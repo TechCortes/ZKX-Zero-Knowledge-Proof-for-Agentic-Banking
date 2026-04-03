@@ -1,2 +1,2 @@
 # ZKX
-ZK-KYC for agents — composable compliance without doxxing. Extends the Open Wallet Standard with zero-knowledge identity proofs: anonymous micropayments below $1,000/day, ZK proof required above.
+ZK-KYC for agentic banking and teh agentic web — composable compliance without doxxing. Using the Open Wallet Standard with zero-knowledge identity proofs.
