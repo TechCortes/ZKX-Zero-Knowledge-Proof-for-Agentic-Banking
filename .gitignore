@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# ZK build artifacts (large binary files — generated locally)
+circuits/build/
+circuits/*.ptau
+circuits/*.zkey
+
+# Public ZK files are committed so the browser can load them
+# EXCEPT the proving key (large) — regenerate with setup-zk
+public/zk/*.zkey
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
