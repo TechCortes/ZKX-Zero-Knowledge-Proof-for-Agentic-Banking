@@ -84,10 +84,7 @@ export default function Home() {
           </h1>
 
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Composable compliance without doxxing. Agents pay anonymously below{" "}
-            <span className="text-white">$1,000/day</span> — above that, a{" "}
-            <span className="text-purple-300">zero-knowledge proof</span> proves
-            identity without revealing it.
+            Privacy &amp; Institutional-Grade Zero Knowledge Proofs for Agentic Banking
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
