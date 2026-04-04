@@ -1,6 +1,4 @@
-import dynamic from "next/dynamic";
-
-const DemoWidget = dynamic(() => import("@/components/DemoWidget"), { ssr: false });
+import ClientDemoWidget from "@/components/ClientDemoWidget";
 
 const steps = [
   {
@@ -231,7 +229,7 @@ export default function Home() {
           </div>
 
           <div className="bg-white/[0.02] border border-white/8 rounded-3xl p-5 md:p-8">
-            <DemoWidget />
+            <ClientDemoWidget />
           </div>
         </div>
       </section>
