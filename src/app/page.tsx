@@ -5,46 +5,55 @@ const steps = [
     number: "01",
     color: "green",
     title: "Anonymous micropayment",
-    description: "Agent sends a payment under the daily threshold. No identity required. No data collected. Fully private by default.",
+    description: "Agent initiates a payment under the daily threshold. No identity required. No data collected. Fully private by default.",
     badge: "< $1,000 / day",
     badgeColor: "green",
   },
   {
     number: "02",
     color: "yellow",
-    title: "Threshold check",
-    description: "The ZKX policy engine — an Open Wallet Standard middleware — evaluates the agent's daily spend in real time.",
-    badge: "Policy enforced",
+    title: "Real-time threshold check",
+    description: "The ZKX compliance engine — an Open Wallet Standard middleware — evaluates cumulative daily spend in real time against the policy.",
+    badge: "Policy engine",
     badgeColor: "yellow",
   },
   {
     number: "03",
     color: "purple",
-    title: "ZK proof of identity",
-    description: "Above the limit, the agent generates a Groth16 ZK proof in-browser. The verifier learns the identity is valid — nothing else.",
+    title: "Zero-knowledge identity proof",
+    description: "Above the limit, the agent generates a Groth16 proof in-browser. The verifier learns the credential is valid — nothing more.",
     badge: "≥ $1,000 / day",
     badgeColor: "purple",
   },
+];
+
+const stats = [
+  { value: "0 bytes", label: "PII transmitted" },
+  { value: "~2.5s", label: "Proof generation" },
+  { value: "Groth16", label: "ZK protocol" },
+  { value: "OWS native", label: "Wallet standard" },
 ];
 
 const techStack = [
   { name: "circom", description: "ZK circuit language", icon: "◈" },
   { name: "snarkjs", description: "Groth16 prover / verifier", icon: "⚡" },
   { name: "Open Wallet Standard", description: "zkx:kyc feature extension", icon: "⬡" },
-  { name: "Poseidon hash", description: "ZK-friendly commitment scheme", icon: "∿" },
-  { name: "Next.js 14", description: "App + API routes", icon: "▲" },
-  { name: "Groth16", description: "Succinct non-interactive ZK", icon: "∞" },
+  { name: "Poseidon hash", description: "ZK-friendly commitment", icon: "∿" },
+  { name: "Next.js 16", description: "App + API routes", icon: "▲" },
+  { name: "BN128 curve", description: "Elliptic curve cryptography", icon: "∞" },
 ];
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#070710] text-white overflow-x-hidden">
+
       {/* Nav */}
-      <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-[#070710]/80 backdrop-blur-md">
+      <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-[#070710]/90 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-purple-600 flex items-center justify-center text-xs font-bold">ZX</div>
+            <div className="w-7 h-7 rounded-lg bg-purple-600 flex items-center justify-center text-xs font-black tracking-tight">ZX</div>
             <span className="font-bold tracking-tight">ZKX</span>
+            <span className="hidden sm:block text-xs text-slate-600 border-l border-white/10 pl-2.5 ml-0.5">Agentic Finance Compliance</span>
           </div>
           <a
             href="https://github.com/TechCortes/ZKX"
@@ -61,138 +70,145 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section className="pt-32 pb-20 px-6 text-center relative">
-        {/* Background glow */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-3xl" />
+      <section className="pt-36 pb-24 px-6 text-center relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-purple-700/8 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-1/4 w-[300px] h-[300px] bg-blue-700/5 rounded-full blur-3xl" />
         </div>
 
         <div className="relative max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-300 mb-6">
+          <div className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full border border-purple-500/25 bg-purple-500/8 text-purple-300 mb-8 font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
-            Built on Open Wallet Standard
+            Open Wallet Standard · zkx:kyc
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6 leading-none">
-            <span className="bg-gradient-to-r from-white via-white to-slate-400 bg-clip-text text-transparent">
-              ZK-KYC
-            </span>
+          <h1 className="text-5xl md:text-[4.5rem] font-black tracking-tighter mb-5 leading-[0.95]">
+            <span className="text-white">ZK-KYC</span>
             <br />
-            <span className="bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-purple-400 via-purple-300 to-blue-400 bg-clip-text text-transparent">
               for Agents
             </span>
           </h1>
 
-          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Privacy &amp; Institutional-Grade Zero Knowledge Proofs for Agentic Banking
+          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
+            Privacy &amp; Institutional-Grade Zero Knowledge Proofs
+            <br className="hidden md:block" /> for Agentic Banking
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-16">
             <a
               href="#demo"
-              className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl transition-colors text-sm"
+              className="px-7 py-3 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl transition-colors text-sm shadow-lg shadow-purple-900/30"
             >
               Try the Demo
             </a>
             <a
               href="#how-it-works"
-              className="px-6 py-3 border border-white/10 hover:border-white/20 text-slate-300 hover:text-white font-semibold rounded-xl transition-colors text-sm"
+              className="px-7 py-3 border border-white/10 hover:border-white/20 text-slate-400 hover:text-white font-medium rounded-xl transition-colors text-sm"
             >
               How it works
             </a>
+          </div>
+
+          {/* Stats bar */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5 rounded-2xl overflow-hidden border border-white/8">
+            {stats.map((s) => (
+              <div key={s.label} className="bg-[#070710] px-6 py-4 text-center">
+                <p className="text-lg font-bold text-white mb-0.5">{s.value}</p>
+                <p className="text-xs text-slate-500">{s.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="py-20 px-6">
+      <section id="how-it-works" className="py-24 px-6 border-t border-white/5">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <p className="text-xs font-semibold text-purple-400 uppercase tracking-widest mb-3">How it works</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-white">
+          <div className="text-center mb-16">
+            <p className="text-xs font-semibold text-purple-400 uppercase tracking-[0.2em] mb-3">How it works</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Compliance that scales with risk
             </h2>
-            <p className="text-slate-400 mt-3 max-w-xl mx-auto text-sm leading-relaxed">
-              The ZKX policy engine acts as an OWS middleware layer. Low-value flows stay private. High-value flows require proof — not disclosure.
+            <p className="text-slate-500 max-w-xl mx-auto text-sm leading-relaxed">
+              ZKX acts as a middleware layer in the payment stack. Low-value flows stay fully private. High-value flows require proof — not disclosure.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-            {/* Connecting line (desktop) */}
-            <div className="hidden md:block absolute top-10 left-1/3 right-1/3 h-px bg-gradient-to-r from-green-500/50 via-yellow-500/50 to-purple-500/50" />
-
-            {steps.map((step) => (
-              <div
-                key={step.number}
-                className="relative bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-colors backdrop-blur-sm"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <span className={`text-3xl font-black ${
-                    step.color === "green" ? "text-green-500/30"
-                    : step.color === "yellow" ? "text-yellow-500/30"
-                    : "text-purple-500/30"
-                  }`}>
-                    {step.number}
-                  </span>
-                  <span className={`text-xs px-2 py-1 rounded-full border font-medium ${
-                    step.badgeColor === "green"
-                      ? "bg-green-500/10 border-green-500/20 text-green-400"
-                      : step.badgeColor === "yellow"
-                      ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-400"
-                      : "bg-purple-500/10 border-purple-500/20 text-purple-400"
-                  }`}>
-                    {step.badge}
-                  </span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+            {steps.map((step, i) => (
+              <div key={step.number} className="relative">
+                {i < steps.length - 1 && (
+                  <div className="hidden md:block absolute top-8 left-full w-5 -ml-2.5 z-10">
+                    <svg viewBox="0 0 20 8" className="w-full opacity-30" fill="none">
+                      <path d="M0 4h16M12 1l4 3-4 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                )}
+                <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-6 hover:border-white/15 transition-colors h-full">
+                  <div className="flex items-start justify-between mb-5">
+                    <span className={`text-4xl font-black leading-none ${
+                      step.color === "green" ? "text-green-500/20"
+                      : step.color === "yellow" ? "text-yellow-500/20"
+                      : "text-purple-500/20"
+                    }`}>
+                      {step.number}
+                    </span>
+                    <span className={`text-xs px-2.5 py-1 rounded-full border font-medium ${
+                      step.badgeColor === "green" ? "bg-green-500/8 border-green-500/20 text-green-400"
+                      : step.badgeColor === "yellow" ? "bg-yellow-500/8 border-yellow-500/20 text-yellow-400"
+                      : "bg-purple-500/8 border-purple-500/20 text-purple-400"
+                    }`}>
+                      {step.badge}
+                    </span>
+                  </div>
+                  <h3 className="text-white font-semibold mb-2 leading-snug">{step.title}</h3>
+                  <p className="text-slate-500 text-sm leading-relaxed">{step.description}</p>
                 </div>
-                <h3 className="text-white font-semibold mb-2">{step.title}</h3>
-                <p className="text-slate-400 text-sm leading-relaxed">{step.description}</p>
               </div>
             ))}
           </div>
 
-          {/* ZK proof detail */}
-          <div className="mt-10 bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 backdrop-blur-sm">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          {/* Circuit detail */}
+          <div className="bg-white/[0.03] border border-white/8 rounded-2xl p-6 md:p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
               <div>
-                <p className="text-xs font-semibold text-purple-400 uppercase tracking-widest mb-3">The ZK Circuit</p>
-                <h3 className="text-xl font-bold text-white mb-3">What the proof actually proves</h3>
-                <ul className="space-y-2.5 text-sm text-slate-400">
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-400 mt-0.5">✓</span>
-                    I know a secret <code className="text-purple-300 text-xs">(idHash, salt)</code> that hashes to a registered <code className="text-purple-300 text-xs">commitment</code>
+                <p className="text-xs font-semibold text-purple-400 uppercase tracking-[0.2em] mb-3">The ZK Circuit</p>
+                <h3 className="text-xl font-bold text-white mb-4">What the verifier learns</h3>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3 text-sm">
+                    <span className="text-green-400 mt-0.5 shrink-0">✓</span>
+                    <span className="text-slate-300">The holder knows a preimage <code className="text-purple-300 text-xs bg-purple-500/10 px-1 py-0.5 rounded">(idHash, salt)</code> that maps to a registered <code className="text-purple-300 text-xs bg-purple-500/10 px-1 py-0.5 rounded">commitment</code></span>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-400 mt-0.5">✓</span>
-                    My age satisfies <code className="text-purple-300 text-xs">currentYear − birthYear ≥ 18</code>
+                  <li className="flex items-start gap-3 text-sm">
+                    <span className="text-green-400 mt-0.5 shrink-0">✓</span>
+                    <span className="text-slate-300">Age satisfies <code className="text-purple-300 text-xs bg-purple-500/10 px-1 py-0.5 rounded">currentYear − birthYear ≥ 18</code></span>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-400 mt-0.5">✗</span>
-                    <span className="text-slate-500">My name, ID number, date of birth — never revealed</span>
+                  <li className="flex items-start gap-3 text-sm">
+                    <span className="text-red-500/60 mt-0.5 shrink-0">✗</span>
+                    <span className="text-slate-600">Name, ID number, date of birth, or any PII</span>
                   </li>
                 </ul>
               </div>
-              <div className="bg-[#0a0a0f] rounded-xl p-4 font-mono text-xs leading-relaxed border border-white/5">
-                <span className="text-slate-500">// kyc_credential.circom</span>
-                <br />
-                <span className="text-purple-400">template</span>{" "}
-                <span className="text-white">KYCCredential</span>() &#123;
-                <br />
-                <span className="text-slate-500 ml-4">// private — stays in browser</span>
-                <br />
-                <span className="text-slate-400 ml-4">signal <span className="text-yellow-400">private</span> input idHash;</span>
-                <br />
-                <span className="text-slate-400 ml-4">signal <span className="text-yellow-400">private</span> input birthYear;</span>
-                <br />
-                <span className="text-slate-400 ml-4">signal <span className="text-yellow-400">private</span> input salt;</span>
-                <br />
-                <span className="text-slate-500 ml-4 mt-1">// public — seen by verifier</span>
-                <br />
-                <span className="text-slate-400 ml-4">signal input <span className="text-green-400">commitment</span>;</span>
-                <br />
-                <span className="text-slate-400 ml-4">signal input <span className="text-green-400">currentYear</span>;</span>
-                <br />
-                <span className="text-slate-400 ml-4">signal input <span className="text-green-400">minAge</span>;</span>
-                <br />&#125;
+              <div className="bg-[#0a0a14] rounded-xl border border-white/5 overflow-hidden">
+                <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/40" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/40" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/40" />
+                  <span className="text-xs text-slate-600 ml-2 font-mono">kyc_credential.circom</span>
+                </div>
+                <div className="p-4 font-mono text-xs leading-6">
+                  <div className="text-slate-600">{"// private inputs — never leave browser"}</div>
+                  <div className="text-slate-400">signal <span className="text-yellow-400">private</span> input <span className="text-white">idHash</span>;</div>
+                  <div className="text-slate-400">signal <span className="text-yellow-400">private</span> input <span className="text-white">birthYear</span>;</div>
+                  <div className="text-slate-400">signal <span className="text-yellow-400">private</span> input <span className="text-white">salt</span>;</div>
+                  <div className="mt-2 text-slate-600">{"// public inputs — visible to verifier"}</div>
+                  <div className="text-slate-400">signal input <span className="text-green-400">commitment</span>;</div>
+                  <div className="text-slate-400">signal input <span className="text-green-400">currentYear</span>;</div>
+                  <div className="text-slate-400">signal input <span className="text-green-400">minAge</span>;</div>
+                  <div className="mt-2 text-slate-600">{"// constraint: Poseidon(idHash, salt) == commitment"}</div>
+                  <div className="text-slate-600">{"// constraint: currentYear - birthYear >= minAge"}</div>
+                </div>
               </div>
             </div>
           </div>
@@ -200,39 +216,40 @@ export default function Home() {
       </section>
 
       {/* Live Demo */}
-      <section id="demo" className="py-20 px-6">
+      <section id="demo" className="py-24 px-6 border-t border-white/5">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-xs font-semibold text-purple-400 uppercase tracking-widest mb-3">Live demo</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">Try it yourself</h2>
-            <p className="text-slate-400 text-sm max-w-lg mx-auto">
-              Send payments as an AI agent. Hit the $1,000 threshold to trigger the ZK KYC flow.
-            </p>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+            <div>
+              <p className="text-xs font-semibold text-purple-400 uppercase tracking-[0.2em] mb-3">Live demo</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-white">Interactive compliance engine</h2>
+            </div>
+            <div className="text-sm text-slate-500 max-w-xs leading-relaxed">
+              Select a scenario and send a payment. Exceed the daily threshold to trigger the ZK proof flow.
+            </div>
           </div>
 
-          <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 md:p-8">
+          <div className="bg-white/[0.02] border border-white/8 rounded-3xl p-5 md:p-8">
             <DemoWidget />
           </div>
         </div>
       </section>
 
       {/* Tech Stack */}
-      <section id="tech" className="py-20 px-6 border-t border-white/5">
+      <section id="tech" className="py-24 px-6 border-t border-white/5">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <p className="text-xs font-semibold text-purple-400 uppercase tracking-widest mb-3">Tech stack</p>
+            <p className="text-xs font-semibold text-purple-400 uppercase tracking-[0.2em] mb-3">Technology</p>
             <h2 className="text-3xl font-bold text-white">Built with</h2>
           </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {techStack.map((tech) => (
               <div
                 key={tech.name}
-                className="bg-white/5 border border-white/10 rounded-xl p-4 text-center hover:border-purple-500/30 hover:bg-purple-500/5 transition-all group"
+                className="bg-white/[0.03] border border-white/8 rounded-xl p-4 text-center hover:border-purple-500/25 hover:bg-purple-500/4 transition-all group"
               >
-                <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">{tech.icon}</div>
+                <div className="text-xl mb-2 opacity-60 group-hover:opacity-100 transition-opacity">{tech.icon}</div>
                 <p className="text-white text-xs font-semibold mb-1">{tech.name}</p>
-                <p className="text-slate-500 text-xs leading-tight">{tech.description}</p>
+                <p className="text-slate-600 text-xs leading-tight">{tech.description}</p>
               </div>
             ))}
           </div>
@@ -240,18 +257,23 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-10 px-6 border-t border-white/5 text-center text-xs text-slate-600">
-        <p>
-          ZKX — Built at a hackathon, April 2026 &middot;{" "}
-          <a href="https://github.com/TechCortes/ZKX" target="_blank" rel="noreferrer" className="hover:text-slate-400 transition-colors underline">
-            TechCortes/ZKX
-          </a>
-          {" "}&middot;{" "}
-          <a href="https://github.com/open-wallet-standard/core" target="_blank" rel="noreferrer" className="hover:text-slate-400 transition-colors underline">
-            Open Wallet Standard
-          </a>
-        </p>
+      <footer className="py-10 px-6 border-t border-white/5">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-600">
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 rounded bg-purple-600/50 flex items-center justify-center text-xs font-bold text-white">ZX</div>
+            <span>ZKX — Built at a hackathon, April 2026</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <a href="https://github.com/TechCortes/ZKX" target="_blank" rel="noreferrer" className="hover:text-slate-400 transition-colors">
+              GitHub
+            </a>
+            <a href="https://github.com/open-wallet-standard/core" target="_blank" rel="noreferrer" className="hover:text-slate-400 transition-colors">
+              Open Wallet Standard
+            </a>
+          </div>
+        </div>
       </footer>
+
     </div>
   );
 }
