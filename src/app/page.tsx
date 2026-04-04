@@ -91,7 +91,7 @@ export default function Home() {
           </h1>
 
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
-            Privacy &amp; Institutional-Grade Zero Knowledge Proofs
+            Institutional-Grade Zero Knowledge Proofs
             <br className="hidden md:block" /> for Agentic Banking
           </p>
 
