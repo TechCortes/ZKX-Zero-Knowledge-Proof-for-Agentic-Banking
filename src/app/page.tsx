@@ -1,4 +1,6 @@
-import DemoWidget from "@/components/DemoWidget";
+import dynamic from "next/dynamic";
+
+const DemoWidget = dynamic(() => import("@/components/DemoWidget"), { ssr: false });
 
 const steps = [
   {
