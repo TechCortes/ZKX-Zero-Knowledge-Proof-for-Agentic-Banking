@@ -24,7 +24,7 @@ export type ZKXKYCFeature = {
   }) => Promise<{ status: "approved" | "requires_kyc" | "rejected"; txId?: string }>;
 };
 
-export interface ZKXWalletAccount extends WalletAccount {
+export interface ZKXWalletAccount extends Omit<WalletAccount, "features"> {
   features: {
     [ZKX_KYC_FEATURE]: ZKXKYCFeature;
   };
