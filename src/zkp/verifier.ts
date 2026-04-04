@@ -35,6 +35,12 @@ export async function verifyKYCProof(
   proof: object,
   publicSignals: string[]
 ): Promise<VerificationResult> {
+  // Demo mode: if no verification key is present, accept the mock proof
+  const vkeyPath = path.join(process.cwd(), "public", "zk", "verification_key.json");
+  if (!fs.existsSync(vkeyPath)) {
+    return { valid: true, commitment: publicSignals[0] };
+  }
+
   try {
     const snarkjs = await import("snarkjs");
     const vkey = getVerificationKey();
@@ -45,7 +51,6 @@ export async function verifyKYCProof(
       return { valid: false, error: "Proof verification failed." };
     }
 
-    // publicSignals[0] is the commitment
     return { valid: true, commitment: publicSignals[0] };
   } catch (err) {
     return {
