@@ -71,25 +71,19 @@ npm run setup-zk
 npm run dev
 ```
 
-## Sharing the Demo (ngrok)
+## Sharing the Demo
 
-To expose your local app publicly during a presentation:
+To get a public shareable URL with no install or account required:
 
 ```bash
-# Install ngrok (macOS)
-brew install ngrok
-
-# Authenticate (one-time) — get your token at https://dashboard.ngrok.com
-ngrok config add-authtoken <YOUR_TOKEN>
-
-# Start the app
+# Terminal 1 — run the app
 npm run dev
 
-# In a second terminal, tunnel port 3000
-ngrok http 3000
+# Terminal 2 — expose it publicly
+npx localtunnel --port 3000
 ```
 
-ngrok will print a public URL like `https://abc123.ngrok-free.app` — share that link with the audience. The tunnel stays live as long as the terminal is open.
+`localtunnel` will print a URL like `https://xyz.loca.lt` — share that with anyone. The tunnel stays live as long as the terminal is open.
 
 ## OWS Extension
 
