@@ -71,6 +71,26 @@ npm run setup-zk
 npm run dev
 ```
 
+## Sharing the Demo (ngrok)
+
+To expose your local app publicly during a presentation:
+
+```bash
+# Install ngrok (macOS)
+brew install ngrok
+
+# Authenticate (one-time) — get your token at https://dashboard.ngrok.com
+ngrok config add-authtoken <YOUR_TOKEN>
+
+# Start the app
+npm run dev
+
+# In a second terminal, tunnel port 3000
+ngrok http 3000
+```
+
+ngrok will print a public URL like `https://abc123.ngrok-free.app` — share that link with the audience. The tunnel stays live as long as the terminal is open.
+
 ## OWS Extension
 
 ZKX registers as the `zkx:kyc` feature in the wallet-standard registry:
