@@ -1,4 +1,4 @@
-# ZKX — ZK-KYC for Agents
+# ZKX — Zero-Knowldge Proof for Agentic Banking
 
 > Composable compliance without doxxing.
 
