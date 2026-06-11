@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  turbopack: {},
   webpack: (config) => {
-    // snarkjs needs these node built-ins
     config.resolve.fallback = {
       ...config.resolve.fallback,
       fs: false,
