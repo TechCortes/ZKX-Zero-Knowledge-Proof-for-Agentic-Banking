@@ -10,23 +10,23 @@
     "setup-zk": "node scripts/setup_zk.js"
   },
   "dependencies": {
-    "next": "14.2.5",
-    "react": "^18",
-    "react-dom": "^18",
-    "snarkjs": "^0.7.4",
-    "ffjavascript": "^0.3.0",
     "@wallet-standard/core": "^1.0.3",
     "@wallet-standard/features": "^1.0.3",
-    "clsx": "^2.1.1"
+    "clsx": "^2.1.1",
+    "ffjavascript": "^0.3.0",
+    "next": "^16.2.2",
+    "react": "^18",
+    "react-dom": "^18",
+    "snarkjs": "^0.7.4"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "typescript": "^5",
-    "tailwindcss": "^3.4.1",
-    "postcss": "^8",
     "autoprefixer": "^10.0.1",
-    "circom": "^2.1.9"
+    "circomlib": "^2.0.5",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
   }
 }

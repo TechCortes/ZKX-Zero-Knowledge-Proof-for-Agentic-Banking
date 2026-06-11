@@ -21,3 +21,4 @@ public/zk/*.zkey
 
 # OS
 .DS_Store
+.vercel
