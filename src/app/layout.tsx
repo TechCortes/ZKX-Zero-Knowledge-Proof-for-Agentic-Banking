@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ZKX — ZK-KYC for Agents",
+  title: "ZKX — Zero-Knowledge Agentic Banking",
   description:
-    "Composable compliance without doxxing. Extends the Open Wallet Standard with zero-knowledge identity proofs.",
+    "Know Your Agent (KYA) — zero-knowledge compliance infrastructure for AI agents in financial markets. Compliant by default. Private by design.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
