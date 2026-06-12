@@ -100,11 +100,10 @@ export default function Home() {
           </div>
 
           <h1 className="text-center text-5xl md:text-[5.5rem] font-black tracking-tighter leading-[0.92] mb-6">
-            <span className="text-white">The Neobank</span>
+            <span className="text-white">Zero-Knowledge</span>
             <br />
-            <span className="text-white">for </span>
             <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-purple-300 bg-clip-text text-transparent">
-              Autonomous Agents
+              Agentic Banking
             </span>
           </h1>
 
