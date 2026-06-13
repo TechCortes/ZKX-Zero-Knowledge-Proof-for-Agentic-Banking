@@ -1,5 +1,6 @@
 import ClientDemoWidget from "@/components/ClientDemoWidget";
 import { LogoWordmark } from "@/components/Logo";
+import { ZKXFacilitator } from "@/components/ZKXFacilitator";
 
 const steps = [
   {
@@ -82,54 +83,71 @@ export default function Home() {
       <section className="pt-32 pb-20 px-6 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-900/10 rounded-full blur-3xl" />
-          <div className="absolute top-20 right-1/4 w-[400px] h-[400px] bg-purple-900/8 rounded-full blur-3xl" />
+          <div className="absolute top-20 right-1/4 w-[500px] h-[500px] bg-purple-900/8 rounded-full blur-3xl" />
         </div>
 
-        <div className="relative max-w-5xl mx-auto">
-          <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center gap-2 text-xs px-3.5 py-1.5 rounded-full border border-blue-500/20 bg-blue-500/5 text-blue-300 font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-              Private Beta · Open Wallet Standard · zkx:kyc
+        <div className="relative max-w-6xl mx-auto">
+          {/* Two-column hero: copy left, character right */}
+          <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-6">
+
+            {/* Left — copy */}
+            <div className="flex-1 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 text-xs px-3.5 py-1.5 rounded-full border border-blue-500/20 bg-blue-500/5 text-blue-300 font-medium mb-8">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                Private Beta · Open Wallet Standard · zkx:kyc
+              </div>
+
+              <h1 className="text-5xl md:text-[5rem] font-black tracking-tighter leading-[0.92] mb-6">
+                <span className="text-white">Zero-Knowledge</span>
+                <br />
+                <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-purple-300 bg-clip-text text-transparent">
+                  Agentic Banking
+                </span>
+              </h1>
+
+              <p className="text-lg md:text-xl text-slate-400 max-w-xl mb-4 leading-relaxed font-light mx-auto lg:mx-0">
+                Zero-knowledge compliance infrastructure for AI agents in financial markets.{" "}
+                <span className="text-slate-300 font-normal">Compliant by default. Private by design.</span>
+              </p>
+
+              <div className="flex flex-wrap gap-2 mb-10 justify-center lg:justify-start">
+                {trustBadges.map((badge) => (
+                  <span key={badge} className="text-xs px-2.5 py-1 rounded-md border border-white/8 bg-white/[0.03] text-slate-500 font-medium">
+                    {badge}
+                  </span>
+                ))}
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3 mb-6">
+                <a
+                  href="#demo"
+                  className="px-7 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors text-sm shadow-lg shadow-blue-900/30"
+                >
+                  Try the Demo
+                </a>
+                <a
+                  href="#architecture"
+                  className="px-7 py-3 border border-white/10 hover:border-white/20 text-slate-400 hover:text-white font-medium rounded-xl transition-colors text-sm"
+                >
+                  View Architecture
+                </a>
+              </div>
+
+              {/* KYA facilitator label */}
+              <div className="hidden lg:flex items-center gap-2 text-xs text-slate-600">
+                <span className="w-1 h-1 rounded-full bg-purple-500" />
+                Guided by <span className="text-purple-400 font-medium">KYA</span> — Know Your Agent facilitator
+              </div>
+            </div>
+
+            {/* Right — superhero character */}
+            <div className="w-72 md:w-80 lg:w-96 shrink-0">
+              <ZKXFacilitator />
             </div>
           </div>
 
-          <h1 className="text-center text-5xl md:text-[5.5rem] font-black tracking-tighter leading-[0.92] mb-6">
-            <span className="text-white">Zero-Knowledge</span>
-            <br />
-            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-purple-300 bg-clip-text text-transparent">
-              Agentic Banking
-            </span>
-          </h1>
-
-          <p className="text-center text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-4 leading-relaxed font-light">
-            Zero-knowledge compliance infrastructure for AI agents operating in financial markets.{" "}
-            <span className="text-slate-300 font-normal">Compliant by default. Private by design.</span>
-          </p>
-
-          <div className="flex justify-center flex-wrap gap-2 mb-10">
-            {trustBadges.map((badge) => (
-              <span key={badge} className="text-xs px-2.5 py-1 rounded-md border border-white/8 bg-white/[0.03] text-slate-500 font-medium">
-                {badge}
-              </span>
-            ))}
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-16">
-            <a
-              href="#demo"
-              className="px-7 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors text-sm shadow-lg shadow-blue-900/30"
-            >
-              Try the Demo
-            </a>
-            <a
-              href="#architecture"
-              className="px-7 py-3 border border-white/10 hover:border-white/20 text-slate-400 hover:text-white font-medium rounded-xl transition-colors text-sm"
-            >
-              View Architecture
-            </a>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.04] rounded-2xl overflow-hidden border border-white/[0.06]">
+          {/* Stats bar — full width below */}
+          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.04] rounded-2xl overflow-hidden border border-white/[0.06]">
             {[
               { value: "0 bytes", label: "PII transmitted" },
               { value: "~2.5s", label: "Proof generation" },
