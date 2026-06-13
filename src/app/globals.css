@@ -7,3 +7,13 @@ body {
   color: #e2e8f0;
   font-family: 'Courier New', monospace;
 }
+
+@keyframes zkxFloat {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-14px) rotate(1deg); }
+  66%       { transform: translateY(-7px) rotate(-0.5deg); }
+}
+
+.zkx-float {
+  animation: zkxFloat 5s ease-in-out infinite;
+}
