@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authenticate, unauthorized } from "@/lib/auth";
+import { authenticate, isAuthFailure, unauthorized } from "@/lib/auth";
 import { verifyKYCProof } from "@/zkp/verifier";
 import { evaluatePayment, approveWithProof } from "@/policy/engine";
 import { logger } from "@/lib/logger";
@@ -7,11 +7,12 @@ import { logger } from "@/lib/logger";
 const ROUTE = "POST /api/v1/verify-proof";
 
 export async function POST(req: NextRequest) {
-  const agent = authenticate(req);
-  if (!agent) {
-    logger.warn(ROUTE, "unauthorized");
-    return unauthorized();
+  const auth = authenticate(req);
+  if (isAuthFailure(auth)) {
+    logger.warn(ROUTE, "unauthorized", { errorCode: auth.errorCode });
+    return unauthorized(auth.message, auth.errorCode);
   }
+  const agent = auth;
 
   let body: unknown;
   try {
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const { proof, publicSignals, amount, recipient, memo } =
+  const { proof, publicSignals, amount, recipient, memo, chainId } =
     (body ?? {}) as Record<string, unknown>;
 
   if (!proof || !Array.isArray(publicSignals)) {
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
   if (proofCommitment !== agent.commitment) {
     logger.warn(ROUTE, "commitment_mismatch", { agentId: agent.id });
     return NextResponse.json(
-      { error: "Proof commitment does not match registered agent identity." },
+      { error: "Proof commitment does not match registered agent identity.", errorCode: "POLICY_DENIED" },
       { status: 403 }
     );
   }
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
   if (!result.valid) {
     logger.warn(ROUTE, "proof_rejected", { agentId: agent.id, error: result.error });
     return NextResponse.json(
-      { status: "rejected", error: result.error ?? "Proof verification failed." },
+      { status: "rejected", error: result.error ?? "Proof verification failed.", errorCode: "POLICY_DENIED" },
       { status: 403 }
     );
   }
@@ -62,9 +63,10 @@ export async function POST(req: NextRequest) {
     amount,
     recipient,
     memo: typeof memo === "string" ? memo : undefined,
+    chainId: typeof chainId === "string" ? chainId : undefined,
   };
 
-  const decision = evaluatePayment(paymentRequest);
+  const decision = evaluatePayment(paymentRequest, agent.policies);
   if (!decision.requiresKYC) {
     logger.warn(ROUTE, "proof_not_needed", { agentId: agent.id, amount });
     return NextResponse.json(
@@ -74,7 +76,12 @@ export async function POST(req: NextRequest) {
   }
 
   const approved = approveWithProof(paymentRequest);
-  logger.info(ROUTE, "payment_approved_zk", { agentId: agent.id, amount, commitment: result.commitment });
+  logger.info(ROUTE, "payment_approved_zk", {
+    agentId: agent.id,
+    amount,
+    chainId: chainId ?? null,
+    commitment: result.commitment,
+  });
 
   return NextResponse.json({
     status: "approved",
