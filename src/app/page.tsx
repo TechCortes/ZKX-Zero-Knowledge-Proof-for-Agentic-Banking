@@ -1,5 +1,5 @@
 import ClientDemoWidget from "@/components/ClientDemoWidget";
-import { LogoWordmark } from "@/components/Logo";
+import { LogoWordmark, LogoIcon } from "@/components/Logo";
 import { ZKXFacilitator } from "@/components/ZKXFacilitator";
 
 const zkxPrinciples = [
@@ -686,13 +686,7 @@ export default function Home() {
       <footer className="py-10 px-6 border-t border-white/[0.04]">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-700">
           <div className="flex items-center gap-2.5">
-            <div className="w-5 h-5 rounded-md bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shrink-0">
-              <svg width="10" height="10" viewBox="0 0 32 32" fill="none">
-                <circle cx="16" cy="16" r="10" stroke="white" strokeOpacity="0.4" strokeWidth="2" strokeDasharray="4 3" fill="none"/>
-                <circle cx="16" cy="16" r="6" fill="white" fillOpacity="0.15"/>
-                <path d="M12.5 16l2.5 2.5 4.5-4.5" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
+            <LogoIcon size={20} id="zkx-footer"/>
             <span>ZKX · Know Your Agent</span>
             <span className="text-slate-800">·</span>
             <span>zkx:kyc for Open Wallet Standard</span>
