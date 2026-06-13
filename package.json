@@ -7,11 +7,16 @@
     "build": "next build",
     "start": "next start",
     "compile-circuit": "circom circuits/kyc_credential.circom --r1cs --wasm --sym -o circuits/build",
-    "setup-zk": "node scripts/setup_zk.js"
+    "setup-zk": "node scripts/setup_zk.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:circuit": "vitest run src/zkp/",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@wallet-standard/core": "^1.0.3",
     "@wallet-standard/features": "^1.0.3",
+    "circomlibjs": "^0.1.7",
     "clsx": "^2.1.1",
     "ffjavascript": "^0.3.0",
     "next": "^16.2.2",
@@ -23,10 +28,12 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@vitest/coverage-v8": "^4.1.8",
     "autoprefixer": "^10.0.1",
     "circomlib": "^2.0.5",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.8"
   }
 }
