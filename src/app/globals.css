@@ -17,3 +17,22 @@ body {
 .zkx-float {
   animation: zkxFloat 5s ease-in-out infinite;
 }
+
+@keyframes orbPulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%       { opacity: 0.85; transform: scale(1.08); }
+}
+
+.zkx-orb-pulse {
+  animation: orbPulse 2.8s ease-in-out infinite;
+  transform-origin: 380px 142px;
+}
+
+@keyframes proofTrace {
+  0%   { stroke-dashoffset: 24; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.proof-trace path {
+  animation: proofTrace 1.6s linear infinite;
+}
