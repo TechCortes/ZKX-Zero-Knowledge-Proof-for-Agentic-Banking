@@ -768,20 +768,40 @@ export default function Home() {
                 </div>
                 <div>
                   <p className="text-white text-sm font-semibold">Jorge Cortes</p>
-                  <p className="text-slate-600 text-xs">Founder · ZKX</p>
+                  <p className="text-slate-600 text-xs">Founder · ZKX · MiamiDadeDAO</p>
                 </div>
               </div>
               <p className="text-slate-500 text-xs leading-relaxed mb-3">
-                Research at the intersection of zero-knowledge proofs, agentic finance, and decentralized compliance infrastructure.
+                Research at the intersection of zero-knowledge proofs, civic identity, and decentralized compliance infrastructure.
               </p>
-              <div className="border-t border-white/[0.04] pt-3 mb-3">
-                <p className="text-xs text-slate-700 uppercase tracking-[0.12em] font-medium mb-2">Prior work</p>
-                <p className="text-slate-600 text-xs leading-relaxed">
-                  Zero-knowledge proofs for Digital IDs and Community IDs in Miami — applying ZK credential systems to civic identity before the agentic finance context.
-                </p>
+              <div className="border-t border-white/[0.04] pt-3 mb-3 space-y-3">
+                <div>
+                  <p className="text-xs text-slate-700 uppercase tracking-[0.12em] font-medium mb-1.5">Prior work</p>
+                  <p className="text-slate-600 text-xs leading-relaxed">
+                    Founded the{" "}
+                    <a href="https://miamiid.org/" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-white transition-colors">
+                      Miami-Dade Community ID
+                    </a>
+                    {" "}— a zero-knowledge credential system for digital and community identity in Miami, built under the{" "}
+                    <a href="https://linktr.ee/miamidadedao" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-white transition-colors">
+                      Greater Miami DAO
+                    </a>
+                    . ZKX extends that work to agentic finance and the Open Wallet Standard.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <a
+                    href="https://crypto.news/zero-knowledge-cryptography-is-bigger-than-web3"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-slate-700 hover:text-slate-400 transition-colors leading-relaxed"
+                  >
+                    ZK cryptography is bigger than Web3 ↗
+                  </a>
+                </div>
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {["zkx:kyc", "OWS", "Groth16", "FATF", "Digital ID", "Miami"].map((t) => (
+                {["ZKX", "MiamiDadeDAO", "Community ID", "Groth16", "OWS", "FATF"].map((t) => (
                   <span key={t} className="text-xs px-2 py-0.5 rounded border border-white/[0.06] text-slate-600 font-mono">{t}</span>
                 ))}
               </div>
