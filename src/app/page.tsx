@@ -355,9 +355,11 @@ export default function Home() {
             {/* Founder card */}
             <div className="md:col-span-1 bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center shrink-0">
-                  <span className="text-white text-sm font-bold tracking-tight">JC</span>
-                </div>
+                <img
+                  src="/jorge-cortes.png"
+                  alt="Jorge Cortes"
+                  className="w-14 h-14 rounded-full object-cover object-top ring-2 ring-purple-500/30 shrink-0"
+                />
                 <div>
                   <p className="text-white text-sm font-semibold">Jorge Cortes</p>
                   <p className="text-slate-500 text-xs">Founder · ZKX · MiamiDadeDAO</p>
