@@ -352,55 +352,122 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-4">
-            {/* Founder card */}
-            <div className="md:col-span-1 bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">
-              <div className="flex items-center gap-3 mb-4">
+            {/* Founder card — expanded */}
+            <div className="md:col-span-2 bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">
+              {/* Header row */}
+              <div className="flex items-start gap-4 mb-5">
                 <img
                   src="/jorge-cortes.png"
                   alt="Jorge Cortes"
-                  className="w-14 h-14 rounded-full object-cover object-top ring-2 ring-purple-500/30 shrink-0"
+                  className="w-16 h-16 rounded-full object-cover object-top ring-2 ring-purple-500/30 shrink-0"
                 />
-                <div>
-                  <p className="text-white text-sm font-semibold">Jorge Cortes</p>
-                  <p className="text-slate-500 text-xs">Founder · ZKX · MiamiDadeDAO</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white text-base font-semibold">Jorge Cortes</p>
+                  <p className="text-slate-400 text-xs mt-0.5">Founder, ZKX · Co-founder, MiamiDadeDAO</p>
+                  <p className="text-slate-600 text-xs mt-1 leading-relaxed">+15 years Innovation &amp; Tech Ecosystems · LinkedIn Top Voice Web3 &amp; Industry 4.0</p>
+                  <div className="flex flex-wrap items-center gap-3 mt-3">
+                    <a href="https://www.linkedin.com/in/jorgeandrescortes/" target="_blank" rel="noreferrer"
+                       className="text-xs text-slate-500 hover:text-slate-300 transition-colors">LinkedIn ↗</a>
+                    <a href="https://x.com/realTechCortes" target="_blank" rel="noreferrer"
+                       className="text-xs text-slate-500 hover:text-slate-300 transition-colors">X ↗</a>
+                    <a href="https://techcortes.substack.com" target="_blank" rel="noreferrer"
+                       className="text-xs text-slate-500 hover:text-slate-300 transition-colors">Substack ↗</a>
+                    <a href="https://github.com/TechCortes" target="_blank" rel="noreferrer"
+                       className="text-xs text-slate-500 hover:text-slate-300 transition-colors">GitHub ↗</a>
+                  </div>
                 </div>
               </div>
-              <p className="text-slate-400 text-xs leading-relaxed mb-4">
-                Research at the intersection of zero-knowledge proofs, civic identity, and decentralized compliance infrastructure.
-              </p>
-              <div className="border-t border-white/[0.06] pt-4 mb-4 space-y-3">
+
+              <div className="grid sm:grid-cols-2 gap-5 border-t border-white/[0.06] pt-5">
+                {/* Roles & Affiliations */}
                 <div>
-                  <p className="text-xs text-slate-500 uppercase tracking-[0.12em] font-semibold mb-2">Prior work</p>
-                  <p className="text-slate-400 text-xs leading-relaxed">
-                    Founded the{" "}
-                    <a href="https://miamiid.org/" target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-2">
-                      Miami-Dade Community ID
-                    </a>
-                    {" "}— a zero-knowledge credential system for digital and community identity in Miami, built under the{" "}
-                    <a href="https://linktr.ee/miamidadedao" target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-2">
-                      Greater Miami DAO
-                    </a>
-                    . ZKX extends that civic ZK work into agentic finance.
-                  </p>
+                  <p className="text-xs text-slate-500 uppercase tracking-[0.12em] font-semibold mb-3">Roles &amp; Affiliations</p>
+                  <ul className="space-y-2.5">
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-500 text-xs mt-0.5 shrink-0">▸</span>
+                      <span className="text-slate-400 text-xs leading-relaxed">
+                        Co-founder,{" "}
+                        <a href="https://linktr.ee/miamidadedao" target="_blank" rel="noreferrer"
+                           className="text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-2">MiamiDadeDAO</a>
+                        {" "}— civic digital credentials and community identity in South Florida
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-500 text-xs mt-0.5 shrink-0">▸</span>
+                      <span className="text-slate-400 text-xs leading-relaxed">
+                        Advisor,{" "}
+                        <a href="https://www.ufblockchain.org/" target="_blank" rel="noreferrer"
+                           className="text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-2">University of Florida Blockchain Lab</a>
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-500 text-xs mt-0.5 shrink-0">▸</span>
+                      <span className="text-slate-400 text-xs leading-relaxed">
+                        <a href="https://www.nobeldao.com/" target="_blank" rel="noreferrer"
+                           className="text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-2">Nobel DAO</a>
+                        {" "}— decentralized coordination and regenerative finance
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-500 text-xs mt-0.5 shrink-0">▸</span>
+                      <span className="text-slate-400 text-xs leading-relaxed">
+                        <a href="https://ldacap.com/" target="_blank" rel="noreferrer"
+                           className="text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-2">LDA Capital</a>
+                        {" "}— Digital Assets Portfolio
+                      </span>
+                    </li>
+                  </ul>
                 </div>
-                <a
-                  href="https://crypto.news/zero-knowledge-cryptography-is-bigger-than-web3"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors"
-                >
-                  ZK cryptography is bigger than Web3 ↗
-                </a>
+
+                {/* Prior work + Media */}
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-xs text-slate-500 uppercase tracking-[0.12em] font-semibold mb-2">Prior Work</p>
+                    <p className="text-slate-400 text-xs leading-relaxed">
+                      Founded the{" "}
+                      <a href="https://miamiid.org/" target="_blank" rel="noreferrer"
+                         className="text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-2">Miami-Dade Community ID</a>
+                      {" "}— a zero-knowledge credential system for digital and civic identity in Miami. ZKX extends that work into agentic finance and cross-chain compliance.
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 uppercase tracking-[0.12em] font-semibold mb-2">Media</p>
+                    <ul className="space-y-1.5">
+                      <li>
+                        <a href="https://www.coindesk.com/tv/community-crypto/community-crypto-june-3-2021-20210528"
+                           target="_blank" rel="noreferrer"
+                           className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+                          CoinDesk · Community Crypto ↗
+                        </a>
+                      </li>
+                      <li>
+                        <a href="https://www.cnbc.com/2021/06/24/why-titan-crypto-crash-that-burned-mark-cuban-may-not-signal-similar-bitcoin-plunge.html"
+                           target="_blank" rel="noreferrer"
+                           className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+                          CNBC · Crypto Markets Commentary ↗
+                        </a>
+                      </li>
+                      <li>
+                        <a href="https://www.youtube.com/watch?v=pcQfAj55C10"
+                           target="_blank" rel="noreferrer"
+                           className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+                          CNN en Español · Web3 &amp; Digital Assets ↗
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                {["ZKX", "MiamiDadeDAO", "Community ID", "Groth16", "OWS", "FATF"].map((t) => (
+
+              <div className="flex flex-wrap gap-1.5 mt-5 pt-4 border-t border-white/[0.06]">
+                {["ZKX", "MiamiDadeDAO", "Community ID", "Groth16", "OWS", "FATF", "ReFi", "Web3"].map((t) => (
                   <span key={t} className="text-xs px-2 py-0.5 rounded border border-white/[0.08] text-slate-500 font-mono">{t}</span>
                 ))}
               </div>
             </div>
 
             {/* Research partners */}
-            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 content-start">
+            <div className="md:col-span-1 grid grid-cols-1 gap-4 content-start">
               {researchPartners.map((p) => (
                 <div key={p.name} className={`bg-white/[0.02] border rounded-2xl p-5 transition-colors ${
                   p.color === "blue" ? "border-blue-500/10 hover:border-blue-500/20" :
