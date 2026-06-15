@@ -141,7 +141,7 @@ export default function Home() {
             </a>
             <a
               href="#founder"
-              className="hidden md:flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+              className="hidden md:flex items-center gap-1.5 text-xs font-semibold text-slate-300 hover:text-white transition-colors border border-white/10 hover:border-white/20 px-3 py-1.5 rounded-lg"
             >
               Founder
             </a>
