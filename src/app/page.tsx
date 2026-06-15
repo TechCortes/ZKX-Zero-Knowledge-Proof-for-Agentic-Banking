@@ -73,8 +73,45 @@ const protocolStack = [
   { name: "BN128",                description: "Barreto-Naehrig elliptic curve — pairing-based proving system",            tag: "Curve"     },
   { name: "Open Wallet Standard", description: "zkx:kyc feature extension — OWS policy engine integration point",          tag: "Standard"  },
   { name: "CAIP-2",               description: "Chain-agnostic identifiers — multi-chain wallet address resolution",        tag: "Chains"    },
+  { name: "x402",                 description: "HTTP payment protocol — ows pay request for API-native agentic payments",  tag: "Payments"  },
+  { name: "MoonPay",              description: "Fiat-to-crypto onramp — ows fund deposit funds agent wallets with USDC",   tag: "Onramp"    },
   { name: "Next.js 16",           description: "App Router with Turbopack — edge-ready API runtime",                       tag: "Runtime"   },
   { name: "FATF Rec. 16",         description: "Travel Rule compliance framework — $1,000 threshold design basis",         tag: "Regulatory"},
+];
+
+const owsCliCommands = [
+  { cmd: "ows wallet create",  desc: "Create a local multi-chain vault — EVM, Solana, Bitcoin + 7 more" },
+  { cmd: "ows fund deposit",   desc: "Fund agent wallet via MoonPay — fiat → USDC on any chain"         },
+  { cmd: "ows pay request",    desc: "Make x402 payments to API-native endpoints — no card required"     },
+  { cmd: "ows pay discover",   desc: "Discover x402-enabled services in the OWS ecosystem"               },
+  { cmd: "ows key create",     desc: "Issue ows_key_ agent tokens with typed policy rules attached"      },
+  { cmd: "ows policy create",  desc: "Register allowed_chains · expires_at · spending_limit rules"       },
+];
+
+const owsChains = [
+  { name: "EVM",     networks: "Ethereum · Base · Polygon · Arbitrum", curve: "secp256k1" },
+  { name: "Solana",  networks: "mainnet · devnet",                       curve: "Ed25519"   },
+  { name: "Bitcoin", networks: "mainnet · testnet (BIP-84 bech32)",      curve: "secp256k1" },
+  { name: "Cosmos",  networks: "cosmos · osmosis · +IBC chains",         curve: "secp256k1" },
+  { name: "Sui",     networks: "mainnet · testnet",                       curve: "Ed25519"   },
+  { name: "TON",     networks: "mainnet · testnet (v5r1)",                curve: "Ed25519"   },
+];
+
+const researchPartners = [
+  {
+    name: "MoonPay",
+    role: "Payment Infrastructure",
+    detail: "MoonPay's fiat-to-crypto rails are natively integrated into OWS via ows fund deposit — bridging compliant fiat onboarding directly to agent wallet funding.",
+    tag: "ows fund deposit",
+    color: "blue",
+  },
+  {
+    name: "Open Wallet Standard",
+    role: "Wallet Infrastructure",
+    detail: "The foundation — local key custody, AES-256-GCM encryption, CAIP-2 multi-chain support, and a pre-signing policy engine across 10 chain families.",
+    tag: "v1.3.2",
+    color: "green",
+  },
 ];
 
 const neverLearnedItems = [
@@ -385,6 +422,76 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ═══════════════ OWS ECOSYSTEM ═══════════════ */}
+      <section className="py-20 px-6 border-t border-white/[0.04]">
+        <div className="max-w-5xl mx-auto">
+          <div className="mb-10">
+            <p className="text-xs font-semibold text-blue-400 uppercase tracking-[0.2em] mb-3">OWS Ecosystem</p>
+            <h2 className="text-2xl font-bold text-white mb-2">One interface. Ten chains. Every agent.</h2>
+            <p className="text-slate-600 text-sm max-w-xl leading-relaxed">
+              OWS gives every agent local key custody, multi-chain signing, and a pre-signing policy engine out of the box.
+              ZKX adds the compliance layer to the same stack — no new primitives, no new infrastructure.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-5">
+            {/* CLI commands */}
+            <div className="bg-[#060610] rounded-2xl border border-white/[0.06] overflow-hidden">
+              <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/[0.04]">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500/40"/>
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/40"/>
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500/40"/>
+                <span className="text-xs text-slate-700 ml-2 font-mono">ows — CLI reference</span>
+              </div>
+              <div className="p-5 space-y-4">
+                {owsCliCommands.map((c) => (
+                  <div key={c.cmd} className="flex items-start gap-3">
+                    <span className="text-white/20 font-mono text-xs shrink-0 mt-0.5 select-none">$</span>
+                    <div>
+                      <p className="text-green-400 font-mono text-xs">{c.cmd}</p>
+                      <p className="text-slate-700 text-xs mt-0.5 leading-relaxed">{c.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Chain support */}
+            <div className="flex flex-col gap-3">
+              <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl overflow-hidden flex-1">
+                <div className="px-5 py-3.5 border-b border-white/[0.04]">
+                  <p className="text-xs font-semibold text-slate-600 uppercase tracking-[0.15em]">Supported Chains · OWS v1.3.2</p>
+                </div>
+                <div className="divide-y divide-white/[0.03]">
+                  {owsChains.map((c) => (
+                    <div key={c.name} className="flex items-center justify-between px-5 py-2.5">
+                      <div>
+                        <p className="text-white text-xs font-semibold">{c.name}</p>
+                        <p className="text-slate-700 text-xs font-mono mt-0.5">{c.networks}</p>
+                      </div>
+                      <span className="text-xs px-2 py-0.5 rounded border border-white/[0.06] text-slate-600 font-mono shrink-0 ml-3">{c.curve}</span>
+                    </div>
+                  ))}
+                  <div className="px-5 py-2.5 text-xs text-slate-800 font-mono">+ Tron · XRPL · Filecoin · Spark</div>
+                </div>
+              </div>
+
+              {/* MoonPay callout */}
+              <div className="bg-blue-500/[0.04] border border-blue-500/10 rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0"/>
+                  <p className="text-blue-400 text-xs font-semibold">MoonPay · Fiat Onramp</p>
+                </div>
+                <p className="text-slate-600 text-xs leading-relaxed font-mono">ows fund deposit</p>
+                <p className="text-slate-600 text-xs leading-relaxed mt-1">
+                  Fund agent wallets with USDC directly from fiat — MoonPay rails integrated natively into the OWS CLI. No exchange account required.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ═══════════════ COMPLIANCE POLICY ═══════════════ */}
       <section className="py-20 px-6 border-t border-white/[0.04]">
         <div className="max-w-5xl mx-auto">
@@ -643,6 +750,67 @@ export default function Home() {
                 <p className="text-slate-600 text-xs leading-relaxed">{tech.description}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════ PROVENANCE ═══════════════ */}
+      <section className="py-20 px-6 border-t border-white/[0.04]">
+        <div className="max-w-5xl mx-auto">
+          <div className="mb-10">
+            <p className="text-xs font-semibold text-slate-700 uppercase tracking-[0.2em] mb-3">Research & Provenance</p>
+            <h2 className="text-2xl font-bold text-white mb-3">
+              Built at the intersection of payments, wallets, and cryptographic compliance.
+            </h2>
+            <p className="text-slate-600 text-sm max-w-2xl leading-relaxed">
+              ZKX originated as a research project exploring zero-knowledge identity for autonomous agents — conducted in collaboration with the teams behind MoonPay and the Open Wallet Standard.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            {/* Founder */}
+            <div className="md:col-span-1 bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center shrink-0">
+                  <span className="text-white text-xs font-bold tracking-tight">JC</span>
+                </div>
+                <div>
+                  <p className="text-white text-sm font-semibold">Jorge Cortes</p>
+                  <p className="text-slate-600 text-xs">Founder · ZKX</p>
+                </div>
+              </div>
+              <p className="text-slate-500 text-xs leading-relaxed mb-4">
+                Research at the intersection of zero-knowledge proofs, agentic finance, and decentralized compliance infrastructure.
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {["zkx:kyc", "OWS", "Groth16", "FATF"].map((t) => (
+                  <span key={t} className="text-xs px-2 py-0.5 rounded border border-white/[0.06] text-slate-600 font-mono">{t}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Research partners */}
+            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {researchPartners.map((p) => (
+                <div key={p.name} className={`bg-white/[0.02] border rounded-2xl p-5 transition-colors ${
+                  p.color === "blue"  ? "border-blue-500/10 hover:border-blue-500/20"  :
+                  "border-green-500/10 hover:border-green-500/20"
+                }`}>
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <p className={`text-sm font-semibold ${p.color === "blue" ? "text-blue-300" : "text-green-300"}`}>
+                      {p.name}
+                    </p>
+                    <span className={`text-xs px-1.5 py-0.5 rounded border font-mono shrink-0 ${
+                      p.color === "blue"
+                        ? "border-blue-500/20 bg-blue-500/5 text-blue-500"
+                        : "border-green-500/20 bg-green-500/5 text-green-500"
+                    }`}>{p.tag}</span>
+                  </div>
+                  <p className="text-xs font-medium text-slate-600 uppercase tracking-[0.1em] mb-2">{p.role}</p>
+                  <p className="text-slate-600 text-xs leading-relaxed">{p.detail}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
