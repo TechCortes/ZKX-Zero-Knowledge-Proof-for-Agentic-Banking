@@ -771,11 +771,17 @@ export default function Home() {
                   <p className="text-slate-600 text-xs">Founder · ZKX</p>
                 </div>
               </div>
-              <p className="text-slate-500 text-xs leading-relaxed mb-4">
+              <p className="text-slate-500 text-xs leading-relaxed mb-3">
                 Research at the intersection of zero-knowledge proofs, agentic finance, and decentralized compliance infrastructure.
               </p>
+              <div className="border-t border-white/[0.04] pt-3 mb-3">
+                <p className="text-xs text-slate-700 uppercase tracking-[0.12em] font-medium mb-2">Prior work</p>
+                <p className="text-slate-600 text-xs leading-relaxed">
+                  Zero-knowledge proofs for Digital IDs and Community IDs in Miami — applying ZK credential systems to civic identity before the agentic finance context.
+                </p>
+              </div>
               <div className="flex flex-wrap gap-1.5">
-                {["zkx:kyc", "OWS", "Groth16", "FATF"].map((t) => (
+                {["zkx:kyc", "OWS", "Groth16", "FATF", "Digital ID", "Miami"].map((t) => (
                   <span key={t} className="text-xs px-2 py-0.5 rounded border border-white/[0.06] text-slate-600 font-mono">{t}</span>
                 ))}
               </div>
