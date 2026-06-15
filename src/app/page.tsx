@@ -140,6 +140,12 @@ export default function Home() {
               GitHub
             </a>
             <a
+              href="#founder"
+              className="hidden md:flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+            >
+              Founder
+            </a>
+            <a
               href="#demo"
               className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg transition-colors"
             >
@@ -328,6 +334,91 @@ export default function Home() {
                 <p className="text-slate-600 text-xs leading-relaxed">{p.body}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════ FOUNDER ═══════════════ */}
+      <section id="founder" className="py-20 px-6 border-t border-white/[0.04]">
+        <div className="max-w-5xl mx-auto">
+          <div className="mb-10">
+            <p className="text-xs font-semibold text-blue-400 uppercase tracking-[0.2em] mb-3">Founder & Research</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+              Built at the intersection of civic identity and agentic finance.
+            </h2>
+            <p className="text-slate-500 text-sm max-w-2xl leading-relaxed">
+              ZKX originated as a research project on zero-knowledge identity — extending prior work on civic digital credentials to autonomous agents and the Open Wallet Standard.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            {/* Founder card */}
+            <div className="md:col-span-1 bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center shrink-0">
+                  <span className="text-white text-sm font-bold tracking-tight">JC</span>
+                </div>
+                <div>
+                  <p className="text-white text-sm font-semibold">Jorge Cortes</p>
+                  <p className="text-slate-500 text-xs">Founder · ZKX · MiamiDadeDAO</p>
+                </div>
+              </div>
+              <p className="text-slate-400 text-xs leading-relaxed mb-4">
+                Research at the intersection of zero-knowledge proofs, civic identity, and decentralized compliance infrastructure.
+              </p>
+              <div className="border-t border-white/[0.06] pt-4 mb-4 space-y-3">
+                <div>
+                  <p className="text-xs text-slate-500 uppercase tracking-[0.12em] font-semibold mb-2">Prior work</p>
+                  <p className="text-slate-400 text-xs leading-relaxed">
+                    Founded the{" "}
+                    <a href="https://miamiid.org/" target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-2">
+                      Miami-Dade Community ID
+                    </a>
+                    {" "}— a zero-knowledge credential system for digital and community identity in Miami, built under the{" "}
+                    <a href="https://linktr.ee/miamidadedao" target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-2">
+                      Greater Miami DAO
+                    </a>
+                    . ZKX extends that civic ZK work into agentic finance.
+                  </p>
+                </div>
+                <a
+                  href="https://crypto.news/zero-knowledge-cryptography-is-bigger-than-web3"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                >
+                  ZK cryptography is bigger than Web3 ↗
+                </a>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {["ZKX", "MiamiDadeDAO", "Community ID", "Groth16", "OWS", "FATF"].map((t) => (
+                  <span key={t} className="text-xs px-2 py-0.5 rounded border border-white/[0.08] text-slate-500 font-mono">{t}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Research partners */}
+            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 content-start">
+              {researchPartners.map((p) => (
+                <div key={p.name} className={`bg-white/[0.02] border rounded-2xl p-5 transition-colors ${
+                  p.color === "blue" ? "border-blue-500/10 hover:border-blue-500/20" :
+                  "border-green-500/10 hover:border-green-500/20"
+                }`}>
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <p className={`text-sm font-semibold ${p.color === "blue" ? "text-blue-300" : "text-green-300"}`}>
+                      {p.name}
+                    </p>
+                    <span className={`text-xs px-1.5 py-0.5 rounded border font-mono shrink-0 ${
+                      p.color === "blue"
+                        ? "border-blue-500/20 bg-blue-500/5 text-blue-400"
+                        : "border-green-500/20 bg-green-500/5 text-green-400"
+                    }`}>{p.tag}</span>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-600 uppercase tracking-[0.1em] mb-2">{p.role}</p>
+                  <p className="text-slate-500 text-xs leading-relaxed">{p.detail}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -742,93 +833,6 @@ export default function Home() {
                 <p className="text-slate-600 text-xs leading-relaxed">{tech.description}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════ PROVENANCE ═══════════════ */}
-      <section className="py-20 px-6 border-t border-white/[0.04]">
-        <div className="max-w-5xl mx-auto">
-          <div className="mb-10">
-            <p className="text-xs font-semibold text-slate-700 uppercase tracking-[0.2em] mb-3">Research & Provenance</p>
-            <h2 className="text-2xl font-bold text-white mb-3">
-              Built at the intersection of payments, wallets, and cryptographic compliance.
-            </h2>
-            <p className="text-slate-600 text-sm max-w-2xl leading-relaxed">
-              ZKX originated as a research project exploring zero-knowledge identity for autonomous agents — conducted in collaboration with the team behind the Open Wallet Standard.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-4">
-            {/* Founder */}
-            <div className="md:col-span-1 bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center shrink-0">
-                  <span className="text-white text-xs font-bold tracking-tight">JC</span>
-                </div>
-                <div>
-                  <p className="text-white text-sm font-semibold">Jorge Cortes</p>
-                  <p className="text-slate-600 text-xs">Founder · ZKX · MiamiDadeDAO</p>
-                </div>
-              </div>
-              <p className="text-slate-500 text-xs leading-relaxed mb-3">
-                Research at the intersection of zero-knowledge proofs, civic identity, and decentralized compliance infrastructure.
-              </p>
-              <div className="border-t border-white/[0.04] pt-3 mb-3 space-y-3">
-                <div>
-                  <p className="text-xs text-slate-700 uppercase tracking-[0.12em] font-medium mb-1.5">Prior work</p>
-                  <p className="text-slate-600 text-xs leading-relaxed">
-                    Founded the{" "}
-                    <a href="https://miamiid.org/" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-white transition-colors">
-                      Miami-Dade Community ID
-                    </a>
-                    {" "}— a zero-knowledge credential system for digital and community identity in Miami, built under the{" "}
-                    <a href="https://linktr.ee/miamidadedao" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-white transition-colors">
-                      Greater Miami DAO
-                    </a>
-                    . ZKX extends that work to agentic finance and the Open Wallet Standard.
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <a
-                    href="https://crypto.news/zero-knowledge-cryptography-is-bigger-than-web3"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs text-slate-700 hover:text-slate-400 transition-colors leading-relaxed"
-                  >
-                    ZK cryptography is bigger than Web3 ↗
-                  </a>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {["ZKX", "MiamiDadeDAO", "Community ID", "Groth16", "OWS", "FATF"].map((t) => (
-                  <span key={t} className="text-xs px-2 py-0.5 rounded border border-white/[0.06] text-slate-600 font-mono">{t}</span>
-                ))}
-              </div>
-            </div>
-
-            {/* Research partners */}
-            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {researchPartners.map((p) => (
-                <div key={p.name} className={`bg-white/[0.02] border rounded-2xl p-5 transition-colors ${
-                  p.color === "blue"  ? "border-blue-500/10 hover:border-blue-500/20"  :
-                  "border-green-500/10 hover:border-green-500/20"
-                }`}>
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <p className={`text-sm font-semibold ${p.color === "blue" ? "text-blue-300" : "text-green-300"}`}>
-                      {p.name}
-                    </p>
-                    <span className={`text-xs px-1.5 py-0.5 rounded border font-mono shrink-0 ${
-                      p.color === "blue"
-                        ? "border-blue-500/20 bg-blue-500/5 text-blue-500"
-                        : "border-green-500/20 bg-green-500/5 text-green-500"
-                    }`}>{p.tag}</span>
-                  </div>
-                  <p className="text-xs font-medium text-slate-600 uppercase tracking-[0.1em] mb-2">{p.role}</p>
-                  <p className="text-slate-600 text-xs leading-relaxed">{p.detail}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
