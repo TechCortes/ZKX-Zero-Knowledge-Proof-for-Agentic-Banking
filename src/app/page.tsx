@@ -74,14 +74,13 @@ const protocolStack = [
   { name: "Open Wallet Standard", description: "zkx:kyc feature extension — OWS policy engine integration point",          tag: "Standard"  },
   { name: "CAIP-2",               description: "Chain-agnostic identifiers — multi-chain wallet address resolution",        tag: "Chains"    },
   { name: "x402",                 description: "HTTP payment protocol — ows pay request for API-native agentic payments",  tag: "Payments"  },
-  { name: "MoonPay",              description: "Fiat-to-crypto onramp — ows fund deposit funds agent wallets with USDC",   tag: "Onramp"    },
   { name: "Next.js 16",           description: "App Router with Turbopack — edge-ready API runtime",                       tag: "Runtime"   },
   { name: "FATF Rec. 16",         description: "Travel Rule compliance framework — $1,000 threshold design basis",         tag: "Regulatory"},
 ];
 
 const owsCliCommands = [
   { cmd: "ows wallet create",  desc: "Create a local multi-chain vault — EVM, Solana, Bitcoin + 7 more" },
-  { cmd: "ows fund deposit",   desc: "Fund agent wallet via MoonPay — fiat → USDC on any chain"         },
+  { cmd: "ows fund deposit",   desc: "Fund agent wallet with USDC on any supported chain"               },
   { cmd: "ows pay request",    desc: "Make x402 payments to API-native endpoints — no card required"     },
   { cmd: "ows pay discover",   desc: "Discover x402-enabled services in the OWS ecosystem"               },
   { cmd: "ows key create",     desc: "Issue ows_key_ agent tokens with typed policy rules attached"      },
@@ -98,13 +97,6 @@ const owsChains = [
 ];
 
 const researchPartners = [
-  {
-    name: "MoonPay",
-    role: "Payment Infrastructure",
-    detail: "MoonPay's fiat-to-crypto rails are natively integrated into OWS via ows fund deposit — bridging compliant fiat onboarding directly to agent wallet funding.",
-    tag: "ows fund deposit",
-    color: "blue",
-  },
   {
     name: "Open Wallet Standard",
     role: "Wallet Infrastructure",
@@ -476,15 +468,15 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* MoonPay callout */}
-              <div className="bg-blue-500/[0.04] border border-blue-500/10 rounded-2xl p-4">
+              {/* x402 callout */}
+              <div className="bg-purple-500/[0.04] border border-purple-500/10 rounded-2xl p-4">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0"/>
-                  <p className="text-blue-400 text-xs font-semibold">MoonPay · Fiat Onramp</p>
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0"/>
+                  <p className="text-purple-400 text-xs font-semibold">x402 · HTTP Payments</p>
                 </div>
-                <p className="text-slate-600 text-xs leading-relaxed font-mono">ows fund deposit</p>
+                <p className="text-slate-600 text-xs leading-relaxed font-mono">ows pay request</p>
                 <p className="text-slate-600 text-xs leading-relaxed mt-1">
-                  Fund agent wallets with USDC directly from fiat — MoonPay rails integrated natively into the OWS CLI. No exchange account required.
+                  Agents make payments directly to API endpoints — no exchange, no manual steps. OWS signs and broadcasts atomically.
                 </p>
               </div>
             </div>
@@ -763,7 +755,7 @@ export default function Home() {
               Built at the intersection of payments, wallets, and cryptographic compliance.
             </h2>
             <p className="text-slate-600 text-sm max-w-2xl leading-relaxed">
-              ZKX originated as a research project exploring zero-knowledge identity for autonomous agents — conducted in collaboration with the teams behind MoonPay and the Open Wallet Standard.
+              ZKX originated as a research project exploring zero-knowledge identity for autonomous agents — conducted in collaboration with the team behind the Open Wallet Standard.
             </p>
           </div>
 
