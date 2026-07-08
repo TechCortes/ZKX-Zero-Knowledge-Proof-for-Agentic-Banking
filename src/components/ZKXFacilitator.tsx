@@ -403,8 +403,8 @@ export function ZKXFacilitator({ className }: { className?: string }) {
         {/* Exposed fist skin */}
         <ellipse cx="408" cy="170" rx="12" ry="10" fill="#C47850"/>
         {/* Knuckle lines */}
-        <path d="M 398 166 C 402 163 408 165" stroke="#A06040" strokeWidth="1" fill="none" opacity="0.45"/>
-        <path d="M 397 173 C 401 170 408 172" stroke="#A06040" strokeWidth="0.9" fill="none" opacity="0.38"/>
+        <path d="M 398 166 Q 402 163 408 165" stroke="#A06040" strokeWidth="1" fill="none" opacity="0.45"/>
+        <path d="M 397 173 Q 401 170 408 172" stroke="#A06040" strokeWidth="0.9" fill="none" opacity="0.38"/>
 
         {/* ═══════════════════════════════════
             LAYER 13 — CHEST BADGE (hex ZK shield)
