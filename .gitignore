@@ -10,9 +10,9 @@ circuits/build/
 circuits/*.ptau
 circuits/*.zkey
 
-# Public ZK files are committed so the browser can load them
-# EXCEPT the proving key (large) — regenerate with setup-zk
-public/zk/*.zkey
+# Public ZK files (wasm, zkey, verification key) are committed so the
+# browser can load them statically — this circuit's proving key is small
+# enough (~260KB) that there's no need to exclude it.
 
 # Env
 .env
