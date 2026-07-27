@@ -5,7 +5,9 @@
 
 > Composable compliance without doxxing.
 
-ZKX extends the [Open Wallet Standard](https://github.com/open-wallet-standard/core) with a zero-knowledge KYC credential for AI agents making payments.
+ZKX extends the [Open Wallet Standard](https://github.com/open-wallet-standard/core) (OWS) — the open, MIT-licensed wallet layer for AI agents originated by MoonPay, with 15+ contributing organizations including Circle, PayPal, Ripple, Solana Foundation, and Ethereum Foundation — with a zero-knowledge KYC credential for agent payments.
+
+The problem is current, not hypothetical: as of April 2026 the x402 agent-payment ecosystem alone reports 69,000+ active agents and 165M+ transactions ([Coinbase](https://www.coinbase.com/developer-platform/discover/launches/x402)), now formalized as the Linux Foundation's x402 Foundation. Agent-to-agent payments already move real volume with no KYA (Know Your Agent) standard and no AML framework attached — that's the gap ZKX closes.
 
 ## Why fork this
 
@@ -59,6 +61,15 @@ Private inputs never leave the browser.
 - **circom + snarkjs** — Groth16 ZK proof system
 - **@wallet-standard/core** — OWS wallet integration
 - **Tailwind CSS** — UI
+
+## OWS Ecosystem
+
+OWS (v1.4.2) isn't just a CLI — it ships as a Node.js/Python SDK, a CLI, **and an MCP server**, so any MCP-speaking agent
+framework (LangChain, Claude agents, custom tool-callers) can attach a policy-gated wallet as a native tool with no
+custom wallet code. It also isn't locked to one payment rail: alongside [x402](https://www.coinbase.com/developer-platform/discover/launches/x402)
+(Coinbase/Cloudflare), it speaks Google's Agent Payments Protocol and Stripe/Tempo's Machine Payments Protocol (MPP)
+for streaming micropayments. ZKX's `zkx:kyc` policy check sits in front of all of them — fork it once, and the
+compliance boundary follows the agent regardless of which payment rail it uses.
 
 ## Quick Start
 
