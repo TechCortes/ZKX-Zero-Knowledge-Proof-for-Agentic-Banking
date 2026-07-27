@@ -33,6 +33,7 @@ npm run test:coverage
 - **Policy logic** (thresholds, spend windows) lives in the OWS `zkx:kyc` middleware — see the Architecture section in [README.md](./README.md).
 - **The circuit** is `circuits/kyc_credential.circom`. Adding a new private/public input means re-running `npm run compile-circuit` and `npm run setup-zk` to regenerate the wasm/zkey/verification key.
 - **Onboarding API** routes are under `src/app/api/v1/agents/` and `src/app/api/v1/payment/` — the reference agent registry lives here if you want to see how tokens and policy checks are wired.
+- **Audit log** — `src/policy/auditLog.ts` + `GET /api/v1/audit`. See [ROADMAP.md](./ROADMAP.md) for why this exists and what's still open (threshold reveal).
 - **UI** — `src/app/page.tsx` (landing page), `src/app/register/` + `src/components/AgentRegistrationWizard.tsx` (registration flow), `src/components/DemoWidget.tsx` (live demo).
 
 ## Proposing a change

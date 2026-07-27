@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticate, isAuthFailure, unauthorized } from "@/lib/auth";
 import { verifyKYCProof } from "@/zkp/verifier";
-import { evaluatePayment, approveWithProof } from "@/policy/engine";
+import { evaluatePayment, approveWithProof, computePolicyVersionHash } from "@/policy/engine";
+import { recordAuditEntry } from "@/policy/auditLog";
 import { logger } from "@/lib/logger";
 
 const ROUTE = "POST /api/v1/verify-proof";
@@ -48,16 +49,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const result = await verifyKYCProof(proof as object, publicSignals as string[]);
-
-  if (!result.valid) {
-    logger.warn(ROUTE, "proof_rejected", { agentId: agent.id, error: result.error });
-    return NextResponse.json(
-      { status: "rejected", error: result.error ?? "Proof verification failed.", errorCode: "POLICY_DENIED" },
-      { status: 403 }
-    );
-  }
-
   const paymentRequest = {
     agentId: agent.id,
     amount,
@@ -65,8 +56,27 @@ export async function POST(req: NextRequest) {
     memo: typeof memo === "string" ? memo : undefined,
     chainId: typeof chainId === "string" ? chainId : undefined,
   };
-
   const decision = evaluatePayment(paymentRequest, agent.policies);
+  const policyVersionHash = computePolicyVersionHash(agent.policies);
+
+  const result = await verifyKYCProof(proof as object, publicSignals as string[]);
+
+  if (!result.valid) {
+    logger.warn(ROUTE, "proof_rejected", { agentId: agent.id, error: result.error });
+    recordAuditEntry({
+      agentId: agent.id,
+      commitment: proofCommitment,
+      policyVersionHash,
+      decision: "proof_rejected",
+      thresholdMet: true,
+      dailyTotal: decision.dailyTotal,
+    });
+    return NextResponse.json(
+      { status: "rejected", error: result.error ?? "Proof verification failed.", errorCode: "POLICY_DENIED" },
+      { status: 403 }
+    );
+  }
+
   if (!decision.requiresKYC) {
     logger.warn(ROUTE, "proof_not_needed", { agentId: agent.id, amount });
     return NextResponse.json(
@@ -76,16 +86,26 @@ export async function POST(req: NextRequest) {
   }
 
   const approved = approveWithProof(paymentRequest);
+  const txId = `zkx_${Date.now()}`;
   logger.info(ROUTE, "payment_approved_zk", {
     agentId: agent.id,
     amount,
     chainId: chainId ?? null,
     commitment: result.commitment,
   });
+  recordAuditEntry({
+    agentId: agent.id,
+    commitment: result.commitment,
+    txId,
+    policyVersionHash,
+    decision: "approved_proof",
+    thresholdMet: true,
+    dailyTotal: approved.dailyTotal,
+  });
 
   return NextResponse.json({
     status: "approved",
-    txId: `zkx_${Date.now()}`,
+    txId,
     type: "zk-verified",
     commitment: result.commitment,
     piiTransmitted: 0,

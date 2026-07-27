@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticate, isAuthFailure, unauthorized } from "@/lib/auth";
-import { evaluatePayment, recordSpend } from "@/policy/engine";
+import { evaluatePayment, recordSpend, computePolicyVersionHash } from "@/policy/engine";
+import { recordAuditEntry } from "@/policy/auditLog";
 import { logger } from "@/lib/logger";
 
 const ROUTE = "POST /api/v1/payment";
@@ -43,9 +44,18 @@ export async function POST(req: NextRequest) {
     agent.policies
   );
 
+  const policyVersionHash = computePolicyVersionHash(agent.policies);
+
   // OWS policy rule denial (chain not allowed, key expired via policy, etc.)
   if (!decision.allowed && !decision.requiresKYC) {
     logger.warn(ROUTE, "policy_denied", { agentId: agent.id, errorCode: decision.errorCode });
+    recordAuditEntry({
+      agentId: agent.id,
+      policyVersionHash,
+      decision: "policy_denied",
+      thresholdMet: false,
+      dailyTotal: decision.dailyTotal,
+    });
     return NextResponse.json(
       { error: decision.reason, errorCode: decision.errorCode },
       { status: 403 }
@@ -54,21 +64,37 @@ export async function POST(req: NextRequest) {
 
   if (decision.allowed) {
     recordSpend(agent.id, amount);
+    const txId = `zkx_${Date.now()}`;
     logger.info(ROUTE, "payment_approved_anonymous", {
       agentId: agent.id,
       amount,
       chainId: chainId ?? null,
       dailyTotal: decision.dailyTotal + amount,
     });
+    recordAuditEntry({
+      agentId: agent.id,
+      txId,
+      policyVersionHash,
+      decision: "approved_anonymous",
+      thresholdMet: false,
+      dailyTotal: decision.dailyTotal + amount,
+    });
     return NextResponse.json({
       status: "approved",
-      txId: `zkx_${Date.now()}`,
+      txId,
       type: "anonymous",
       decision,
     });
   }
 
   logger.info(ROUTE, "proof_required", { agentId: agent.id, amount, dailyTotal: decision.dailyTotal });
+  recordAuditEntry({
+    agentId: agent.id,
+    policyVersionHash,
+    decision: "kyc_required",
+    thresholdMet: true,
+    dailyTotal: decision.dailyTotal,
+  });
   return NextResponse.json(
     {
       status: "requires_proof",
