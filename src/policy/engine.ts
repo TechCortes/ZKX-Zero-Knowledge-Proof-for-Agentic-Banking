@@ -9,6 +9,7 @@
  *   allowed_chains, expires_at, spending_limit
  */
 
+import { createHash } from "crypto";
 import { OWSErrorCode } from "@/lib/ows-errors";
 
 // --- OWS policy rule types ---
@@ -121,6 +122,21 @@ export function recordSpend(agentId: string, amount: number): number {
 }
 
 export const DAILY_ANONYMOUS_LIMIT = 1_000; // USD
+
+/**
+ * Hash of the effective policy config (the global threshold + this agent's
+ * typed rules) at decision time. Lets an audit record be replayed against
+ * the exact policy that was active when it was written, even if the
+ * threshold or rules change later. Not a security boundary — a versioning
+ * fingerprint for compliance replay.
+ */
+export function computePolicyVersionHash(rules: PolicyRule[] = []): string {
+  const canonical = JSON.stringify({
+    dailyAnonymousLimit: DAILY_ANONYMOUS_LIMIT,
+    rules: [...rules].sort((a, b) => a.type.localeCompare(b.type)),
+  });
+  return createHash("sha256").update(canonical).digest("hex").slice(0, 16);
+}
 
 /**
  * Evaluate whether a payment can proceed and whether KYC is needed.

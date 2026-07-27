@@ -12,15 +12,17 @@ This is scoped as a real feature, not a messaging fix, because it requires new c
 
 Two independent pieces, both opt-in and additive to the existing circuit — anonymous-tier payments are untouched.
 
-### 1. Audit log (no new cryptography, ship this first)
+### 1. Audit log — ✅ shipped
 
-Every proof verification writes an append-only record:
+Every policy decision (anonymous approval, KYC challenge, proof approval/rejection, policy denial) writes an append-only record:
 
 ```
-{ commitment, txId, policyVersionHash, timestamp, thresholdMet: bool }
+{ commitment?, txId?, policyVersionHash, timestamp, thresholdMet: bool, dailyTotal }
 ```
 
-No PII in the log — `commitment` is already public and non-reversible on its own. This alone gives a compliance officer a defensible, replayable record of *which policy version* approved *which commitment* at *what time*, which is most of what an auditor actually asks for first. `policyVersionHash` means a change to the $1,000 threshold (or any policy rule) doesn't retroactively change what a past decision "meant" — you can always answer "what rule was active when this was approved."
+No PII in the log — `commitment` is already public and non-reversible on its own. `policyVersionHash` (`computePolicyVersionHash` in `src/policy/engine.ts`) means a change to the $1,000 threshold or any policy rule doesn't retroactively change what a past decision "meant" — you can always answer "what rule was active when this was approved."
+
+Implementation: `src/policy/auditLog.ts` (in-memory, DB-shaped — same convention as `registry.ts`, swap the array for a real append-only store in production), hooked into `POST /api/v1/payment` and `POST /api/v1/verify-proof`. Query your own trail via `GET /api/v1/audit` (bearer-authenticated, scoped to the calling agent). A real regulator-facing query path — as opposed to an agent reading its own log — is part of phase 2 below, not this phase.
 
 ### 2. Threshold reveal (the actual ZK work)
 
@@ -34,7 +36,7 @@ A compliance team can pilot ZKX and truthfully tell their regulator: "we can pro
 
 ## Sequencing
 
-1. Audit log — no cryptography, mechanical, ships independently of everything else.
+1. ✅ Audit log — no cryptography, mechanical, ships independently of everything else.
 2. Threshold-reveal circuit extension + ciphertext format spec.
 3. Reference (non-production) threshold-decryption CLI so forkers can see the full round-trip before wiring up real HSM/consortium infra.
 
@@ -44,4 +46,4 @@ Running an actual threshold-decryption consortium, KYC document verification/iss
 
 ## Contributing
 
-If you're picking this up: start with the audit log (#1) — it's the highest value-to-effort ratio and needs no new circuit. See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup.
+The audit log (#1) is done — see `src/policy/auditLog.ts` and its tests for the pattern. If you're picking up #2 (threshold reveal), that's the real open item: circuit extension + ciphertext format + a reference decryption CLI. See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup.
