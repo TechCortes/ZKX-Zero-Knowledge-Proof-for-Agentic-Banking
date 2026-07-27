@@ -73,7 +73,10 @@ const protocolStack = [
   { name: "BN128",                description: "Barreto-Naehrig elliptic curve — pairing-based proving system",            tag: "Curve"     },
   { name: "Open Wallet Standard", description: "zkx:kyc feature extension — OWS policy engine integration point",          tag: "Standard"  },
   { name: "CAIP-2",               description: "Chain-agnostic identifiers — multi-chain wallet address resolution",        tag: "Chains"    },
-  { name: "x402",                 description: "HTTP payment protocol — ows pay request for API-native agentic payments",  tag: "Payments"  },
+  { name: "x402",                 description: "HTTP payment protocol (Coinbase/Cloudflare) — ows pay request for API-native agentic payments", tag: "Payments" },
+  { name: "Agent Payments Protocol", description: "Google's agent-to-agent payment spec — OWS speaks it natively alongside x402",           tag: "Payments"  },
+  { name: "MPP",                  description: "Machine Payments Protocol (Stripe/Tempo) — streaming micropayments for agent workloads",   tag: "Payments"  },
+  { name: "MCP",                  description: "Model Context Protocol — OWS ships an MCP server, wallets attach as a native agent tool",  tag: "Integration"},
   { name: "Next.js 16",           description: "App Router with Turbopack — edge-ready API runtime",                       tag: "Runtime"   },
   { name: "FATF Rec. 16",         description: "Travel Rule compliance framework — $1,000 threshold design basis",         tag: "Regulatory"},
 ];
@@ -96,12 +99,18 @@ const owsChains = [
   { name: "TON",     networks: "mainnet · testnet (v5r1)",                curve: "Ed25519"   },
 ];
 
+const owsContributors = [
+  "MoonPay", "Circle", "PayPal", "Ripple", "OKX", "Solana Foundation",
+  "Ethereum Foundation", "Base", "Polygon", "Arbitrum", "TON Foundation",
+  "Filecoin Foundation", "LayerZero", "Dynamic", "Allium",
+];
+
 const researchPartners = [
   {
     name: "Open Wallet Standard",
     role: "Wallet Infrastructure",
     detail: "The foundation — local key custody, AES-256-GCM encryption, CAIP-2 multi-chain support, and a pre-signing policy engine across 10 chain families.",
-    tag: "v1.3.2",
+    tag: "v1.4.2",
     color: "green",
   },
 ];
@@ -347,6 +356,25 @@ export default function Home() {
               </p>
             </div>
           </div>
+
+          {/* Why now */}
+          <div className="mt-5 grid grid-cols-3 gap-px bg-white/[0.04] rounded-2xl overflow-hidden border border-white/[0.06]">
+            {[
+              { value: "69,000+", label: "Active agents on x402" },
+              { value: "165M+",   label: "Agent transactions" },
+              { value: "$50M+",  label: "Cumulative volume" },
+            ].map((s) => (
+              <div key={s.label} className="bg-[#04040a] px-4 py-4 text-center">
+                <p className="text-lg font-bold text-white font-mono tracking-tight">{s.value}</p>
+                <p className="text-xs text-slate-600 mt-0.5">{s.label}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-slate-700 text-xs mt-3 text-center">
+            x402 ecosystem totals as of April 2026, per Coinbase — since formalized as the Linux Foundation&apos;s
+            x402 Foundation with Visa, Mastercard, Stripe, Google, and AWS as members. The gap isn&apos;t theoretical:
+            agent-to-agent payments already move real volume with no KYA standard and no AML framework attached.
+          </p>
         </div>
       </section>
 
@@ -616,10 +644,12 @@ export default function Home() {
         <div className="max-w-5xl mx-auto">
           <div className="mb-10">
             <p className="text-xs font-semibold text-blue-400 uppercase tracking-[0.2em] mb-3">OWS Ecosystem</p>
-            <h2 className="text-2xl font-bold text-white mb-2">One interface. Ten chains. Every agent.</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">One interface. Ten chains. Every agent framework.</h2>
             <p className="text-slate-600 text-sm max-w-xl leading-relaxed">
-              OWS gives every agent local key custody, multi-chain signing, and a pre-signing policy engine out of the box.
-              ZKX adds the compliance layer to the same stack — no new primitives, no new infrastructure.
+              OWS gives every agent local key custody, multi-chain signing, and a pre-signing policy engine out of the box —
+              exposed as a CLI, Node.js/Python SDK, <span className="text-slate-400">and an MCP server</span>. Any MCP-speaking
+              framework (LangChain, Claude agents, custom tool-callers) attaches an OWS wallet as a native tool, no custom
+              wallet code required. ZKX adds the compliance layer to the same stack — no new primitives, no new infrastructure.
             </p>
           </div>
 
@@ -643,13 +673,17 @@ export default function Home() {
                   </div>
                 ))}
               </div>
+              <div className="mx-5 mb-5 flex items-center gap-2 px-3 py-2 rounded-lg border border-blue-500/15 bg-blue-500/[0.04]">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0"/>
+                <p className="text-blue-300 text-xs">Same wallet, exposed as an <span className="font-mono">MCP server</span> for agent frameworks</p>
+              </div>
             </div>
 
             {/* Chain support */}
             <div className="flex flex-col gap-3">
               <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl overflow-hidden flex-1">
                 <div className="px-5 py-3.5 border-b border-white/[0.04]">
-                  <p className="text-xs font-semibold text-slate-600 uppercase tracking-[0.15em]">Supported Chains · OWS v1.3.2</p>
+                  <p className="text-xs font-semibold text-slate-600 uppercase tracking-[0.15em]">Supported Chains · OWS v1.4.2</p>
                 </div>
                 <div className="divide-y divide-white/[0.03]">
                   {owsChains.map((c) => (
@@ -676,6 +710,33 @@ export default function Home() {
                   Agents make payments directly to API endpoints — no exchange, no manual steps. OWS signs and broadcasts atomically.
                 </p>
               </div>
+
+              {/* APP / MPP callout */}
+              <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0"/>
+                  <p className="text-slate-300 text-xs font-semibold">+ Agent Payments Protocol · MPP</p>
+                </div>
+                <p className="text-slate-600 text-xs leading-relaxed">
+                  OWS isn&apos;t locked to one rail — it also speaks Google&apos;s Agent Payments Protocol and Stripe/Tempo&apos;s
+                  Machine Payments Protocol for streaming micropayments. ZKX&apos;s policy check sits in front of all three.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Backed by */}
+          <div className="mt-5 bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5">
+            <p className="text-xs font-semibold text-slate-600 uppercase tracking-[0.15em] mb-3">
+              OWS · originated by MoonPay, built with 15+ contributing organizations
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {owsContributors.map((org) => (
+                <span key={org} className="text-xs px-2.5 py-1 rounded-md border border-white/[0.08] text-slate-500 font-mono">
+                  {org}
+                </span>
+              ))}
+              <span className="text-xs px-2.5 py-1 text-slate-700">+ more</span>
             </div>
           </div>
         </div>
