@@ -111,6 +111,25 @@ const neverLearnedItems = [
   "Tax ID", "Account number", "IP address", "Agent wallet",
 ];
 
+const forkIdeas = [
+  {
+    title: "Swap the threshold",
+    body: "The $1,000 FATF Rec. 16 cutoff is one constant in the policy engine. Point it at your own risk model — per-jurisdiction limits, velocity checks, whatever your compliance team needs.",
+  },
+  {
+    title: "Extend the circuit",
+    body: "kyc_credential.circom proves two facts today: commitment validity and age. Add a new private input — jurisdiction, accreditation status, sanctions-list exclusion — and re-run the trusted setup.",
+  },
+  {
+    title: "Bring your own chain",
+    body: "The OWS wallet integration already speaks CAIP-2 across ten chain families. Point zkx:kyc at the chain your agents actually settle on — no new primitives required.",
+  },
+  {
+    title: "Replace the registry",
+    body: "The /api/v1/agents onboarding API is a working reference, not a requirement. Swap it for your own agent identity system and keep the ZK verification boundary as-is.",
+  },
+];
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#04040a] text-white overflow-x-hidden">
@@ -175,7 +194,7 @@ export default function Home() {
             <div className="flex-1 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 text-xs px-3.5 py-1.5 rounded-full border border-blue-500/20 bg-blue-500/5 text-blue-300 font-medium mb-8">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"/>
-                OWS Native · zkx:kyc · FATF-Compatible
+                OWS Native · zkx:kyc · FATF-Compatible · MIT Licensed
               </div>
 
               <h1 className="text-5xl md:text-[5rem] font-black tracking-tighter leading-[0.92] mb-6">
@@ -193,7 +212,8 @@ export default function Home() {
 
               <p className="text-sm text-slate-600 max-w-lg mb-8 leading-relaxed mx-auto lg:mx-0">
                 Agents authenticate with scoped API tokens. Verifiers receive cryptographic proofs.
-                Private inputs never cross the boundary — to anyone, ever.
+                Private inputs never cross the boundary — to anyone, ever. The full protocol — circuit,
+                verifier, and wallet integration — is open source. Fork it and ship your own.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3 mb-8">
@@ -202,6 +222,17 @@ export default function Home() {
                   className="px-7 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors text-sm shadow-lg shadow-blue-900/30"
                 >
                   Try the Demo
+                </a>
+                <a
+                  href="https://github.com/TechCortes/ZKX-Zero-Knowledge-Proof-for-Agentic-Banking/fork"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 px-7 py-3 border border-purple-500/20 hover:border-purple-500/40 bg-purple-500/5 hover:bg-purple-500/10 text-purple-300 hover:text-purple-200 font-semibold rounded-xl transition-colors text-sm"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+                  </svg>
+                  Fork on GitHub
                 </a>
                 <a
                   href="https://openwallet.sh/"
@@ -947,6 +978,60 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ═══════════════ BUILD ON ZKX ═══════════════ */}
+      <section id="build" className="py-20 px-6 border-t border-white/[0.04]">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-xs font-semibold text-purple-400 uppercase tracking-[0.2em] mb-3">Open Source · MIT Licensed</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              This isn&apos;t a mockup. Fork it.
+            </h2>
+            <p className="text-slate-500 max-w-2xl mx-auto text-sm leading-relaxed">
+              Everything on this page is wired end to end in the repo — a real Groth16 circuit with a completed
+              trusted setup, a live agent onboarding API, OWS wallet-standard integration, and the registration
+              UI you just saw in the demo. Clone it and you have a working ZK compliance stack on day one.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {forkIdeas.map((idea) => (
+              <div key={idea.title} className="bg-white/[0.02] border border-white/[0.05] rounded-2xl p-5 hover:border-purple-500/20 hover:bg-white/[0.04] transition-all">
+                <h3 className="text-white font-semibold text-sm mb-2">{idea.title}</h3>
+                <p className="text-slate-600 text-xs leading-relaxed">{idea.body}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-[#060610] rounded-2xl border border-white/[0.06] overflow-hidden mb-6">
+            <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/[0.04]">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500/40"/>
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/40"/>
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500/40"/>
+              <span className="text-xs text-slate-700 ml-2 font-mono">terminal</span>
+            </div>
+            <div className="p-5 font-mono text-xs leading-7">
+              <div><span className="text-white/20 mr-2">$</span><span className="text-green-400">git clone</span> <span className="text-slate-300">https://github.com/TechCortes/ZKX-Zero-Knowledge-Proof-for-Agentic-Banking</span></div>
+              <div><span className="text-white/20 mr-2">$</span><span className="text-green-400">cd</span> <span className="text-slate-300">ZKX-Zero-Knowledge-Proof-for-Agentic-Banking</span></div>
+              <div><span className="text-white/20 mr-2">$</span><span className="text-green-400">npm install</span> <span className="text-slate-500">&amp;&amp;</span> <span className="text-green-400">npm run dev</span></div>
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <a
+              href="https://github.com/TechCortes/ZKX-Zero-Knowledge-Proof-for-Agentic-Banking/fork"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 px-8 py-3 bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl transition-colors text-sm shadow-lg shadow-purple-900/30"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+              </svg>
+              Fork on GitHub
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* ═══════════════ FOOTER ═══════════════ */}
       <footer className="py-10 px-6 border-t border-white/[0.04]">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-700">
@@ -958,7 +1043,8 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-5">
             <a href="https://openwallet.sh/" target="_blank" rel="noreferrer" className="hover:text-slate-400 transition-colors">OWS Spec ↗</a>
-            <a href="https://github.com/TechCortes/ZKX-Zero-Knowledge-Proof-for-Agentic-Banking" target="_blank" rel="noreferrer" className="hover:text-slate-400 transition-colors">GitHub</a>
+            <a href="https://github.com/TechCortes/ZKX-Zero-Knowledge-Proof-for-Agentic-Banking/fork" target="_blank" rel="noreferrer" className="hover:text-slate-400 transition-colors">Fork</a>
+            <a href="https://github.com/TechCortes/ZKX-Zero-Knowledge-Proof-for-Agentic-Banking" target="_blank" rel="noreferrer" className="hover:text-slate-400 transition-colors">Star ↗</a>
           </div>
         </div>
       </footer>
