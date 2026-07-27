@@ -132,6 +132,10 @@ A few concrete starting points if you fork:
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup and how to propose changes.
 
+## Roadmap
+
+The zero-knowledge property today means the verifier learns nothing beyond "credential valid, age ≥ 18" — great for the anonymous tier, not sufficient on its own for institutional piloting, which needs a lawful-disclosure path (EU eIDAS 2 and FATF Travel Rule guidance both expect one). See [ROADMAP.md](./ROADMAP.md) for the proposed threshold-reveal + audit-log design that closes that gap without breaking anonymity by default.
+
 ## License
 
 MIT — see [LICENSE](./LICENSE). Fork it, ship it, no attribution required (though a star is always appreciated).

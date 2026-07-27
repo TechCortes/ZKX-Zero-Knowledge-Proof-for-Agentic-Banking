@@ -38,3 +38,7 @@ npm run test:coverage
 ## Proposing a change
 
 Open a PR with a short description of what changed and why. For anything touching the circuit or the policy engine, include what a verifier learns/doesn't learn after your change — that boundary is the entire point of the project, so it should stay explicit.
+
+## Biggest open item: [ROADMAP.md](./ROADMAP.md)
+
+If you want to work on something with real impact, start there. Short version: the anonymous-tier ZK property is solid, but there's no lawful-disclosure path for institutions that need one (regulator research is clear they will). The audit log piece needs no new cryptography and is the best first PR for this.
