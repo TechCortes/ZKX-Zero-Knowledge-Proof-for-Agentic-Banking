@@ -146,6 +146,12 @@ export default function Home() {
               Founder
             </a>
             <a
+              href="/register"
+              className="hidden md:flex items-center gap-1.5 text-xs font-semibold text-purple-300 hover:text-purple-200 transition-colors border border-purple-500/20 hover:border-purple-500/40 px-3 py-1.5 rounded-lg bg-purple-500/5 hover:bg-purple-500/10"
+            >
+              Register Agent
+            </a>
+            <a
               href="#demo"
               className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg transition-colors"
             >
