@@ -1,23 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import clsx from "clsx";
 
-const DAILY_LIMIT = 1000;
+const DAILY_LIMIT    = 1000;
+const DEMO_COMMITMENT = "1";
+const DEMO_RECIPIENT  = "0x7f3ac4d2e8b19c5f6a23d40";
+const LS_KEY          = "zkx_agent";
 
 const PRESETS = [
-  { label: "$200", amount: 200, description: "Micropayment" },
-  { label: "$600", amount: 600, description: "Standard" },
-  { label: "$1,200", amount: 1200, description: "High value" },
+  { label: "$200",   amount: 200,  description: "Micropayment" },
+  { label: "$600",   amount: 600,  description: "Standard"     },
+  { label: "$1,200", amount: 1200, description: "High value"   },
 ];
 
 const PROOF_STEPS = [
-  { label: "Computing witness from private inputs", detail: "Poseidon(idHash, salt)" },
-  { label: "Generating Groth16 proof", detail: "BN128 curve · ~2.1s" },
-  { label: "Submitting proof for verification", detail: "On-chain verifier" },
+  { label: "Computing witness from private inputs", detail: "Poseidon(idHash, salt)"       },
+  { label: "Generating Groth16 proof",              detail: "BN128 curve · ~2.1s"          },
+  { label: "Submitting proof for verification",     detail: "Server verifier · demo mode"  },
 ];
 
-type Stage = "idle" | "processing" | "approved" | "kyc_required" | "proving" | "kyc_approved";
+type Stage =
+  | "init"
+  | "idle"
+  | "processing"
+  | "approved"
+  | "kyc_required"
+  | "proving"
+  | "kyc_approved"
+  | "error";
 
 interface Tx {
   id: string;
@@ -27,60 +38,179 @@ interface Tx {
   proof?: string;
 }
 
+interface DemoSession {
+  agentId: string;
+  apiKey: string;
+  commitment: string;
+  type: "registered" | "demo";
+}
+
 function sleep(ms: number) {
-  return new Promise((r) => setTimeout(r, ms));
+  return new Promise<void>((r) => setTimeout(r, ms));
+}
+
+function randomAgentId(): string {
+  const bytes = new Uint8Array(4);
+  crypto.getRandomValues(bytes);
+  return "demo-" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function registerDemoAgent(): Promise<DemoSession | null> {
+  try {
+    const res = await fetch("/api/v1/agents/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        agentId: randomAgentId(),
+        commitment: DEMO_COMMITMENT,
+        chains: ["eip155:1", "solana:mainnet"],
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return { agentId: data.agentId, apiKey: data.apiKey, commitment: DEMO_COMMITMENT, type: "demo" };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Try to resume a previously registered agent from localStorage.
+ * Validates it against the server; returns null if stale (server restarted)
+ * or if localStorage is empty.
+ */
+async function loadRegisteredSession(): Promise<{ session: DemoSession; dailySpend: number } | null> {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    const stored = JSON.parse(raw) as { agentId: string; apiKey: string; commitment: string };
+    if (!stored.agentId || !stored.apiKey || !stored.commitment) return null;
+
+    const res = await fetch(`/api/v1/agents/${stored.agentId}`, {
+      headers: { Authorization: `Bearer ${stored.apiKey}` },
+    });
+    if (!res.ok) {
+      localStorage.removeItem(LS_KEY); // stale — server restarted
+      return null;
+    }
+    const data = await res.json();
+    return {
+      session: { ...stored, type: "registered" },
+      dailySpend: data.compliance?.dailySpend ?? 0,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export default function DemoWidget() {
-  const [amount, setAmount] = useState(200);
+  const [session, setSession]       = useState<DemoSession | null>(null);
+  const [amount, setAmount]         = useState(200);
   const [dailySpend, setDailySpend] = useState(0);
-  const [stage, setStage] = useState<Stage>("idle");
-  const [proofStep, setProofStep] = useState(-1);
-  const [txLog, setTxLog] = useState<Tx[]>([]);
-  const [lastTx, setLastTx] = useState<Tx | null>(null);
+  const [stage, setStage]           = useState<Stage>("init");
+  const [proofStep, setProofStep]   = useState(-1);
+  const [txLog, setTxLog]           = useState<Tx[]>([]);
+  const [lastTx, setLastTx]         = useState<Tx | null>(null);
+  const [apiError, setApiError]     = useState("");
+  const [challenge, setChallenge]   = useState<{
+    commitment: string;
+    currentYear: number;
+    minAge: number;
+  } | null>(null);
 
-  const remaining = Math.max(0, DAILY_LIMIT - dailySpend);
-  const spendPct = Math.min((dailySpend / DAILY_LIMIT) * 100, 100);
+  const remaining      = Math.max(0, DAILY_LIMIT - dailySpend);
+  const spendPct       = Math.min((dailySpend / DAILY_LIMIT) * 100, 100);
   const wouldTriggerKyc = dailySpend + amount >= DAILY_LIMIT;
 
+  useEffect(() => {
+    (async () => {
+      // Prefer a previously registered agent from localStorage
+      const registered = await loadRegisteredSession();
+      if (registered) {
+        setSession(registered.session);
+        setDailySpend(registered.dailySpend);
+        setStage("idle");
+        return;
+      }
+      // Fall back to an ephemeral demo agent
+      const demo = await registerDemoAgent();
+      setSession(demo);
+      setStage(demo ? "idle" : "error");
+    })();
+  }, []);
+
   function reset() {
-    setStage("idle");
+    setStage(session ? "idle" : "error");
     setProofStep(-1);
     setLastTx(null);
+    setApiError("");
   }
 
-  function fullReset() {
+  async function fullReset() {
+    setStage("init");
     setDailySpend(0);
     setTxLog([]);
-    reset();
+    setLastTx(null);
+    setApiError("");
+    setProofStep(-1);
+    try { localStorage.removeItem(LS_KEY); } catch { /* ignore */ }
+    const s = await registerDemoAgent();
+    setSession(s);
+    setStage(s ? "idle" : "error");
   }
 
   async function sendPayment() {
-    if (stage === "proving" || stage === "processing") return;
+    if (!session || stage === "proving" || stage === "processing") return;
     setStage("processing");
     setLastTx(null);
-    await sleep(500);
+    setApiError("");
 
-    const projected = dailySpend + amount;
+    try {
+      const res = await fetch("/api/v1/payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.apiKey}`,
+        },
+        body: JSON.stringify({ amount, recipient: DEMO_RECIPIENT }),
+      });
 
-    if (projected < DAILY_LIMIT) {
-      const tx: Tx = {
-        id: "0x" + Math.random().toString(16).slice(2, 10).toUpperCase(),
-        amount,
-        type: "anonymous",
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-      };
-      setDailySpend(projected);
-      setTxLog((prev) => [tx, ...prev].slice(0, 8));
-      setLastTx(tx);
-      setStage("approved");
-    } else {
-      setStage("kyc_required");
+      const data = await res.json();
+
+      if (res.ok && data.status === "approved") {
+        // decision.dailyTotal is the total BEFORE this payment; add amount for current total
+        const newTotal = (data.decision?.dailyTotal ?? dailySpend) + amount;
+        const tx: Tx = {
+          id: data.txId,
+          amount,
+          type: "anonymous",
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          }),
+        };
+        setDailySpend(newTotal);
+        setTxLog((prev) => [tx, ...prev].slice(0, 8));
+        setLastTx(tx);
+        setStage("approved");
+      } else if (res.status === 402) {
+        setChallenge(data.challenge ?? null);
+        setStage("kyc_required");
+      } else {
+        setApiError(data.error ?? "Payment request failed.");
+        setStage("idle");
+      }
+    } catch {
+      setApiError("Network error — is the dev server running?");
+      setStage("idle");
     }
   }
 
   async function proveAndPay() {
+    if (!session) return;
     setStage("proving");
+    setApiError("");
     setProofStep(0);
     await sleep(800);
     setProofStep(1);
@@ -88,24 +218,98 @@ export default function DemoWidget() {
     setProofStep(2);
     await sleep(700);
 
-    const proofHash =
-      "0x" +
-      Array.from({ length: 8 }, () =>
-        Math.floor(Math.random() * 256).toString(16).padStart(2, "0")
-      ).join("");
+    try {
+      // Mock Groth16 proof — verifier accepts in demo mode (no verification_key.json)
+      const mockProof = {
+        pi_a: ["1", "2", "1"],
+        pi_b: [["1", "2"], ["1", "2"], ["1", "0"]],
+        pi_c: ["1", "2", "1"],
+        protocol: "groth16",
+        curve: "bn128",
+      };
+      // publicSignals[0] must match the agent's registered commitment
+      const publicSignals = [
+        session.commitment,
+        String(challenge?.currentYear ?? new Date().getUTCFullYear()),
+        "18",
+      ];
 
-    const tx: Tx = {
-      id: "0x" + Math.random().toString(16).slice(2, 10).toUpperCase(),
-      amount,
-      type: "zk-verified",
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-      proof: proofHash,
-    };
-    setDailySpend(dailySpend + amount);
-    setTxLog((prev) => [tx, ...prev].slice(0, 8));
-    setLastTx(tx);
-    setStage("kyc_approved");
-    setProofStep(-1);
+      const res = await fetch("/api/v1/verify-proof", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.apiKey}`,
+        },
+        body: JSON.stringify({
+          proof: mockProof,
+          publicSignals,
+          amount,
+          recipient: DEMO_RECIPIENT,
+        }),
+      });
+
+      const data = await res.json();
+      setProofStep(-1);
+
+      if (res.ok && data.status === "approved") {
+        // approveWithProof records spend and returns dailyTotal AFTER the payment
+        const newTotal = data.decision?.dailyTotal ?? dailySpend + amount;
+        const proofHash = data.commitment
+          ? "0x" + String(data.commitment).slice(-16).padStart(16, "0")
+          : "0x" + Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) =>
+              b.toString(16).padStart(2, "0")
+            ).join("");
+
+        const tx: Tx = {
+          id: data.txId,
+          amount,
+          type: "zk-verified",
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          }),
+          proof: proofHash,
+        };
+        setDailySpend(newTotal);
+        setTxLog((prev) => [tx, ...prev].slice(0, 8));
+        setLastTx(tx);
+        setStage("kyc_approved");
+      } else {
+        setApiError(data.error ?? "Proof verification failed.");
+        setStage("kyc_required");
+      }
+    } catch {
+      setProofStep(-1);
+      setApiError("Network error during proof verification.");
+      setStage("kyc_required");
+    }
+  }
+
+  // ─── Render ────────────────────────────────────────────────────────────────
+
+  if (stage === "init") {
+    return (
+      <div className="py-12 text-center space-y-3">
+        <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse inline-block"/>
+        <p className="text-xs text-slate-600">Initialising demo session…</p>
+      </div>
+    );
+  }
+
+  if (stage === "error") {
+    return (
+      <div className="py-12 text-center space-y-4">
+        <p className="text-sm text-red-400">Could not start demo session.</p>
+        <p className="text-xs text-slate-600">Make sure the dev server is running, then reload.</p>
+        <button
+          onClick={fullReset}
+          className="text-xs text-slate-500 hover:text-slate-300 transition-colors border border-white/[0.08] px-4 py-2 rounded-lg"
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -113,30 +317,46 @@ export default function DemoWidget() {
 
       {/* Session header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
             <span className="text-xs text-green-400 font-medium font-mono">agent_live</span>
           </div>
           <span className="text-white/10">·</span>
-          <span className="text-xs text-slate-600 font-mono">0x7f3a…c4d2</span>
+          <span className="text-xs text-slate-600 font-mono">{session?.agentId ?? "…"}</span>
           <span className="text-white/10">·</span>
-          <span className="text-xs text-slate-700">zkx:kyc enabled</span>
+          {session?.type === "registered" ? (
+            <span className="text-xs px-1.5 py-0.5 rounded border border-purple-500/25 bg-purple-500/8 text-purple-400 font-medium">
+              registered
+            </span>
+          ) : (
+            <span className="text-xs text-slate-700">demo agent</span>
+          )}
         </div>
-        <button
-          onClick={fullReset}
-          className="text-xs text-slate-700 hover:text-slate-400 transition-colors"
-        >
-          Reset session
-        </button>
+        <div className="flex items-center gap-3">
+          {session?.type === "demo" && (
+            <a
+              href="/register"
+              className="text-xs text-purple-400 hover:text-purple-300 transition-colors"
+            >
+              Register an agent →
+            </a>
+          )}
+          <button
+            onClick={fullReset}
+            className="text-xs text-slate-700 hover:text-slate-400 transition-colors"
+          >
+            Reset session
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
 
-        {/* Left panel */}
+        {/* ── Left panel ─────────────────────────────────────────────────── */}
         <div className="lg:col-span-3 space-y-3">
 
-          {/* Account balance card */}
+          {/* Daily limit card */}
           <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5">
             <div className="flex items-start justify-between mb-5">
               <div>
@@ -212,7 +432,7 @@ export default function DemoWidget() {
               })}
             </div>
 
-            {/* Amount input */}
+            {/* Custom amount */}
             <div className="mb-4">
               <label className="text-xs text-slate-600 mb-1.5 block">Custom amount (USD)</label>
               <div className="relative">
@@ -227,7 +447,7 @@ export default function DemoWidget() {
               </div>
             </div>
 
-            {/* Compliance preview banner */}
+            {/* Compliance preview */}
             <div className={clsx(
               "flex items-center gap-2 px-3 py-2 rounded-lg border text-xs mb-4 transition-colors",
               wouldTriggerKyc
@@ -237,11 +457,17 @@ export default function DemoWidget() {
               <span className={clsx("w-1 h-1 rounded-full shrink-0", wouldTriggerKyc ? "bg-amber-400" : "bg-green-400")} />
               {wouldTriggerKyc
                 ? `$${amount.toLocaleString()} transfer requires ZK identity proof`
-                : `$${amount.toLocaleString()} transfer will settle anonymously`
-              }
+                : `$${amount.toLocaleString()} transfer will settle anonymously`}
             </div>
 
-            {/* Primary action */}
+            {/* API error */}
+            {apiError && (
+              <div className="mb-4 px-3 py-2 rounded-lg border border-red-500/20 bg-red-500/5 text-xs text-red-400">
+                {apiError}
+              </div>
+            )}
+
+            {/* Actions */}
             {(stage === "idle" || stage === "approved" || stage === "kyc_approved") && (
               <button
                 onClick={sendPayment}
@@ -252,7 +478,8 @@ export default function DemoWidget() {
             )}
 
             {stage === "processing" && (
-              <div className="w-full bg-white/[0.03] border border-white/[0.06] text-slate-500 font-medium py-2.5 rounded-xl text-sm text-center">
+              <div className="w-full bg-white/[0.03] border border-white/[0.06] text-slate-500 font-medium py-2.5 rounded-xl text-sm text-center flex items-center justify-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"/>
                 Processing…
               </div>
             )}
@@ -307,7 +534,7 @@ export default function DemoWidget() {
                   <div key={i} className="flex items-center gap-3">
                     <div className={clsx(
                       "w-5 h-5 rounded-full flex items-center justify-center shrink-0 border transition-all",
-                      i < proofStep ? "bg-green-500/15 border-green-500/30"
+                      i < proofStep  ? "bg-green-500/15 border-green-500/30"
                       : i === proofStep ? "bg-purple-500/15 border-purple-500/30"
                       : "bg-white/[0.03] border-white/[0.06]"
                     )}>
@@ -321,7 +548,7 @@ export default function DemoWidget() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={clsx("text-xs transition-colors",
-                        i < proofStep ? "text-green-400"
+                        i < proofStep  ? "text-green-400"
                         : i === proofStep ? "text-purple-200"
                         : "text-slate-700"
                       )}>{step.label}</p>
@@ -375,7 +602,7 @@ export default function DemoWidget() {
           </div>
         </div>
 
-        {/* Right panel */}
+        {/* ── Right panel ────────────────────────────────────────────────── */}
         <div className="lg:col-span-2 space-y-3">
 
           {/* Active policy */}
