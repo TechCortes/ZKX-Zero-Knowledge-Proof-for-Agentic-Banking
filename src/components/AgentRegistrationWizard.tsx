@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import clsx from "clsx";
+import { randomFieldElement } from "@/zkp/prover";
 
 type Step = "agent" | "identity" | "review" | "success";
 
@@ -21,14 +22,6 @@ const CHAIN_OPTIONS = [
 ];
 
 const AGENT_ID_RE = /^[a-zA-Z0-9_-]{3,64}$/;
-
-function randomFieldElement(): string {
-  const bytes = new Uint8Array(31); // 248-bit, always < BN128 prime
-  crypto.getRandomValues(bytes);
-  return BigInt(
-    "0x" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("")
-  ).toString();
-}
 
 export default function AgentRegistrationWizard() {
   const [step, setStep]               = useState<Step>("agent");
@@ -97,11 +90,19 @@ export default function AgentRegistrationWizard() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Registration failed."); return; }
-      // Persist to localStorage so the demo widget can pick it up
+      // Persist to localStorage so the demo widget can pick it up and later generate
+      // real proofs against this registration — idHash/salt never leave the browser.
       try {
         localStorage.setItem(
           "zkx_agent",
-          JSON.stringify({ agentId: data.agentId, apiKey: data.apiKey, commitment: data.commitment })
+          JSON.stringify({
+            agentId: data.agentId,
+            apiKey: data.apiKey,
+            commitment: data.commitment,
+            idHash,
+            salt,
+            birthYear,
+          })
         );
       } catch { /* storage unavailable — non-fatal */ }
       setResult(data);
