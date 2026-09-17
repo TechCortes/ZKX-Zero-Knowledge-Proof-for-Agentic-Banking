@@ -65,7 +65,7 @@ Private inputs never leave the browser.
 ## OWS Ecosystem
 
 OWS (v1.4.2) isn't just a CLI — it ships as a Node.js/Python SDK, a CLI, **and an MCP server**, so any MCP-speaking agent
-framework (LangChain, Claude agents, custom tool-callers) can attach a policy-gated wallet as a native tool with no
+framework (LangChain, AutoGPT, custom tool-callers) can attach a policy-gated wallet as a native tool with no
 custom wallet code. It also isn't locked to one payment rail: alongside [x402](https://www.coinbase.com/developer-platform/discover/launches/x402)
 (Coinbase/Cloudflare), it speaks Google's Agent Payments Protocol and Stripe/Tempo's Machine Payments Protocol (MPP)
 for streaming micropayments. ZKX's `zkx:kyc` policy check sits in front of all of them — fork it once, and the
