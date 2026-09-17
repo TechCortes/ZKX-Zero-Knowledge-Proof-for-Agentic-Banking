@@ -36,6 +36,15 @@ export interface ZKProof {
   publicSignals: string[];
 }
 
+/** A random BN128-scalar-field element, as a decimal string (248-bit, always < the field prime). */
+export function randomFieldElement(): string {
+  const bytes = new Uint8Array(31);
+  crypto.getRandomValues(bytes);
+  return BigInt(
+    "0x" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("")
+  ).toString();
+}
+
 /**
  * Generate a ZK proof of KYC credential in the browser.
  *

@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-The app runs in demo mode without a compiled circuit (the verifier auto-accepts proofs when `public/zk/verification_key.json` is absent). To work with real ZK proofs:
+The verifier fails closed: without a compiled circuit, `POST /api/v1/verify-proof` rejects every proof rather than auto-accepting (`public/zk/verification_key.json` must be present). To work with real ZK proofs:
 
 ```bash
 # Install circom: https://docs.circom.io/getting-started/installation/

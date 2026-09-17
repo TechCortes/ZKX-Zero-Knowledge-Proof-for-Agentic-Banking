@@ -22,3 +22,6 @@ circuits/*.zkey
 # OS
 .DS_Store
 .vercel
+
+# TypeScript incremental build info
+*.tsbuildinfo

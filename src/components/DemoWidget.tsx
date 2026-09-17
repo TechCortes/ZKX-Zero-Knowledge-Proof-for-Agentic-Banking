@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import clsx from "clsx";
+import { deriveCommitment, generateKYCProof, randomFieldElement } from "@/zkp/prover";
 
 const DAILY_LIMIT    = 1000;
-const DEMO_COMMITMENT = "1";
+const DEMO_BIRTH_YEAR = 1990;
 const DEMO_RECIPIENT  = "0x7f3ac4d2e8b19c5f6a23d40";
 const LS_KEY          = "zkx_agent";
 
@@ -15,9 +16,9 @@ const PRESETS = [
 ];
 
 const PROOF_STEPS = [
-  { label: "Computing witness from private inputs", detail: "Poseidon(idHash, salt)"       },
-  { label: "Generating Groth16 proof",              detail: "BN128 curve · ~2.1s"          },
-  { label: "Submitting proof for verification",     detail: "Server verifier · demo mode"  },
+  { label: "Computing witness from private inputs", detail: "Poseidon(idHash, salt)"          },
+  { label: "Generating Groth16 proof",              detail: "BN128 curve · in-browser"        },
+  { label: "Submitting proof for verification",     detail: "Server verifier · real proof"    },
 ];
 
 type Stage =
@@ -42,8 +43,14 @@ interface DemoSession {
   agentId: string;
   apiKey: string;
   commitment: string;
+  /** Private inputs — kept client-side only (state + localStorage), never sent to the server. */
+  idHash: string;
+  salt: string;
+  birthYear: number;
   type: "registered" | "demo";
 }
+
+type StoredSession = Pick<DemoSession, "agentId" | "apiKey" | "commitment" | "idHash" | "salt" | "birthYear">;
 
 function sleep(ms: number) {
   return new Promise<void>((r) => setTimeout(r, ms));
@@ -55,20 +62,41 @@ function randomAgentId(): string {
   return "demo-" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+function persistSession(s: StoredSession) {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(s));
+  } catch { /* storage unavailable — non-fatal */ }
+}
+
 async function registerDemoAgent(): Promise<DemoSession | null> {
   try {
+    const idHash = randomFieldElement();
+    const salt = randomFieldElement();
+    const birthYear = DEMO_BIRTH_YEAR;
+    const commitment = await deriveCommitment({ idHash, salt, birthYear });
+
     const res = await fetch("/api/v1/agents/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         agentId: randomAgentId(),
-        commitment: DEMO_COMMITMENT,
+        commitment,
         chains: ["eip155:1", "solana:mainnet"],
       }),
     });
     if (!res.ok) return null;
     const data = await res.json();
-    return { agentId: data.agentId, apiKey: data.apiKey, commitment: DEMO_COMMITMENT, type: "demo" };
+    const session: DemoSession = {
+      agentId: data.agentId,
+      apiKey: data.apiKey,
+      commitment,
+      idHash,
+      salt,
+      birthYear,
+      type: "demo",
+    };
+    persistSession(session);
+    return session;
   } catch {
     return null;
   }
@@ -76,15 +104,21 @@ async function registerDemoAgent(): Promise<DemoSession | null> {
 
 /**
  * Try to resume a previously registered agent from localStorage.
- * Validates it against the server; returns null if stale (server restarted)
+ * Validates it against the server; returns null if stale (server restarted),
+ * incomplete (e.g. a session saved before proof-generation fields existed),
  * or if localStorage is empty.
  */
 async function loadRegisteredSession(): Promise<{ session: DemoSession; dailySpend: number } | null> {
   try {
     const raw = localStorage.getItem(LS_KEY);
     if (!raw) return null;
-    const stored = JSON.parse(raw) as { agentId: string; apiKey: string; commitment: string };
-    if (!stored.agentId || !stored.apiKey || !stored.commitment) return null;
+    const stored = JSON.parse(raw) as Partial<StoredSession>;
+    if (
+      !stored.agentId || !stored.apiKey || !stored.commitment ||
+      !stored.idHash || !stored.salt || typeof stored.birthYear !== "number"
+    ) {
+      return null;
+    }
 
     const res = await fetch(`/api/v1/agents/${stored.agentId}`, {
       headers: { Authorization: `Bearer ${stored.apiKey}` },
@@ -95,7 +129,7 @@ async function loadRegisteredSession(): Promise<{ session: DemoSession; dailySpe
     }
     const data = await res.json();
     return {
-      session: { ...stored, type: "registered" },
+      session: { ...(stored as StoredSession), type: "registered" },
       dailySpend: data.compliance?.dailySpend ?? 0,
     };
   } catch {
@@ -212,28 +246,19 @@ export default function DemoWidget() {
     setStage("proving");
     setApiError("");
     setProofStep(0);
-    await sleep(800);
-    setProofStep(1);
-    await sleep(1400);
-    setProofStep(2);
-    await sleep(700);
+    await sleep(400);
 
     try {
-      // Mock Groth16 proof — verifier accepts in demo mode (no verification_key.json)
-      const mockProof = {
-        pi_a: ["1", "2", "1"],
-        pi_b: [["1", "2"], ["1", "2"], ["1", "0"]],
-        pi_c: ["1", "2", "1"],
-        protocol: "groth16",
-        curve: "bn128",
-      };
-      // publicSignals[0] must match the agent's registered commitment
-      const publicSignals = [
+      // Real Groth16 proof, generated in the browser — private inputs never leave this device.
+      setProofStep(1);
+      const minAge = challenge?.minAge ?? 18;
+      const { proof, publicSignals } = await generateKYCProof(
+        { idHash: session.idHash, salt: session.salt, birthYear: session.birthYear },
         session.commitment,
-        String(challenge?.currentYear ?? new Date().getUTCFullYear()),
-        "18",
-      ];
+        minAge
+      );
 
+      setProofStep(2);
       const res = await fetch("/api/v1/verify-proof", {
         method: "POST",
         headers: {
@@ -241,7 +266,7 @@ export default function DemoWidget() {
           Authorization: `Bearer ${session.apiKey}`,
         },
         body: JSON.stringify({
-          proof: mockProof,
+          proof,
           publicSignals,
           amount,
           recipient: DEMO_RECIPIENT,
@@ -279,9 +304,11 @@ export default function DemoWidget() {
         setApiError(data.error ?? "Proof verification failed.");
         setStage("kyc_required");
       }
-    } catch {
+    } catch (err) {
       setProofStep(-1);
-      setApiError("Network error during proof verification.");
+      setApiError(
+        err instanceof Error ? `Proof generation failed: ${err.message}` : "Proof generation failed."
+      );
       setStage("kyc_required");
     }
   }

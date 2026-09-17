@@ -35,10 +35,13 @@ export async function verifyKYCProof(
   proof: object,
   publicSignals: string[]
 ): Promise<VerificationResult> {
-  // Demo mode: if no verification key is present, accept the mock proof
+  // Fail closed: without a verification key there is no basis to trust a proof.
   const vkeyPath = path.join(process.cwd(), "public", "zk", "verification_key.json");
   if (!fs.existsSync(vkeyPath)) {
-    return { valid: true, commitment: publicSignals[0] };
+    return {
+      valid: false,
+      error: "Verification key not found — server is not configured to verify proofs. Run `npm run setup-zk`.",
+    };
   }
 
   try {
