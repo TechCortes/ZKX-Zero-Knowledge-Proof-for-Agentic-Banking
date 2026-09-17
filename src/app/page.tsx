@@ -583,7 +583,7 @@ export default function Home() {
             {/* Visual stack */}
             <div className="p-6 space-y-2">
               {[
-                { label: "Agent",            sub: "Claude · GPT · Custom · Polymarket",    color: "border-blue-500/20  text-blue-400",   bg: "bg-blue-500/5"    },
+                { label: "Agent",            sub: "GPT · Gemini · Custom · Polymarket",    color: "border-blue-500/20  text-blue-400",   bg: "bg-blue-500/5"    },
                 { label: "OWS Interface",    sub: "MCP · SDK · CLI · REST",                color: "border-slate-500/20 text-slate-400",  bg: "bg-slate-500/5"   },
                 { label: "OWS Policy Engine",sub: "Spending limits · Allowlists · Chains", color: "border-slate-500/15 text-slate-500",  bg: "bg-slate-500/4"   },
                 { label: "ZKX · zkx:kyc",   sub: "FATF threshold · Groth16 verification", color: "border-purple-500/25 text-purple-400", bg: "bg-purple-500/8"  },
@@ -648,7 +648,7 @@ export default function Home() {
             <p className="text-slate-600 text-sm max-w-xl leading-relaxed">
               OWS gives every agent local key custody, multi-chain signing, and a pre-signing policy engine out of the box —
               exposed as a CLI, Node.js/Python SDK, <span className="text-slate-400">and an MCP server</span>. Any MCP-speaking
-              framework (LangChain, Claude agents, custom tool-callers) attaches an OWS wallet as a native tool, no custom
+              framework (LangChain, AutoGPT, custom tool-callers) attaches an OWS wallet as a native tool, no custom
               wallet code required. ZKX adds the compliance layer to the same stack — no new primitives, no new infrastructure.
             </p>
           </div>
