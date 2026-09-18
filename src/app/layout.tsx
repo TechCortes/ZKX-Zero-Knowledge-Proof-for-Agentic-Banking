@@ -14,13 +14,11 @@ export const metadata: Metadata = {
     description,
     url: "/",
     type: "website",
-    images: ["/logo.svg"],
   },
   twitter: {
     card: "summary_large_image",
     title,
     description,
-    images: ["/logo.svg"],
   },
 };
 

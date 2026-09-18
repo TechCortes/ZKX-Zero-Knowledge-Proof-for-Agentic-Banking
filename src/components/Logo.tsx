@@ -1,4 +1,4 @@
-export function LogoIcon({ size = 32, id = "zkx" }: { size?: number; id?: string }) {
+export function LogoIcon({ size = 32, id = "vero" }: { size?: number; id?: string }) {
   return (
     <svg
       width={size}
@@ -40,10 +40,10 @@ export function LogoIcon({ size = 32, id = "zkx" }: { size?: number; id?: string
 export function LogoWordmark() {
   return (
     <div className="flex items-center gap-2.5">
-      <LogoIcon size={32} id="zkx-nav"/>
+      <LogoIcon size={32} id="vero-nav"/>
       <div className="leading-none">
-        <p className="text-sm font-black tracking-tight text-white" style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>Vero Protocol</p>
-        <p className="text-[8.5px] text-slate-600 tracking-[0.20em] uppercase mt-[3px]" style={{ fontFamily: "ui-monospace, monospace" }}>Know Your Agent</p>
+        <p className="text-sm font-black tracking-tight text-white whitespace-nowrap" style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>Vero<span className="font-medium text-slate-400"> Protocol</span></p>
+        <p className="text-[8.5px] text-slate-600 tracking-[0.20em] uppercase mt-[3px]" style={{ fontFamily: "ui-monospace, monospace" }}>Agent Compliance</p>
       </div>
     </div>
   );
@@ -52,8 +52,8 @@ export function LogoWordmark() {
 export function LogoCompact() {
   return (
     <div className="flex items-center gap-2">
-      <LogoIcon size={24} id="zkx-compact"/>
-      <span className="text-sm font-black tracking-tight text-white" style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>Vero Protocol</span>
+      <LogoIcon size={24} id="vero-compact"/>
+      <span className="text-sm font-black tracking-tight text-white whitespace-nowrap" style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>Vero<span className="font-medium text-slate-400"> Protocol</span></span>
     </div>
   );
 }
