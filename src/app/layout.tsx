@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-const title = "ZKX — Zero-Knowledge Agentic Banking";
+const title = "Vero Protocol — Zero-Knowledge Compliance for AI Agent Wallets";
 const description =
-  "Know Your Agent (KYA) — zero-knowledge compliance infrastructure for AI agents in financial markets. Open source, MIT licensed. Compliant by default. Private by design.";
+  "Vero is open-source zero-knowledge compliance for AI agent payments. Agents prove eligibility — not identity. MIT licensed. FATF R.15/R.16 aligned. Built on the Open Wallet Standard. Fork it on GitHub.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://zkx-psi.vercel.app"),

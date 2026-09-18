@@ -1,5 +1,5 @@
 /**
- * ZKX Verifier — server-side ZK proof verification using snarkjs
+ * Vero Protocol Verifier — server-side ZK proof verification using snarkjs
  *
  * Runs in the Next.js API route. Verifies Groth16 proofs against
  * the compiled verification key.

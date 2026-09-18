@@ -1,5 +1,5 @@
 /**
- * Agent Registry — in-memory store for ZKX agent identities.
+ * Agent Registry — in-memory store for Vero Protocol agent identities.
  *
  * Follows the Open Wallet Standard API key model:
  *   - Token format: ows_key_<64 hex chars> (hash stored, never raw)

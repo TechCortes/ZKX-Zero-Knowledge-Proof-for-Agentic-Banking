@@ -1,5 +1,5 @@
 /**
- * ZKX Policy Engine — OWS Compliance Middleware
+ * Vero Protocol Policy Engine — OWS Compliance Middleware
  *
  * Enforces the rule:
  *   - Daily spend < $1,000  → anonymous micropayments, no KYC required

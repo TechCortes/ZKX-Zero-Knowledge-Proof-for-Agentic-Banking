@@ -6,7 +6,7 @@ export function LogoIcon({ size = 32, id = "zkx" }: { size?: number; id?: string
       viewBox="0 0 32 32"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      aria-label="ZKX"
+      aria-label="Vero Protocol"
     >
       <defs>
         <linearGradient id={`${id}-g`} x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
@@ -42,7 +42,7 @@ export function LogoWordmark() {
     <div className="flex items-center gap-2.5">
       <LogoIcon size={32} id="zkx-nav"/>
       <div className="leading-none">
-        <p className="text-sm font-black tracking-tight text-white" style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>ZKX</p>
+        <p className="text-sm font-black tracking-tight text-white" style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>Vero Protocol</p>
         <p className="text-[8.5px] text-slate-600 tracking-[0.20em] uppercase mt-[3px]" style={{ fontFamily: "ui-monospace, monospace" }}>Know Your Agent</p>
       </div>
     </div>
@@ -53,7 +53,7 @@ export function LogoCompact() {
   return (
     <div className="flex items-center gap-2">
       <LogoIcon size={24} id="zkx-compact"/>
-      <span className="text-sm font-black tracking-tight text-white" style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>ZKX</span>
+      <span className="text-sm font-black tracking-tight text-white" style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>Vero Protocol</span>
     </div>
   );
 }

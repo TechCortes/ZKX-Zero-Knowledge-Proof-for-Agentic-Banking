@@ -1,6 +1,6 @@
-# Contributing to ZKX
+# Contributing to Vero Protocol
 
-ZKX is MIT licensed — forks, PRs, and standalone derivatives are all welcome. This is a short guide to the actual dev workflow, not a formal process.
+Vero Protocol is MIT licensed — forks, PRs, and standalone derivatives are all welcome. This is a short guide to the actual dev workflow, not a formal process.
 
 ## Dev setup
 
@@ -30,7 +30,7 @@ npm run test:coverage
 
 ## Where to make changes
 
-- **Policy logic** (thresholds, spend windows) lives in the OWS `zkx:kyc` middleware — see the Architecture section in [README.md](./README.md).
+- **Policy logic** (thresholds, spend windows) lives in the OWS `vero:kyc` middleware — see the Architecture section in [README.md](./README.md).
 - **The circuit** is `circuits/kyc_credential.circom`. Adding a new private/public input means re-running `npm run compile-circuit` and `npm run setup-zk` to regenerate the wasm/zkey/verification key.
 - **Onboarding API** routes are under `src/app/api/v1/agents/` and `src/app/api/v1/payment/` — the reference agent registry lives here if you want to see how tokens and policy checks are wired.
 - **Audit log** — `src/policy/auditLog.ts` + `GET /api/v1/audit`. See [ROADMAP.md](./ROADMAP.md) for why this exists and what's still open (threshold reveal).
