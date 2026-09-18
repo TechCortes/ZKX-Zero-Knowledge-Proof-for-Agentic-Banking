@@ -1,5 +1,5 @@
 /**
- * ZKX — ZK Circuit Setup Script
+ * Vero Protocol — ZK Circuit Setup Script
  *
  * Run this once after compiling the circuit to generate:
  *   1. Groth16 proving key (.zkey)

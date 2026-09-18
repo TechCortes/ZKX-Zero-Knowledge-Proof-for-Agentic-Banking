@@ -167,7 +167,7 @@ export default function AgentRegistrationWizard() {
           <div>
             <h2 className="text-2xl font-bold text-white mb-2">Register an Agent</h2>
             <p className="text-slate-500 text-sm leading-relaxed">
-              Create an OWS-compatible agent identity with ZKX compliance built in. Your KYC commitment is derived locally — no personal data leaves your device.
+              Create an OWS-compatible agent identity with Vero Protocol compliance built in. Your KYC commitment is derived locally — no personal data leaves your device.
             </p>
           </div>
 
@@ -193,7 +193,7 @@ export default function AgentRegistrationWizard() {
           <div className="grid grid-cols-3 gap-3">
             {[
               { icon: "🔑", label: "Bearer token",   sub: "ows_key_ format" },
-              { icon: "🔒", label: "ZKX compliance", sub: "zkx:kyc feature" },
+              { icon: "🔒", label: "Vero Protocol compliance", sub: "vero:kyc feature" },
               { icon: "⛓",  label: "Multi-chain",    sub: "CAIP-2 chains"   },
             ].map((f) => (
               <div key={f.label} className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-3 text-center">
@@ -446,7 +446,7 @@ export default function AgentRegistrationWizard() {
             <h2 className="text-2xl font-bold text-white mb-2">Agent Registered</h2>
             <p className="text-slate-500 text-sm">
               <span className="font-mono text-slate-400">{result.agentId}</span> is live with{" "}
-              <span className="text-purple-400">zkx:kyc</span> compliance.
+              <span className="text-purple-400">vero:kyc</span> compliance.
             </p>
           </div>
 

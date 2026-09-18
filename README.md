@@ -1,13 +1,13 @@
-# ZKX — Zero-Knowledge Proof for Agentic Banking
+# Vero Protocol — Zero-Knowledge Compliance for AI Agent Wallets
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-purple.svg)](./LICENSE)
 [![Live Demo](https://img.shields.io/badge/demo-zkx--psi.vercel.app-blue)](https://zkx-psi.vercel.app)
 
 > Composable compliance without doxxing.
 
-ZKX extends the [Open Wallet Standard](https://github.com/open-wallet-standard/core) (OWS) — the open, MIT-licensed wallet layer for AI agents originated by MoonPay, with 15+ contributing organizations including Circle, PayPal, Ripple, Solana Foundation, and Ethereum Foundation — with a zero-knowledge KYC credential for agent payments.
+Vero Protocol extends the [Open Wallet Standard](https://github.com/open-wallet-standard/core) (OWS) — the open, MIT-licensed wallet layer for AI agents originated by MoonPay, with 15+ contributing organizations including Circle, PayPal, Ripple, Solana Foundation, and Ethereum Foundation — with a zero-knowledge KYC credential for agent payments.
 
-The problem is current, not hypothetical: as of April 2026 the x402 agent-payment ecosystem alone reports 69,000+ active agents and 165M+ transactions ([Coinbase](https://www.coinbase.com/developer-platform/discover/launches/x402)), now formalized as the Linux Foundation's x402 Foundation. Agent-to-agent payments already move real volume with no KYA (Know Your Agent) standard and no AML framework attached — that's the gap ZKX closes.
+The problem is current, not hypothetical: as of April 2026 the x402 agent-payment ecosystem alone reports 69,000+ active agents and 165M+ transactions ([Coinbase](https://www.coinbase.com/developer-platform/discover/launches/x402)), now formalized as the Linux Foundation's x402 Foundation. Agent-to-agent payments already move real volume with no KYA (Know Your Agent) standard and no AML framework attached — that's the gap Vero Protocol closes.
 
 ## Why fork this
 
@@ -15,7 +15,7 @@ This isn't a slide deck or a mocked-up demo — it's a working reference impleme
 
 - **A real Groth16 setup** — `kyc_credential.circom` is compiled, and a completed Powers of Tau ceremony + trusted setup (`public/zk/*.wasm`, `*.zkey`, `verification_key.json`) is committed. No stub verifier.
 - **A live agent onboarding API** — `/api/v1/agents/register`, `/api/v1/payment`, `/api/v1/verify-proof` — token-scoped auth, policy evaluation, and proof verification wired end to end.
-- **OWS wallet-standard integration** — registers `zkx:kyc` as a wallet-standard feature so it composes with the existing OWS policy engine instead of bolting on a parallel one.
+- **OWS wallet-standard integration** — registers `vero:kyc` as a wallet-standard feature so it composes with the existing OWS policy engine instead of bolting on a parallel one.
 - **A working registration UI** (`/register`) — the same flow demoed on the live site, not just an API you have to curl.
 
 If you're building agent-facing payments and need a compliance layer that doesn't require agents (or their operators) to hand over PII, this is a starting point you can clone and ship from — not build from scratch.
@@ -34,7 +34,7 @@ Agents prove they have a valid identity **without revealing who they are**. Comp
 ```
 Agent Payment Request
        ↓
-  Policy Engine (OWS zkx:kyc middleware)
+  Policy Engine (OWS vero:kyc middleware)
        ↓
  Daily spend < $1k? ──yes──→ Approve (anonymous)
        ↓ no
@@ -68,7 +68,7 @@ OWS (v1.4.2) isn't just a CLI — it ships as a Node.js/Python SDK, a CLI, **and
 framework (LangChain, AutoGPT, custom tool-callers) can attach a policy-gated wallet as a native tool with no
 custom wallet code. It also isn't locked to one payment rail: alongside [x402](https://www.coinbase.com/developer-platform/discover/launches/x402)
 (Coinbase/Cloudflare), it speaks Google's Agent Payments Protocol and Stripe/Tempo's Machine Payments Protocol (MPP)
-for streaming micropayments. ZKX's `zkx:kyc` policy check sits in front of all of them — fork it once, and the
+for streaming micropayments. Vero Protocol's `vero:kyc` policy check sits in front of all of them — fork it once, and the
 compliance boundary follows the agent regardless of which payment rail it uses.
 
 ## Quick Start
@@ -112,13 +112,13 @@ npx localtunnel --port 3000
 
 ## OWS Extension
 
-ZKX registers as the `zkx:kyc` feature in the wallet-standard registry:
+Vero Protocol registers as the `vero:kyc` feature in the wallet-standard registry:
 
 ```typescript
-import { ZKX_KYC_FEATURE } from "@/wallet/ows-wallet";
+import { VERO_KYC_FEATURE } from "@/wallet/ows-wallet";
 
 // Agents declare this capability
-wallet.features[ZKX_KYC_FEATURE].requestPayment({ amount, recipient });
+wallet.features[VERO_KYC_FEATURE].requestPayment({ amount, recipient });
 ```
 
 ## Extend it

@@ -1,6 +1,6 @@
 "use client";
 
-export function ZKXFacilitator({ className }: { className?: string }) {
+export function VeroFacilitator({ className }: { className?: string }) {
   return (
     <div className={`relative select-none ${className ?? ""}`}>
       {/* Ambient glow layers */}
@@ -12,7 +12,7 @@ export function ZKXFacilitator({ className }: { className?: string }) {
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className="relative w-full h-full zkx-float"
-        aria-label="Vera — ZKX Know Your Agent"
+        aria-label="Vera — Vero Protocol · Zero-Knowledge Agent Compliance"
       >
         <defs>
           {/* ── Suit ── */}

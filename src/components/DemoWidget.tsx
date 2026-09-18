@@ -660,7 +660,7 @@ export default function DemoWidget() {
               </div>
             </div>
             <div className="mt-4 pt-4 border-t border-white/[0.04] grid grid-cols-2 gap-3">
-              {[["Protocol", "Groth16"], ["Curve", "BN128"], ["Hash", "Poseidon"], ["Standard", "zkx:kyc"]].map(([k, v]) => (
+              {[["Protocol", "Groth16"], ["Curve", "BN128"], ["Hash", "Poseidon"], ["Standard", "vero:kyc"]].map(([k, v]) => (
                 <div key={k}>
                   <p className="text-xs text-slate-700">{k}</p>
                   <p className="text-xs text-slate-400 font-mono mt-0.5">{v}</p>

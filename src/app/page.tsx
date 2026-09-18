@@ -1,6 +1,6 @@
 import ClientDemoWidget from "@/components/ClientDemoWidget";
 import { LogoWordmark, LogoIcon } from "@/components/Logo";
-import { ZKXFacilitator } from "@/components/ZKXFacilitator";
+import { VeroFacilitator } from "@/components/VeroFacilitator";
 
 const zkxPrinciples = [
   {
@@ -21,7 +21,7 @@ const zkxPrinciples = [
   {
     num: "04",
     title: "Policy composable",
-    body: "Integrates natively with the Open Wallet Standard policy engine via the zkx:kyc feature extension. Same wallet, same security model, compliance included.",
+    body: "Integrates natively with the Open Wallet Standard policy engine via the vero:kyc feature extension. Same wallet, same security model, compliance included.",
   },
   {
     num: "05",
@@ -46,7 +46,7 @@ const steps = [
   {
     step: "02",
     title: "Policy evaluation",
-    description: "The ZKX compliance engine evaluates cumulative daily spend against the configured FATF threshold — sub-10ms, no network calls, no external APIs.",
+    description: "The Vero Protocol compliance engine evaluates cumulative daily spend against the configured FATF threshold — sub-10ms, no network calls, no external APIs.",
     tag: "< 10ms",
     color: "slate",
   },
@@ -71,7 +71,7 @@ const protocolStack = [
   { name: "snarkjs",              description: "Groth16 prover and verifier — generates and checks the proof",              tag: "Proving"   },
   { name: "Poseidon",             description: "ZK-friendly hash — binds idHash + salt into a verifiable commitment",      tag: "Hash"      },
   { name: "BN128",                description: "Barreto-Naehrig elliptic curve — pairing-based proving system",            tag: "Curve"     },
-  { name: "Open Wallet Standard", description: "zkx:kyc feature extension — OWS policy engine integration point",          tag: "Standard"  },
+  { name: "Open Wallet Standard", description: "vero:kyc feature extension — OWS policy engine integration point",          tag: "Standard"  },
   { name: "CAIP-2",               description: "Chain-agnostic identifiers — multi-chain wallet address resolution",        tag: "Chains"    },
   { name: "x402",                 description: "HTTP payment protocol (Coinbase/Cloudflare) — ows pay request for API-native agentic payments", tag: "Payments" },
   { name: "Agent Payments Protocol", description: "Google's agent-to-agent payment spec — OWS speaks it natively alongside x402",           tag: "Payments"  },
@@ -131,7 +131,7 @@ const forkIdeas = [
   },
   {
     title: "Bring your own chain",
-    body: "The OWS wallet integration already speaks CAIP-2 across ten chain families. Point zkx:kyc at the chain your agents actually settle on — no new primitives required.",
+    body: "The OWS wallet integration already speaks CAIP-2 across ten chain families. Point vero:kyc at the chain your agents actually settle on — no new primitives required.",
   },
   {
     title: "Replace the registry",
@@ -203,20 +203,20 @@ export default function Home() {
             <div className="flex-1 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 text-xs px-3.5 py-1.5 rounded-full border border-blue-500/20 bg-blue-500/5 text-blue-300 font-medium mb-8">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"/>
-                OWS Native · zkx:kyc · FATF-Compatible · MIT Licensed
+                OWS Native · vero:kyc · FATF-Compatible · MIT Licensed
               </div>
 
               <h1 className="text-5xl md:text-[5rem] font-black tracking-tighter leading-[0.92] mb-6">
                 <span className="text-white">Zero-Knowledge</span>
                 <br/>
                 <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-purple-300 bg-clip-text text-transparent">
-                  Agentic Banking
+                  Agent Compliance
                 </span>
               </h1>
 
               <p className="text-lg md:text-xl text-slate-400 max-w-xl mb-3 leading-relaxed font-light mx-auto lg:mx-0">
                 OWS gives every agent a wallet.{" "}
-                <span className="text-slate-300 font-normal">ZKX gives every wallet compliance — without disclosing a single byte of identity data.</span>
+                <span className="text-slate-300 font-normal">Vero Protocol gives every wallet compliance — without disclosing a single byte of identity data.</span>
               </p>
 
               <p className="text-sm text-slate-600 max-w-lg mb-8 leading-relaxed mx-auto lg:mx-0">
@@ -261,7 +261,7 @@ export default function Home() {
 
             {/* Right — Vera */}
             <div className="w-72 md:w-80 lg:w-96 shrink-0">
-              <ZKXFacilitator/>
+              <VeroFacilitator/>
             </div>
           </div>
 
@@ -321,14 +321,14 @@ export default function Home() {
 
             {/* After */}
             <div className="bg-white/[0.02] border border-purple-500/10 rounded-2xl p-6">
-              <p className="text-xs font-semibold text-purple-400/70 uppercase tracking-[0.15em] mb-5">ZKX · Know Your Agent</p>
+              <p className="text-xs font-semibold text-purple-400/70 uppercase tracking-[0.15em] mb-5">Vero Protocol · Zero-Knowledge Agent Compliance</p>
               <div className="space-y-3 font-mono text-xs">
                 {[
                   ["Collects",  "nothing"],
                   ["Stores",    "Poseidon commitment only"],
                   ["Requires",  "Groth16 proof — generated locally"],
                   ["Exposes",   "no data — math is the anchor"],
-                  ["Extends",   "OWS zkx:kyc natively"],
+                  ["Extends",   "OWS vero:kyc natively"],
                 ].map(([label, val]) => (
                   <div key={label} className="flex gap-3">
                     <span className="text-purple-500/50 shrink-0 w-16">{label}</span>
@@ -349,7 +349,7 @@ export default function Home() {
               </p>
             </div>
             <div>
-              <p className="text-xs font-semibold text-purple-500/60 uppercase tracking-[0.15em] mb-3">ZKX · Know Your Agent</p>
+              <p className="text-xs font-semibold text-purple-500/60 uppercase tracking-[0.15em] mb-3">Vero Protocol · Zero-Knowledge Agent Compliance</p>
               <p className="text-slate-300 text-sm leading-relaxed">
                 <span className="text-purple-500/50 font-mono">&ldquo;</span>Compliance never sees plaintext identity.
                 Instead, verifiers receive cryptographic proofs.<span className="text-purple-500/50 font-mono">&rdquo;</span>
@@ -384,7 +384,7 @@ export default function Home() {
           <div className="mb-12">
             <p className="text-xs font-semibold text-blue-400 uppercase tracking-[0.2em] mb-3">Design Principles</p>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Six principles that make ZKX different.
+              Six principles that make Vero Protocol different.
             </h2>
             <p className="text-slate-500 text-sm max-w-xl leading-relaxed">
               Modeled after the Open Wallet Standard&apos;s ethos — no new primitives, existing standards implemented in a compliance-native way.
@@ -412,7 +412,7 @@ export default function Home() {
               Built at the intersection of civic identity and agentic finance.
             </h2>
             <p className="text-slate-500 text-sm max-w-2xl leading-relaxed">
-              ZKX originated as a research project on zero-knowledge identity — extending prior work on civic digital credentials to autonomous agents and the Open Wallet Standard.
+              Vero Protocol originated as a research project on zero-knowledge identity — extending prior work on civic digital credentials to autonomous agents and the Open Wallet Standard.
             </p>
           </div>
 
@@ -428,7 +428,7 @@ export default function Home() {
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-white text-base font-semibold">Jorge Cortes</p>
-                  <p className="text-slate-400 text-xs mt-0.5">Founder, ZKX · Co-founder, MiamiDadeDAO</p>
+                  <p className="text-slate-400 text-xs mt-0.5">Founder, Vero Protocol · Co-founder, MiamiDadeDAO</p>
                   <p className="text-slate-600 text-xs mt-1 leading-relaxed">+15 years Innovation &amp; Tech Ecosystems · LinkedIn Top Voice Web3 &amp; Industry 4.0</p>
                   <div className="flex flex-wrap items-center gap-3 mt-3">
                     <a href="https://www.linkedin.com/in/jorgeandrescortes/" target="_blank" rel="noreferrer"
@@ -492,7 +492,7 @@ export default function Home() {
                       Founded the{" "}
                       <a href="https://miamiid.org/" target="_blank" rel="noreferrer"
                          className="text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-2">Miami-Dade Community ID</a>
-                      {" "}— a zero-knowledge credential system for digital and civic identity in Miami. ZKX extends that work into agentic finance and cross-chain compliance.
+                      {" "}— a zero-knowledge credential system for digital and civic identity in Miami. Vero Protocol extends that work into agentic finance and cross-chain compliance.
                     </p>
                   </div>
                   <div>
@@ -525,7 +525,7 @@ export default function Home() {
               </div>
 
               <div className="flex flex-wrap gap-1.5 mt-5 pt-4 border-t border-white/[0.06]">
-                {["ZKX", "MiamiDadeDAO", "Community ID", "Groth16", "OWS", "FATF", "ReFi", "Web3"].map((t) => (
+                {["Vero Protocol", "MiamiDadeDAO", "Community ID", "Groth16", "OWS", "FATF", "ReFi", "Web3"].map((t) => (
                   <span key={t} className="text-xs px-2 py-0.5 rounded border border-white/[0.08] text-slate-500 font-mono">{t}</span>
                 ))}
               </div>
@@ -567,7 +567,7 @@ export default function Home() {
             </h2>
             <p className="text-slate-500 max-w-xl mx-auto text-sm leading-relaxed">
               OWS already defines a Policy Engine that evaluates spending limits, allowlists, and chain rules before any key is touched.
-              ZKX extends that boundary with the <span className="font-mono text-purple-400">zkx:kyc</span> feature — compliance enforced at the same layer as key access, with the same zero-trust model.
+              Vero Protocol extends that boundary with the <span className="font-mono text-purple-400">vero:kyc</span> feature — compliance enforced at the same layer as key access, with the same zero-trust model.
             </p>
           </div>
 
@@ -586,7 +586,7 @@ export default function Home() {
                 { label: "Agent",            sub: "GPT · Gemini · Custom · Polymarket",    color: "border-blue-500/20  text-blue-400",   bg: "bg-blue-500/5"    },
                 { label: "OWS Interface",    sub: "MCP · SDK · CLI · REST",                color: "border-slate-500/20 text-slate-400",  bg: "bg-slate-500/5"   },
                 { label: "OWS Policy Engine",sub: "Spending limits · Allowlists · Chains", color: "border-slate-500/15 text-slate-500",  bg: "bg-slate-500/4"   },
-                { label: "ZKX · zkx:kyc",   sub: "FATF threshold · Groth16 verification", color: "border-purple-500/25 text-purple-400", bg: "bg-purple-500/8"  },
+                { label: "Vero Protocol · vero:kyc",   sub: "FATF threshold · Groth16 verification", color: "border-purple-500/25 text-purple-400", bg: "bg-purple-500/8"  },
                 { label: "Wallet Vault",     sub: "~/.ows/wallets/ · AES-256-GCM",         color: "border-slate-600/15 text-slate-600",  bg: "bg-[#04040a]"     },
               ].map((row, i) => (
                 <div key={row.label}>
@@ -613,7 +613,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* zkx:kyc feature registration */}
+          {/* vero:kyc feature registration */}
           <div className="bg-[#060610] rounded-2xl border border-white/[0.06] overflow-hidden">
             <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/[0.04]">
               <div className="w-2.5 h-2.5 rounded-full bg-red-500/40"/>
@@ -622,17 +622,17 @@ export default function Home() {
               <span className="text-xs text-slate-700 ml-2 font-mono">ows-wallet-features.ts</span>
             </div>
             <div className="p-5 font-mono text-xs leading-7">
-              <div className="text-slate-700">{"// Register zkx:kyc as an OWS wallet feature"}</div>
+              <div className="text-slate-700">{"// Register vero:kyc as an OWS wallet feature"}</div>
               <div><span className="text-blue-400">const</span> wallet = <span className="text-yellow-400">await</span> ows.<span className="text-green-400">load</span>(<span className="text-orange-300">&apos;agent-treasury&apos;</span>);</div>
               <div className="mt-1"/>
               <div><span className="text-blue-400">wallet</span>.<span className="text-green-400">registerFeature</span>{"({"}</div>
-              <div className="pl-6"><span className="text-purple-400">name</span>: <span className="text-orange-300">&apos;zkx:kyc&apos;</span>,</div>
+              <div className="pl-6"><span className="text-purple-400">name</span>: <span className="text-orange-300">&apos;vero:kyc&apos;</span>,</div>
               <div className="pl-6"><span className="text-purple-400">version</span>: <span className="text-orange-300">&apos;1.0.0&apos;</span>,</div>
               <div className="pl-6"><span className="text-purple-400">commitment</span>: <span className="text-green-400">poseidon</span>([idHash, salt]),</div>
               <div className="pl-6"><span className="text-purple-400">threshold</span>: <span className="text-white">1000</span>, <span className="text-slate-700">{"// USD, FATF Rec. 16"}</span></div>
               <div className="pl-6"><span className="text-purple-400">circuit</span>: <span className="text-orange-300">&apos;kyc_credential.circom&apos;</span>,</div>
               <div>{"});"}</div>
-              <div className="mt-2 text-slate-700">{"// zkx:kyc is now enforced by the OWS policy engine"}</div>
+              <div className="mt-2 text-slate-700">{"// vero:kyc is now enforced by the OWS policy engine"}</div>
               <div className="text-green-400">{"// ✓ Compliant by default. Private by design."}</div>
             </div>
           </div>
@@ -649,7 +649,7 @@ export default function Home() {
               OWS gives every agent local key custody, multi-chain signing, and a pre-signing policy engine out of the box —
               exposed as a CLI, Node.js/Python SDK, <span className="text-slate-400">and an MCP server</span>. Any MCP-speaking
               framework (LangChain, AutoGPT, custom tool-callers) attaches an OWS wallet as a native tool, no custom
-              wallet code required. ZKX adds the compliance layer to the same stack — no new primitives, no new infrastructure.
+              wallet code required. Vero Protocol adds the compliance layer to the same stack — no new primitives, no new infrastructure.
             </p>
           </div>
 
@@ -719,7 +719,7 @@ export default function Home() {
                 </div>
                 <p className="text-slate-600 text-xs leading-relaxed">
                   OWS isn&apos;t locked to one rail — it also speaks Google&apos;s Agent Payments Protocol and Stripe/Tempo&apos;s
-                  Machine Payments Protocol for streaming micropayments. ZKX&apos;s policy check sits in front of all three.
+                  Machine Payments Protocol for streaming micropayments. Vero Protocol&apos;s policy check sits in front of all three.
                 </p>
               </div>
             </div>
@@ -832,7 +832,7 @@ export default function Home() {
               Every payment, one of two paths.
             </h2>
             <p className="text-slate-500 max-w-xl mx-auto text-sm leading-relaxed">
-              ZKX sits at the compliance boundary of the OWS access layer. The decision is made before settlement —
+              Vero Protocol sits at the compliance boundary of the OWS access layer. The decision is made before settlement —
               milliseconds for anonymous payments, ~2.5 seconds when the FATF threshold requires a proof.
             </p>
           </div>
@@ -986,7 +986,7 @@ export default function Home() {
             <p className="text-xs font-semibold text-blue-400 uppercase tracking-[0.2em] mb-2">Protocol Stack</p>
             <h2 className="text-2xl font-bold text-white mb-2">No new primitives.</h2>
             <p className="text-slate-600 text-sm max-w-xl leading-relaxed">
-              ZKX implements existing BIP, CAIP, and FATF standards in a ZK-native, agent-friendly way.
+              Vero Protocol implements existing BIP, CAIP, and FATF standards in a ZK-native, agent-friendly way.
               Every component has a published spec — nothing proprietary, nothing invented here.
             </p>
           </div>
@@ -1016,7 +1016,7 @@ export default function Home() {
             <span className="text-purple-400">Every standard deserves compliance.</span>
           </blockquote>
           <p className="text-slate-600 text-sm max-w-xl mx-auto leading-relaxed mb-10">
-            The Open Wallet Standard unified key management. ZKX closes the compliance gap —
+            The Open Wallet Standard unified key management. Vero Protocol closes the compliance gap —
             adding identity verification to the stack without breaking the privacy-first principles
             that make agent wallets worth building.
           </p>
@@ -1039,7 +1039,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════════ BUILD ON ZKX ═══════════════ */}
+      {/* ═══════════════ BUILD ON Vero Protocol ═══════════════ */}
       <section id="build" className="py-20 px-6 border-t border-white/[0.04]">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
@@ -1098,9 +1098,9 @@ export default function Home() {
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-700">
           <div className="flex items-center gap-2.5">
             <LogoIcon size={20} id="zkx-footer"/>
-            <span>ZKX · Know Your Agent</span>
+            <span>Vero Protocol · Zero-Knowledge Agent Compliance</span>
             <span className="text-slate-800">·</span>
-            <span>zkx:kyc for Open Wallet Standard</span>
+            <span>vero:kyc for Open Wallet Standard</span>
           </div>
           <div className="flex items-center gap-5">
             <a href="https://openwallet.sh/" target="_blank" rel="noreferrer" className="hover:text-slate-400 transition-colors">OWS Spec ↗</a>

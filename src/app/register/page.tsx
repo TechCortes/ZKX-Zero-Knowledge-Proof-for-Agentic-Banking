@@ -3,9 +3,9 @@ import { LogoWordmark } from "@/components/Logo";
 import AgentRegistrationWizard from "@/components/AgentRegistrationWizard";
 
 export const metadata: Metadata = {
-  title: "Register Agent — ZKX",
+  title: "Register Agent — Vero Protocol",
   description:
-    "Register an OWS-compatible agent with ZKX zkx:kyc compliance. KYC commitment derived locally — no PII transmitted.",
+    "Register an OWS-compatible agent with Vero Protocol vero:kyc compliance. KYC commitment derived locally — no PII transmitted.",
 };
 
 export default function RegisterPage() {
@@ -42,7 +42,7 @@ export default function RegisterPage() {
         <div className="max-w-xl mx-auto mb-10">
           <div className="inline-flex items-center gap-2 text-xs px-3.5 py-1.5 rounded-full border border-purple-500/20 bg-purple-500/5 text-purple-300 font-medium mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"/>
-            OWS Agent Registration · zkx:kyc · FATF-Compatible
+            OWS Agent Registration · vero:kyc · FATF-Compatible
           </div>
 
           {/* Privacy callout */}

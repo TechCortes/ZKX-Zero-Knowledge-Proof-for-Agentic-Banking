@@ -1,10 +1,10 @@
 /**
- * ZKX Wallet — Open Wallet Standard v2 Extension
+ * Vero Protocol Wallet — Open Wallet Standard v2 Extension
  *
  * Aligns with the OWS v2 wallet descriptor format:
  *   - ows_version: 2
- *   - metadata["zkx:kyc"] — KYC status and commitment anchor
- *   - features["zkx:kyc"] — fully wired capability methods
+ *   - metadata["vero:kyc"] — KYC status and commitment anchor
+ *   - features["vero:kyc"] — fully wired capability methods
  *
  * Feature namespace convention: namespace:capability (OWS §15)
  * Metadata extensions must be namespaced to prevent collisions.
@@ -14,10 +14,10 @@
 
 import type { Wallet, WalletAccount } from "@wallet-standard/core";
 
-// --- ZKX custom feature identifier (OWS namespaced per §15) ---
-export const ZKX_KYC_FEATURE = "zkx:kyc" as const;
+// --- Vero Protocol custom feature identifier (OWS namespaced per §15) ---
+export const VERO_KYC_FEATURE = "vero:kyc" as const;
 
-export type ZKXKYCFeature = {
+export type VeroKYCFeature = {
   version: "1.0.0";
   /** Returns the agent's current daily spend in USD */
   getDailySpend: () => Promise<number>;
@@ -33,8 +33,8 @@ export type ZKXKYCFeature = {
   }) => Promise<{ status: "approved" | "requires_kyc" | "rejected"; txId?: string; challenge?: unknown }>;
 };
 
-/** OWS v2 metadata shape for the zkx:kyc extension */
-export interface ZKXKYCMetadata {
+/** OWS v2 metadata shape for the vero:kyc extension */
+export interface VeroKYCMetadata {
   version: "1.0.0";
   /** Poseidon(idHash, salt) — the ZK identity anchor. No PII stored. */
   commitment: string;
@@ -44,29 +44,29 @@ export interface ZKXKYCMetadata {
   chains: string[];
 }
 
-/** OWS v2 wallet descriptor shape with zkx:kyc metadata */
-export interface ZKXWalletDescriptor extends Omit<Wallet, "features"> {
+/** OWS v2 wallet descriptor shape with vero:kyc metadata */
+export interface VeroWalletDescriptor extends Omit<Wallet, "features"> {
   ows_version: 2;
   metadata: {
-    [ZKX_KYC_FEATURE]: ZKXKYCMetadata;
+    [VERO_KYC_FEATURE]: VeroKYCMetadata;
     [key: string]: unknown; // preserve unknown OWS extension fields
   };
   features: {
-    [ZKX_KYC_FEATURE]: ZKXKYCFeature;
+    [VERO_KYC_FEATURE]: VeroKYCFeature;
     [key: string]: unknown;
   };
 }
 
-export interface ZKXWalletAccount extends Omit<WalletAccount, "features"> {
+export interface VeroWalletAccount extends Omit<WalletAccount, "features"> {
   features: {
-    [ZKX_KYC_FEATURE]: ZKXKYCFeature;
+    [VERO_KYC_FEATURE]: VeroKYCFeature;
   };
 }
 
 /**
- * Creates a fully wired ZKX-compliant OWS v2 wallet descriptor.
+ * Creates a fully wired Vero Protocol-compliant OWS v2 wallet descriptor.
  *
- * The wallet is a client-side capability object — it calls the ZKX API
+ * The wallet is a client-side capability object — it calls the Vero Protocol API
  * endpoints so agents can interact with the policy engine without knowing
  * the underlying HTTP routes.
  *
@@ -76,19 +76,19 @@ export interface ZKXWalletAccount extends Omit<WalletAccount, "features"> {
  * @param chains     - CAIP-2 chain identifiers (e.g. ["eip155:1", "solana:mainnet"])
  * @param baseUrl    - API base URL (default: "" for relative in browser)
  */
-export function createZKXWallet(
+export function createVeroWallet(
   agentId: string,
   commitment: string,
   apiKey: string,
   chains: string[] = [],
   baseUrl = ""
-): ZKXWalletDescriptor {
+): VeroWalletDescriptor {
   const headers = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${apiKey}`,
   };
 
-  const feature: ZKXKYCFeature = {
+  const feature: VeroKYCFeature = {
     version: "1.0.0",
 
     async getDailySpend(): Promise<number> {
@@ -118,7 +118,7 @@ export function createZKXWallet(
     },
   };
 
-  const metadata: ZKXKYCMetadata = {
+  const metadata: VeroKYCMetadata = {
     version: "1.0.0",
     commitment,
     registeredAt: new Date().toISOString(),
@@ -128,14 +128,14 @@ export function createZKXWallet(
   return {
     ows_version: 2,
     version: "1.0.0",
-    name: "ZKX Agent Wallet",
+    name: "Vero Protocol Agent Wallet",
     icon: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI4IiBmaWxsPSIjN2MzYWVkIi8+PHRleHQgeD0iOCIgeT0iMjIiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIj5aWDwvdGV4dD48L3N2Zz4=",
     chains: (chains.length > 0 ? chains : ["solana:mainnet", "eip155:1"]) as `${string}:${string}`[],
     features: {
-      [ZKX_KYC_FEATURE]: feature,
+      [VERO_KYC_FEATURE]: feature,
     },
     metadata: {
-      [ZKX_KYC_FEATURE]: metadata,
+      [VERO_KYC_FEATURE]: metadata,
     },
     accounts: [],
   };

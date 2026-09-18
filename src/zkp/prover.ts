@@ -1,5 +1,5 @@
 /**
- * ZKX Prover — client-side ZK proof generation using snarkjs
+ * Vero Protocol Prover — client-side ZK proof generation using snarkjs
  *
  * The circuit proves:
  *   1. I know a preimage (idHash, salt) that hashes to `commitment`
