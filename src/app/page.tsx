@@ -139,6 +139,53 @@ const forkIdeas = [
   },
 ];
 
+const sponsors = [
+  {
+    name: "Dynamic",
+    initial: "D",
+    role: "Agent wallets",
+    body: "Three autonomous agents spawn with Dynamic's Node SDK. No human in the loop.",
+    card: "border-blue-500/25 bg-blue-500/[0.05] hover:border-blue-500/45",
+    mark: "bg-blue-500/20 text-blue-300 border border-blue-500/30",
+    roleText: "text-blue-400",
+  },
+  {
+    name: "x402 + Base",
+    initial: "x",
+    role: "Micropayments",
+    body: "Agents pay $0.31 per call in USDC on Base via HTTP 402. 165M transactions and counting.",
+    card: "border-indigo-500/25 bg-indigo-500/[0.05] hover:border-indigo-500/45",
+    mark: "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30",
+    roleText: "text-indigo-400",
+  },
+  {
+    name: "Filecoin",
+    initial: "F",
+    role: "Audit trail",
+    body: "Every ZK proof receipt is pinned to IPFS via Lighthouse. Immutable. Zero PII.",
+    card: "border-cyan-500/25 bg-cyan-500/[0.05] hover:border-cyan-500/45",
+    mark: "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30",
+    roleText: "text-cyan-400",
+  },
+  {
+    name: "Anchorage Digital",
+    initial: "A",
+    role: "Institutional settlement",
+    body: "Vero connects to Anchorage's Agentic Banking API for regulated custody.",
+    card: "border-emerald-500/25 bg-emerald-500/[0.05] hover:border-emerald-500/45",
+    mark: "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30",
+    roleText: "text-emerald-400",
+  },
+];
+
+const stackLayers = [
+  { layer: "Layer 1", name: "Dynamic",       detail: "Agent wallets, autonomous signing, no human required",         accent: "border-blue-500/25 text-blue-300",       bg: "bg-blue-500/[0.06]",    here: false },
+  { layer: "Layer 2", name: "x402 on Base",  detail: "HTTP micropayments, USDC, $0.31 average transaction",           accent: "border-indigo-500/25 text-indigo-300",   bg: "bg-indigo-500/[0.06]",  here: false },
+  { layer: "Layer 3", name: "Vero Protocol", detail: "ZK compliance proof, FATF R.16, Groth16 circuit",               accent: "border-purple-500/50 text-purple-300",   bg: "bg-purple-500/[0.12]",  here: true  },
+  { layer: "Layer 4", name: "Filecoin",      detail: "Proof receipt pinned to IPFS, immutable audit trail",           accent: "border-cyan-500/25 text-cyan-300",       bg: "bg-cyan-500/[0.06]",    here: false },
+  { layer: "Layer 5", name: "Anchorage",     detail: "Institutional settlement, regulated custody, US chartered bank", accent: "border-emerald-500/25 text-emerald-300", bg: "bg-emerald-500/[0.06]", here: false },
+];
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#04040a] text-white overflow-x-hidden">
@@ -278,6 +325,44 @@ export default function Home() {
                 <p className="text-xs text-slate-600 uppercase tracking-[0.1em]">{s.label}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════ BUILT WITH ═══════════════ */}
+      <section id="built-with" className="py-16 px-6 border-t border-white/[0.04]">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-xs font-semibold text-blue-400 uppercase tracking-[0.2em] mb-3">Built With</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-white">Powered by the agent payment stack.</h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {sponsors.map((s) => (
+              <div key={s.name} className={`rounded-2xl border p-6 md:p-7 transition-colors ${s.card}`}>
+                <div className="flex items-center gap-3 mb-4">
+                  <span className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-base font-black ${s.mark}`}>
+                    {s.initial}
+                  </span>
+                  <div>
+                    <p className="text-lg font-bold text-white leading-tight">{s.name}</p>
+                    <p className={`text-xs font-semibold uppercase tracking-[0.12em] mt-0.5 ${s.roleText}`}>{s.role}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-400 leading-relaxed">{s.body}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* OWS — deliberately smaller, listed last */}
+          <div className="mt-4 flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-5 py-4">
+            <span className="w-8 h-8 shrink-0 rounded-lg bg-white/[0.06] text-slate-300 text-[10px] font-black flex items-center justify-center">
+              OWS
+            </span>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              <span className="text-slate-300 font-semibold">Open Wallet Standard</span> · Key management. Vero extends OWS at the Policy Engine layer via the{" "}
+              <span className="font-mono text-purple-400">vero:kyc</span> feature.
+            </p>
           </div>
         </div>
       </section>
@@ -557,59 +642,42 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════════ OWS INTEGRATION ═══════════════ */}
-      <section className="py-20 px-6 border-t border-white/[0.04]">
+      {/* ═══════════════ COMPLETE STACK ═══════════════ */}
+      <section id="stack" className="py-20 px-6 border-t border-white/[0.04]">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <p className="text-xs font-semibold text-blue-400 uppercase tracking-[0.2em] mb-3">Open Wallet Standard</p>
+            <p className="text-xs font-semibold text-blue-400 uppercase tracking-[0.2em] mb-3">Payment Stack</p>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Built for OWS. Native by design.
+              The Complete Compliant Agent Payment Stack
             </h2>
             <p className="text-slate-500 max-w-xl mx-auto text-sm leading-relaxed">
-              OWS already defines a Policy Engine that evaluates spending limits, allowlists, and chain rules before any key is touched.
-              Vero Protocol extends that boundary with the <span className="font-mono text-purple-400">vero:kyc</span> feature — compliance enforced at the same layer as key access, with the same zero-trust model.
+              From autonomous wallet to regulated settlement — Vero Protocol is the compliance layer in the middle.
             </p>
           </div>
 
-          {/* Architecture stack */}
           <div className="bg-white/[0.015] border border-white/[0.06] rounded-3xl overflow-hidden mb-5">
-            <div className="flex items-center gap-1.5 px-5 py-3 border-b border-white/[0.04]">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500/40"/>
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/40"/>
-              <div className="w-2.5 h-2.5 rounded-full bg-green-500/40"/>
-              <span className="text-xs text-slate-700 ml-2 font-mono">zkx-ows-integration.ts</span>
-            </div>
-
-            {/* Visual stack */}
             <div className="p-6 space-y-2">
-              {[
-                { label: "Agent",            sub: "GPT · Gemini · Custom · Polymarket",    color: "border-blue-500/20  text-blue-400",   bg: "bg-blue-500/5"    },
-                { label: "OWS Interface",    sub: "MCP · SDK · CLI · REST",                color: "border-slate-500/20 text-slate-400",  bg: "bg-slate-500/5"   },
-                { label: "OWS Policy Engine",sub: "Spending limits · Allowlists · Chains", color: "border-slate-500/15 text-slate-500",  bg: "bg-slate-500/4"   },
-                { label: "Vero Protocol · vero:kyc",   sub: "FATF threshold · Groth16 verification", color: "border-purple-500/25 text-purple-400", bg: "bg-purple-500/8"  },
-                { label: "Wallet Vault",     sub: "~/.ows/wallets/ · AES-256-GCM",         color: "border-slate-600/15 text-slate-600",  bg: "bg-[#04040a]"     },
-              ].map((row, i) => (
-                <div key={row.label}>
-                  <div className={`flex items-center justify-between px-4 py-3 rounded-xl border ${row.color} ${row.bg}`}>
-                    <span className="text-sm font-semibold">{row.label}</span>
-                    <span className="text-xs text-slate-600 font-mono">{row.sub}</span>
+              {stackLayers.map((row, i) => (
+                <div key={row.name}>
+                  <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-4 px-4 py-3.5 rounded-xl border ${row.accent} ${row.bg}`}>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600 shrink-0">{row.layer}</span>
+                      <span className="text-sm font-semibold">{row.name}</span>
+                      {row.here && (
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-200">
+                          ← You are here
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-slate-500 sm:text-right">{row.detail}</span>
                   </div>
-                  {i < 4 && (
+                  {i < stackLayers.length - 1 && (
                     <div className="flex justify-center py-1">
                       <span className="text-slate-700 text-xs font-mono">↓</span>
                     </div>
                   )}
                 </div>
               ))}
-            </div>
-
-            {/* The boundary line */}
-            <div className="mx-6 mb-6 mt-0">
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-red-500/20"/>
-                <span className="text-xs font-mono text-red-500/50 shrink-0">Keys never cross this boundary · Identity never crosses this boundary</span>
-                <div className="flex-1 h-px bg-red-500/20"/>
-              </div>
             </div>
           </div>
 
