@@ -94,7 +94,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const client = new Anthropic();
+    // Keys that aren't scoped to a workspace must name one via this header.
+    const workspaceId = process.env.ANTHROPIC_WORKSPACE_ID;
+    const client = new Anthropic(
+      workspaceId ? { defaultHeaders: { "anthropic-workspace-id": workspaceId } } : undefined,
+    );
     const response = await client.messages.create({
       model: MODEL,
       max_tokens: MAX_TOKENS,

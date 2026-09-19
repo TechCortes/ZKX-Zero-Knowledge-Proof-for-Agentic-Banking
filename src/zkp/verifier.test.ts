@@ -69,7 +69,7 @@ describe("verifyKYCProof — real proofs", () => {
 
   it("rejects a tampered proof", async () => {
     const bad = JSON.parse(JSON.stringify(good.proof));
-    bad.pi_a[0] = (BigInt(bad.pi_a[0]) + 1n).toString();
+    bad.pi_a[0] = (BigInt(bad.pi_a[0]) + BigInt(1)).toString();
     const res = await verifyKYCProof(bad, good.publicSignals);
     expect(res.valid).toBe(false);
   });
