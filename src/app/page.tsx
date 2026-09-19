@@ -164,8 +164,8 @@ const sponsors: {
     name: "Dynamic",
     initial: "D",
     role: "Agent wallets",
-    body: "Integration in progress: a Dynamic server wallet signs the payment only after Vero's compliance gate approves it. No proof, no signature above the threshold.",
-    status: "building",
+    body: "Planned: a Dynamic server wallet that signs the payment only after Vero's compliance gate approves it. No proof, no signature above the threshold. Not yet integrated.",
+    status: "planned",
     card: "border-blue-500/25 bg-blue-500/[0.05] hover:border-blue-500/45",
     mark: "bg-blue-500/20 text-blue-300 border border-blue-500/30",
     roleText: "text-blue-400",
@@ -206,7 +206,7 @@ const stackLayers: {
   layer: string; name: string; detail: string; status: Status;
   accent: string; bg: string; here: boolean;
 }[] = [
-  { layer: "Layer 1", name: "Dynamic",       detail: "Agent wallets and signing — integration in progress",            status: "building", accent: "border-blue-500/25 text-blue-300",       bg: "bg-blue-500/[0.06]",    here: false },
+  { layer: "Layer 1", name: "Dynamic",       detail: "Agent wallets and signing — planned",                            status: "planned",  accent: "border-blue-500/25 text-blue-300",       bg: "bg-blue-500/[0.06]",    here: false },
   { layer: "Layer 2", name: "x402 on Base",  detail: "HTTP micropayments in USDC — target rail",                        status: "planned",  accent: "border-indigo-500/25 text-indigo-300",   bg: "bg-indigo-500/[0.06]",  here: false },
   { layer: "Layer 3", name: "Vero Protocol", detail: "ZK compliance proof, FATF R.16, Groth16 circuit",                 status: "live",     accent: "border-purple-500/50 text-purple-300",   bg: "bg-purple-500/[0.12]",  here: true  },
   { layer: "Layer 4", name: "Filecoin",      detail: "Proof receipts pinned to IPFS for an immutable audit trail",      status: "planned",  accent: "border-cyan-500/25 text-cyan-300",       bg: "bg-cyan-500/[0.06]",    here: false },
