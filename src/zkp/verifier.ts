@@ -14,6 +14,35 @@ export interface VerificationResult {
   error?: string;
 }
 
+/** Age requirement the server enforces; must match the challenge issued by /api/v1/payment. */
+export const REQUIRED_MIN_AGE = 18;
+
+/**
+ * The circuit's public signals are [commitment, currentYear, minAge]. A Groth16 proof is
+ * only valid *for the public inputs the prover chose*, so the server must pin them —
+ * otherwise a prover could pick minAge=0 (or a fake currentYear) and still verify.
+ * Returns an error message, or null if the signals match the server's challenge.
+ */
+export function checkChallengeSignals(
+  publicSignals: string[],
+  now: Date = new Date()
+): string | null {
+  if (publicSignals.length !== 3) {
+    return "Unexpected public signals: expected [commitment, currentYear, minAge].";
+  }
+  const year = now.getUTCFullYear();
+  const [, proofYear, proofMinAge] = publicSignals;
+  // Accept the prior year too so a proof generated just before New Year UTC isn't rejected;
+  // an earlier year only makes the age check stricter for the prover.
+  if (proofYear !== String(year) && proofYear !== String(year - 1)) {
+    return "Proof currentYear does not match the server's challenge.";
+  }
+  if (proofMinAge !== String(REQUIRED_MIN_AGE)) {
+    return `Proof minAge must be ${REQUIRED_MIN_AGE}.`;
+  }
+  return null;
+}
+
 let cachedVKey: object | null = null;
 
 function getVerificationKey(): object {
@@ -42,6 +71,11 @@ export async function verifyKYCProof(
       valid: false,
       error: "Verification key not found — server is not configured to verify proofs. Run `npm run setup-zk`.",
     };
+  }
+
+  const signalError = checkChallengeSignals(publicSignals);
+  if (signalError) {
+    return { valid: false, error: signalError };
   }
 
   try {
