@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
+import { offlineVeraReply } from "@/lib/veraOffline";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -66,14 +67,14 @@ function parseMessages(body: unknown): Anthropic.MessageParam[] | null {
   return messages;
 }
 
-export async function POST(req: NextRequest) {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json(
-      { error: "Vera is offline right now. Please try again later." },
-      { status: 503 },
-    );
-  }
+/** Pre-written answer for when the Claude API can't be used (no credits, bad key, outage). */
+function offlineResponse(messages: Anthropic.MessageParam[]) {
+  const last = messages[messages.length - 1];
+  const text = typeof last.content === "string" ? last.content : "";
+  return NextResponse.json({ reply: offlineVeraReply(text), offline: true });
+}
 
+export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (rateLimited(ip)) {
     return NextResponse.json(
@@ -91,6 +92,10 @@ export async function POST(req: NextRequest) {
   const messages = parseMessages(body);
   if (!messages) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+  }
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return offlineResponse(messages);
   }
 
   try {
@@ -113,27 +118,17 @@ export async function POST(req: NextRequest) {
       .trim();
 
     if (!reply) {
-      return NextResponse.json({ error: "Vera had nothing to say — try rephrasing." }, { status: 502 });
+      return offlineResponse(messages);
     }
     return NextResponse.json({ reply });
   } catch (error) {
-    if (error instanceof Anthropic.RateLimitError) {
-      return NextResponse.json({ error: "Vera is busy — please try again shortly." }, { status: 503 });
-    }
-    if (error instanceof Anthropic.AuthenticationError) {
-      console.error("[vera] Anthropic authentication failed — check ANTHROPIC_API_KEY");
-      return NextResponse.json({ error: "Vera is offline right now. Please try again later." }, { status: 503 });
-    }
+    // Any upstream failure (billing, auth, rate limit, outage) degrades to offline mode
+    // rather than surfacing an error in the chat. Details stay in server logs only.
     if (error instanceof Anthropic.APIError) {
       console.error(`[vera] Anthropic API error ${error.status}: ${error.message}`);
     } else {
       console.error("[vera] unexpected error", error);
     }
-    // TEMPORARY diagnostic (remove once Vera's 502 is root-caused): surface the upstream failure.
-    const upstream =
-      error instanceof Error
-        ? `${error.constructor.name}${error instanceof Anthropic.APIError ? ` ${error.status ?? ""}` : ""}: ${error.message}`.slice(0, 240)
-        : "unknown";
-    return NextResponse.json({ error: "Vera hit a problem. Please try again.", upstream }, { status: 502 });
+    return offlineResponse(messages);
   }
 }
