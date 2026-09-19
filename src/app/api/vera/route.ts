@@ -125,6 +125,11 @@ export async function POST(req: NextRequest) {
     } else {
       console.error("[vera] unexpected error", error);
     }
-    return NextResponse.json({ error: "Vera hit a problem. Please try again." }, { status: 502 });
+    // TEMPORARY diagnostic (remove once Vera's 502 is root-caused): surface the upstream failure.
+    const upstream =
+      error instanceof Error
+        ? `${error.constructor.name}${error instanceof Anthropic.APIError ? ` ${error.status ?? ""}` : ""}: ${error.message}`.slice(0, 240)
+        : "unknown";
+    return NextResponse.json({ error: "Vera hit a problem. Please try again.", upstream }, { status: 502 });
   }
 }
