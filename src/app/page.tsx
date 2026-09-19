@@ -139,12 +139,33 @@ const forkIdeas = [
   },
 ];
 
-const sponsors = [
+type Status = "live" | "building" | "planned";
+
+const STATUS_BADGE: Record<Status, { label: string; cls: string }> = {
+  live:     { label: "Live",           cls: "bg-green-500/15 border-green-500/40 text-green-300" },
+  building: { label: "Building today", cls: "bg-amber-500/15 border-amber-500/40 text-amber-300" },
+  planned:  { label: "Planned",        cls: "bg-slate-500/15 border-slate-500/40 text-slate-300" },
+};
+
+function StatusBadge({ status }: { status: Status }) {
+  const b = STATUS_BADGE[status];
+  return (
+    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border shrink-0 ${b.cls}`}>
+      {b.label}
+    </span>
+  );
+}
+
+const sponsors: {
+  name: string; initial: string; role: string; body: string; status: Status;
+  card: string; mark: string; roleText: string;
+}[] = [
   {
     name: "Dynamic",
     initial: "D",
     role: "Agent wallets",
-    body: "Three autonomous agents spawn with Dynamic's Node SDK. No human in the loop.",
+    body: "Integration in progress: a Dynamic server wallet signs the payment only after Vero's compliance gate approves it. No proof, no signature above the threshold.",
+    status: "building",
     card: "border-blue-500/25 bg-blue-500/[0.05] hover:border-blue-500/45",
     mark: "bg-blue-500/20 text-blue-300 border border-blue-500/30",
     roleText: "text-blue-400",
@@ -152,8 +173,9 @@ const sponsors = [
   {
     name: "x402 + Base",
     initial: "x",
-    role: "Micropayments",
-    body: "Agents pay $0.31 per call in USDC on Base via HTTP 402. 165M transactions and counting.",
+    role: "Micropayments · target rail",
+    body: "Target payment rail: HTTP 402 micropayments in USDC on Base. Vero's check is rail-agnostic and sits in front of any of them. Not yet integrated.",
+    status: "planned",
     card: "border-indigo-500/25 bg-indigo-500/[0.05] hover:border-indigo-500/45",
     mark: "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30",
     roleText: "text-indigo-400",
@@ -162,7 +184,8 @@ const sponsors = [
     name: "Filecoin",
     initial: "F",
     role: "Audit trail",
-    body: "Every ZK proof receipt is pinned to IPFS via Lighthouse. Immutable. Zero PII.",
+    body: "Planned: pin proof receipts to IPFS for an immutable, PII-free trail. Today the audit log is an append-only, in-memory reference implementation.",
+    status: "planned",
     card: "border-cyan-500/25 bg-cyan-500/[0.05] hover:border-cyan-500/45",
     mark: "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30",
     roleText: "text-cyan-400",
@@ -171,19 +194,23 @@ const sponsors = [
     name: "Anchorage Digital",
     initial: "A",
     role: "Institutional settlement",
-    body: "Vero connects to Anchorage's Agentic Banking API for regulated custody.",
+    body: "Planned: an institutional settlement path for regulated custody. Not built.",
+    status: "planned",
     card: "border-emerald-500/25 bg-emerald-500/[0.05] hover:border-emerald-500/45",
     mark: "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30",
     roleText: "text-emerald-400",
   },
 ];
 
-const stackLayers = [
-  { layer: "Layer 1", name: "Dynamic",       detail: "Agent wallets, autonomous signing, no human required",         accent: "border-blue-500/25 text-blue-300",       bg: "bg-blue-500/[0.06]",    here: false },
-  { layer: "Layer 2", name: "x402 on Base",  detail: "HTTP micropayments, USDC, $0.31 average transaction",           accent: "border-indigo-500/25 text-indigo-300",   bg: "bg-indigo-500/[0.06]",  here: false },
-  { layer: "Layer 3", name: "Vero Protocol", detail: "ZK compliance proof, FATF R.16, Groth16 circuit",               accent: "border-purple-500/50 text-purple-300",   bg: "bg-purple-500/[0.12]",  here: true  },
-  { layer: "Layer 4", name: "Filecoin",      detail: "Proof receipt pinned to IPFS, immutable audit trail",           accent: "border-cyan-500/25 text-cyan-300",       bg: "bg-cyan-500/[0.06]",    here: false },
-  { layer: "Layer 5", name: "Anchorage",     detail: "Institutional settlement, regulated custody, US chartered bank", accent: "border-emerald-500/25 text-emerald-300", bg: "bg-emerald-500/[0.06]", here: false },
+const stackLayers: {
+  layer: string; name: string; detail: string; status: Status;
+  accent: string; bg: string; here: boolean;
+}[] = [
+  { layer: "Layer 1", name: "Dynamic",       detail: "Agent wallets and signing — integration in progress",            status: "building", accent: "border-blue-500/25 text-blue-300",       bg: "bg-blue-500/[0.06]",    here: false },
+  { layer: "Layer 2", name: "x402 on Base",  detail: "HTTP micropayments in USDC — target rail",                        status: "planned",  accent: "border-indigo-500/25 text-indigo-300",   bg: "bg-indigo-500/[0.06]",  here: false },
+  { layer: "Layer 3", name: "Vero Protocol", detail: "ZK compliance proof, FATF R.16, Groth16 circuit",                 status: "live",     accent: "border-purple-500/50 text-purple-300",   bg: "bg-purple-500/[0.12]",  here: true  },
+  { layer: "Layer 4", name: "Filecoin",      detail: "Proof receipts pinned to IPFS for an immutable audit trail",      status: "planned",  accent: "border-cyan-500/25 text-cyan-300",       bg: "bg-cyan-500/[0.06]",    here: false },
+  { layer: "Layer 5", name: "Anchorage",     detail: "Institutional settlement and regulated custody",                  status: "planned",  accent: "border-emerald-500/25 text-emerald-300", bg: "bg-emerald-500/[0.06]", here: false },
 ];
 
 export default function Home() {
@@ -333,8 +360,11 @@ export default function Home() {
       <section id="built-with" className="py-16 px-6 border-t border-white/[0.04]">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-10">
-            <p className="text-xs font-semibold text-blue-400 uppercase tracking-[0.2em] mb-3">Built With</p>
-            <h2 className="text-3xl md:text-4xl font-bold text-white">Powered by the agent payment stack.</h2>
+            <p className="text-xs font-semibold text-blue-400 uppercase tracking-[0.2em] mb-3">Ecosystem</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">Where Vero fits in the agent payment stack.</h2>
+            <p className="text-sm text-slate-500 max-w-xl mx-auto leading-relaxed">
+              Vero&apos;s ZK compliance layer is built and running. The integrations below are labeled by their real status.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -344,10 +374,11 @@ export default function Home() {
                   <span className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-base font-black ${s.mark}`}>
                     {s.initial}
                   </span>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="text-lg font-bold text-white leading-tight">{s.name}</p>
                     <p className={`text-xs font-semibold uppercase tracking-[0.12em] mt-0.5 ${s.roleText}`}>{s.role}</p>
                   </div>
+                  <StatusBadge status={s.status} />
                 </div>
                 <p className="text-sm text-slate-400 leading-relaxed">{s.body}</p>
               </div>
@@ -646,12 +677,13 @@ export default function Home() {
       <section id="stack" className="py-20 px-6 border-t border-white/[0.04]">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <p className="text-xs font-semibold text-blue-400 uppercase tracking-[0.2em] mb-3">Payment Stack</p>
+            <p className="text-xs font-semibold text-blue-400 uppercase tracking-[0.2em] mb-3">Reference Architecture</p>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              The Complete Compliant Agent Payment Stack
+              The Compliant Agent Payment Stack
             </h2>
             <p className="text-slate-500 max-w-xl mx-auto text-sm leading-relaxed">
               From autonomous wallet to regulated settlement — Vero Protocol is the compliance layer in the middle.
+              Layer 3 is built and running; the layers around it are integration targets, marked by status.
             </p>
           </div>
 
@@ -663,6 +695,7 @@ export default function Home() {
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                       <span className="text-[10px] font-mono uppercase tracking-widest text-slate-600 shrink-0">{row.layer}</span>
                       <span className="text-sm font-semibold">{row.name}</span>
+                      <StatusBadge status={row.status} />
                       {row.here && (
                         <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-200">
                           ← You are here
@@ -687,10 +720,10 @@ export default function Home() {
               <div className="w-2.5 h-2.5 rounded-full bg-red-500/40"/>
               <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/40"/>
               <div className="w-2.5 h-2.5 rounded-full bg-green-500/40"/>
-              <span className="text-xs text-slate-700 ml-2 font-mono">ows-wallet-features.ts</span>
+              <span className="text-xs text-slate-700 ml-2 font-mono">illustrative sketch · real types in src/wallet/ows-wallet.ts</span>
             </div>
             <div className="p-5 font-mono text-xs leading-7">
-              <div className="text-slate-700">{"// Register vero:kyc as an OWS wallet feature"}</div>
+              <div className="text-slate-700">{"// Illustrative: how vero:kyc plugs into an OWS wallet"}</div>
               <div><span className="text-blue-400">const</span> wallet = <span className="text-yellow-400">await</span> ows.<span className="text-green-400">load</span>(<span className="text-orange-300">&apos;agent-treasury&apos;</span>);</div>
               <div className="mt-1"/>
               <div><span className="text-blue-400">wallet</span>.<span className="text-green-400">registerFeature</span>{"({"}</div>
