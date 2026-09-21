@@ -13,14 +13,14 @@ const ROUTE = "GET /api/v1/audit";
  * request this under legal process — not implemented here.
  */
 export async function GET(req: NextRequest) {
-  const auth = authenticate(req);
+  const auth = await authenticate(req);
   if (isAuthFailure(auth)) {
     logger.warn(ROUTE, "unauthorized", { errorCode: auth.errorCode });
     return unauthorized(auth.message, auth.errorCode);
   }
   const agent = auth;
 
-  const entries = getAuditLog(agent.id);
+  const entries = await getAuditLog(agent.id);
   logger.info(ROUTE, "audit_fetched", { agentId: agent.id, count: entries.length });
 
   return NextResponse.json({ agentId: agent.id, count: entries.length, entries });

@@ -10,7 +10,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ agentId: string }> }
 ) {
-  const auth = authenticate(req);
+  const auth = await authenticate(req);
   if (isAuthFailure(auth)) {
     logger.warn(ROUTE, "unauthorized", { errorCode: auth.errorCode });
     return unauthorized(auth.message, auth.errorCode);
@@ -24,13 +24,13 @@ export async function GET(
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
 
-  const target = getAgent(agentId);
+  const target = await getAgent(agentId);
   if (!target) {
     logger.warn(ROUTE, "agent_not_found", { agentId });
     return NextResponse.json({ error: `Agent '${agentId}' not found.`, errorCode: "WALLET_NOT_FOUND" }, { status: 404 });
   }
 
-  const dailySpend = getDailySpend(agentId);
+  const dailySpend = await getDailySpend(agentId);
   const remaining = Math.max(0, DAILY_ANONYMOUS_LIMIT - dailySpend);
   const tier = dailySpend >= DAILY_ANONYMOUS_LIMIT ? "zk-verified" : "anonymous";
   const today = new Date().toISOString().slice(0, 10);

@@ -1,15 +1,14 @@
 /**
- * Agent Registry — in-memory store for Vero Protocol agent identities.
+ * Agent Registry — Redis-backed store for Vero Protocol agent identities
+ * (in-memory fallback for local dev/tests — see kv.ts).
  *
  * Follows the Open Wallet Standard API key model:
  *   - Token format: ows_key_<64 hex chars> (hash stored, never raw)
  *   - Agents carry policy rules (allowed_chains, expires_at, spending_limit)
  *   - AND semantics: all attached policies must pass
- *
- * Interface is intentionally DB-shaped: replace the Map with a DB client
- * (Postgres, Turso, etc.) without touching the API routes.
  */
 
+import { kv } from "./kv";
 import type { PolicyRule } from "@/policy/engine";
 
 export interface Agent {
@@ -25,8 +24,8 @@ export interface Agent {
   expiresAt: string | null;
 }
 
-const agents = new Map<string, Agent>();
-const apiKeyIndex = new Map<string, string>(); // apiKey → agentId
+const agentKey = (id: string) => `agent:${id}`;
+const apiKeyKey = (apiKey: string) => `apikey:${apiKey}`;
 
 export class AgentExistsError extends Error {
   constructor(id: string) {
@@ -48,13 +47,11 @@ export interface RegisterAgentOptions {
   expiresAt?: string | null;
 }
 
-export function registerAgent(
+export async function registerAgent(
   id: string,
   commitment: string,
   options: RegisterAgentOptions = {}
-): Agent {
-  if (agents.has(id)) throw new AgentExistsError(id);
-
+): Promise<Agent> {
   const apiKey = generateApiKey();
   const agent: Agent = {
     id,
@@ -66,26 +63,24 @@ export function registerAgent(
     expiresAt: options.expiresAt ?? null,
   };
 
-  agents.set(id, agent);
-  apiKeyIndex.set(apiKey, id);
+  const created = await kv().set(agentKey(id), agent, { nx: true });
+  if (!created) throw new AgentExistsError(id);
+
+  await kv().set(apiKeyKey(apiKey), id);
   return agent;
 }
 
-export function getAgent(id: string): Agent | undefined {
-  return agents.get(id);
+export async function getAgent(id: string): Promise<Agent | undefined> {
+  return (await kv().get<Agent>(agentKey(id))) ?? undefined;
 }
 
-export function getAgentByApiKey(apiKey: string): Agent | undefined {
-  const id = apiKeyIndex.get(apiKey);
-  return id ? agents.get(id) : undefined;
+export async function getAgentByApiKey(apiKey: string): Promise<Agent | undefined> {
+  const id = await kv().get<string>(apiKeyKey(apiKey));
+  return id ? await getAgent(id) : undefined;
 }
 
 export function isAgentExpired(agent: Agent): boolean {
   return agent.expiresAt !== null && new Date() > new Date(agent.expiresAt);
-}
-
-export function agentCount(): number {
-  return agents.size;
 }
 
 /** OWS token format: ows_key_<64 lowercase hex chars> */

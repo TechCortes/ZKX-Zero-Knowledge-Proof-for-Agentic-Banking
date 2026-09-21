@@ -8,7 +8,7 @@ import { logger } from "@/lib/logger";
 const ROUTE = "POST /api/v1/verify-proof";
 
 export async function POST(req: NextRequest) {
-  const auth = authenticate(req);
+  const auth = await authenticate(req);
   if (isAuthFailure(auth)) {
     logger.warn(ROUTE, "unauthorized", { errorCode: auth.errorCode });
     return unauthorized(auth.message, auth.errorCode);
@@ -56,14 +56,14 @@ export async function POST(req: NextRequest) {
     memo: typeof memo === "string" ? memo : undefined,
     chainId: typeof chainId === "string" ? chainId : undefined,
   };
-  const decision = evaluatePayment(paymentRequest, agent.policies);
+  const decision = await evaluatePayment(paymentRequest, agent.policies);
   const policyVersionHash = computePolicyVersionHash(agent.policies);
 
   const result = await verifyKYCProof(proof as object, publicSignals as string[]);
 
   if (!result.valid) {
     logger.warn(ROUTE, "proof_rejected", { agentId: agent.id, error: result.error });
-    recordAuditEntry({
+    await recordAuditEntry({
       agentId: agent.id,
       commitment: proofCommitment,
       policyVersionHash,
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const approved = approveWithProof(paymentRequest);
+  const approved = await approveWithProof(paymentRequest);
   const txId = `zkx_${Date.now()}`;
   logger.info(ROUTE, "payment_approved_zk", {
     agentId: agent.id,
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
     chainId: chainId ?? null,
     commitment: result.commitment,
   });
-  recordAuditEntry({
+  await recordAuditEntry({
     agentId: agent.id,
     commitment: result.commitment,
     txId,

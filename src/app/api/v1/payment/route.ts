@@ -7,7 +7,7 @@ import { logger } from "@/lib/logger";
 const ROUTE = "POST /api/v1/payment";
 
 export async function POST(req: NextRequest) {
-  const auth = authenticate(req);
+  const auth = await authenticate(req);
   if (isAuthFailure(auth)) {
     logger.warn(ROUTE, "unauthorized", { errorCode: auth.errorCode });
     return unauthorized(auth.message, auth.errorCode);
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "recipient is required." }, { status: 422 });
   }
 
-  const decision = evaluatePayment(
+  const decision = await evaluatePayment(
     {
       agentId: agent.id,
       amount,
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
   // OWS policy rule denial (chain not allowed, key expired via policy, etc.)
   if (!decision.allowed && !decision.requiresKYC) {
     logger.warn(ROUTE, "policy_denied", { agentId: agent.id, errorCode: decision.errorCode });
-    recordAuditEntry({
+    await recordAuditEntry({
       agentId: agent.id,
       policyVersionHash,
       decision: "policy_denied",
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (decision.allowed) {
-    recordSpend(agent.id, amount);
+    await recordSpend(agent.id, amount);
     const txId = `zkx_${Date.now()}`;
     logger.info(ROUTE, "payment_approved_anonymous", {
       agentId: agent.id,
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       chainId: chainId ?? null,
       dailyTotal: decision.dailyTotal + amount,
     });
-    recordAuditEntry({
+    await recordAuditEntry({
       agentId: agent.id,
       txId,
       policyVersionHash,
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
   }
 
   logger.info(ROUTE, "proof_required", { agentId: agent.id, amount, dailyTotal: decision.dailyTotal });
-  recordAuditEntry({
+  await recordAuditEntry({
     agentId: agent.id,
     policyVersionHash,
     decision: "kyc_required",

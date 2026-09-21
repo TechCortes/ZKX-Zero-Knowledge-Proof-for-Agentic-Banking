@@ -25,3 +25,4 @@ circuits/*.zkey
 
 # TypeScript incremental build info
 *.tsbuildinfo
+.env*

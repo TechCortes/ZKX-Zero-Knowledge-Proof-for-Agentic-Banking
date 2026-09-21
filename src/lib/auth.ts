@@ -8,13 +8,13 @@ export interface AuthFailure {
   status: 401 | 403;
 }
 
-export function authenticate(req: NextRequest): Agent | AuthFailure {
+export async function authenticate(req: NextRequest): Promise<Agent | AuthFailure> {
   const header = req.headers.get("authorization");
   if (!header?.startsWith("Bearer ")) {
     return { errorCode: OWSErrorCode.API_KEY_NOT_FOUND, message: "Missing Bearer token.", status: 401 };
   }
 
-  const agent = getAgentByApiKey(header.slice(7));
+  const agent = await getAgentByApiKey(header.slice(7));
   if (!agent) {
     return { errorCode: OWSErrorCode.API_KEY_NOT_FOUND, message: "Invalid API key.", status: 401 };
   }

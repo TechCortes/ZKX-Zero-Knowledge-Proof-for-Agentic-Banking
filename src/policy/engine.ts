@@ -11,6 +11,7 @@
 
 import { createHash } from "crypto";
 import { OWSErrorCode } from "@/lib/ows-errors";
+import { kv } from "@/lib/kv";
 
 // --- OWS policy rule types ---
 
@@ -101,24 +102,20 @@ export interface ProofSubmission {
   publicSignals: string[];
 }
 
-// In-memory daily spend tracker (keyed by agentId + UTC date)
-const spendLedger = new Map<string, number>();
+// Daily spend tracker (keyed by agentId + UTC date) — shared across serverless instances.
+const LEDGER_TTL_SECONDS = 60 * 60 * 48; // 48h: outlives the UTC day boundary, then cleans up
 
 function ledgerKey(agentId: string): string {
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD UTC
-  return `${agentId}::${today}`;
+  return `spend:${agentId}::${today}`;
 }
 
-export function getDailySpend(agentId: string): number {
-  return spendLedger.get(ledgerKey(agentId)) ?? 0;
+export async function getDailySpend(agentId: string): Promise<number> {
+  return (await kv().get<number>(ledgerKey(agentId))) ?? 0;
 }
 
-export function recordSpend(agentId: string, amount: number): number {
-  const key = ledgerKey(agentId);
-  const current = spendLedger.get(key) ?? 0;
-  const updated = current + amount;
-  spendLedger.set(key, updated);
-  return updated;
+export async function recordSpend(agentId: string, amount: number): Promise<number> {
+  return kv().incrby(ledgerKey(agentId), amount, { ex: LEDGER_TTL_SECONDS });
 }
 
 export const DAILY_ANONYMOUS_LIMIT = 1_000; // USD
@@ -143,11 +140,11 @@ export function computePolicyVersionHash(rules: PolicyRule[] = []): string {
  * Optionally evaluates OWS policy rules (allowed_chains, expires_at, etc.)
  * Does NOT record the spend — call recordSpend() after payment is confirmed.
  */
-export function evaluatePayment(
+export async function evaluatePayment(
   request: PaymentRequest,
   rules: PolicyRule[] = []
-): PolicyDecision {
-  const daily = getDailySpend(request.agentId);
+): Promise<PolicyDecision> {
+  const daily = await getDailySpend(request.agentId);
   const projectedTotal = daily + request.amount;
   const remaining = Math.max(0, DAILY_ANONYMOUS_LIMIT - daily);
   const context: PolicyContext = {
@@ -197,8 +194,8 @@ export function evaluatePayment(
 /**
  * After a valid ZK proof is verified, approve the payment and record spend.
  */
-export function approveWithProof(request: PaymentRequest): PolicyDecision {
-  const daily = recordSpend(request.agentId, request.amount);
+export async function approveWithProof(request: PaymentRequest): Promise<PolicyDecision> {
+  const daily = await recordSpend(request.agentId, request.amount);
   return {
     allowed: true,
     requiresKYC: false,

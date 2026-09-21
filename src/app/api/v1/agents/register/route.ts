@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const agent = registerAgent(agentId, commitment, {
+    const agent = await registerAgent(agentId, commitment, {
       chains: resolvedChains,
       policies: resolvedPolicies,
       expiresAt: resolvedExpiresAt,

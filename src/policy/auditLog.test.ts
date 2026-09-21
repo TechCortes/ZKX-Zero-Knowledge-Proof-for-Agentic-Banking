@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { recordAuditEntry, getAuditLog, auditLogSize } from "./auditLog";
+import { recordAuditEntry, getAuditLog } from "./auditLog";
 import { computePolicyVersionHash } from "./engine";
 
 let agentCounter = 0;
@@ -8,11 +8,10 @@ function freshAgent(): string {
 }
 
 describe("Audit Log", () => {
-  it("records an entry and assigns id + timestamp", () => {
+  it("records an entry and assigns id + timestamp", async () => {
     const agentId = freshAgent();
-    const before = auditLogSize();
 
-    const record = recordAuditEntry({
+    const record = await recordAuditEntry({
       agentId,
       policyVersionHash: computePolicyVersionHash(),
       decision: "approved_anonymous",
@@ -22,21 +21,21 @@ describe("Audit Log", () => {
 
     expect(record.id).toBeTruthy();
     expect(record.timestamp).toBeTruthy();
-    expect(auditLogSize()).toBe(before + 1);
+    expect(await getAuditLog(agentId)).toHaveLength(1);
   });
 
-  it("scopes getAuditLog to the requested agent only", () => {
+  it("scopes getAuditLog to the requested agent only", async () => {
     const agentA = freshAgent();
     const agentB = freshAgent();
 
-    recordAuditEntry({
+    await recordAuditEntry({
       agentId: agentA,
       policyVersionHash: computePolicyVersionHash(),
       decision: "approved_anonymous",
       thresholdMet: false,
       dailyTotal: 100,
     });
-    recordAuditEntry({
+    await recordAuditEntry({
       agentId: agentB,
       policyVersionHash: computePolicyVersionHash(),
       decision: "kyc_required",
@@ -44,11 +43,11 @@ describe("Audit Log", () => {
       dailyTotal: 1000,
     });
 
-    const logA = getAuditLog(agentA);
+    const logA = await getAuditLog(agentA);
     expect(logA).toHaveLength(1);
     expect(logA[0].agentId).toBe(agentA);
 
-    const logB = getAuditLog(agentB);
+    const logB = await getAuditLog(agentB);
     expect(logB).toHaveLength(1);
     expect(logB[0].decision).toBe("kyc_required");
   });
@@ -56,7 +55,7 @@ describe("Audit Log", () => {
   it("returns entries most-recent-first", async () => {
     const agentId = freshAgent();
 
-    recordAuditEntry({
+    await recordAuditEntry({
       agentId,
       policyVersionHash: computePolicyVersionHash(),
       decision: "approved_anonymous",
@@ -64,7 +63,7 @@ describe("Audit Log", () => {
       dailyTotal: 100,
     });
     await new Promise((r) => setTimeout(r, 2));
-    const second = recordAuditEntry({
+    const second = await recordAuditEntry({
       agentId,
       policyVersionHash: computePolicyVersionHash(),
       decision: "approved_anonymous",
@@ -72,13 +71,13 @@ describe("Audit Log", () => {
       dailyTotal: 200,
     });
 
-    const log = getAuditLog(agentId);
+    const log = await getAuditLog(agentId);
     expect(log[0].id).toBe(second.id);
   });
 
-  it("omits commitment/txId when not provided (kyc_required challenge)", () => {
+  it("omits commitment/txId when not provided (kyc_required challenge)", async () => {
     const agentId = freshAgent();
-    recordAuditEntry({
+    await recordAuditEntry({
       agentId,
       policyVersionHash: computePolicyVersionHash(),
       decision: "kyc_required",
@@ -86,7 +85,7 @@ describe("Audit Log", () => {
       dailyTotal: 1000,
     });
 
-    const [entry] = getAuditLog(agentId);
+    const [entry] = await getAuditLog(agentId);
     expect(entry.commitment).toBeUndefined();
     expect(entry.txId).toBeUndefined();
   });

@@ -6,10 +6,11 @@
  * threshold was crossed. No PII — `commitment` is already public and
  * non-reversible on its own, and `agentId` is a handle, not an identity.
  *
- * Interface is intentionally DB-shaped, same convention as registry.ts:
- * replace the array with a real append-only store (or a hash-chained log)
- * without touching the call sites.
+ * Redis-backed (in-memory fallback for local dev/tests — see kv.ts), keyed
+ * per agent so each agent's trail is its own bounded list.
  */
+
+import { kv } from "@/lib/kv";
 
 export type AuditDecision =
   | "approved_anonymous"
@@ -33,25 +34,24 @@ export interface AuditRecord {
   dailyTotal: number;
 }
 
-const auditLog: AuditRecord[] = [];
+/** Cap per-agent history so a single agent's list can't grow unbounded. */
+const MAX_ENTRIES_PER_AGENT = 500;
 
-export function recordAuditEntry(entry: Omit<AuditRecord, "id" | "timestamp">): AuditRecord {
+const logKey = (agentId: string) => `audit:${agentId}`;
+
+export async function recordAuditEntry(entry: Omit<AuditRecord, "id" | "timestamp">): Promise<AuditRecord> {
   const record: AuditRecord = {
     ...entry,
     id: crypto.randomUUID(),
     timestamp: new Date().toISOString(),
   };
-  auditLog.push(record);
+  const key = logKey(entry.agentId);
+  await kv().lpush(key, record);
+  await kv().ltrim(key, MAX_ENTRIES_PER_AGENT);
   return record;
 }
 
 /** An agent's own audit trail, most recent first. */
-export function getAuditLog(agentId: string): AuditRecord[] {
-  return auditLog
-    .filter((r) => r.agentId === agentId)
-    .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
-}
-
-export function auditLogSize(): number {
-  return auditLog.length;
+export async function getAuditLog(agentId: string): Promise<AuditRecord[]> {
+  return kv().lrange<AuditRecord>(logKey(agentId), 0, -1);
 }
