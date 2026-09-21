@@ -51,6 +51,7 @@ async function getOrCreateWalletMetadata(client: DynamicEvmWalletClient): Promis
   const { walletMetadata } = await client.createWalletAccount({
     thresholdSignatureScheme: ThresholdSignatureScheme.TWO_OF_THREE,
     backUpToDynamic: true,
+    password: requiredEnv("DYNAMIC_WALLET_PASSWORD"),
   });
   await kv().set(WALLET_KEY, walletMetadata);
   return walletMetadata;
@@ -75,6 +76,7 @@ export async function settleTestnetPayment(): Promise<SettlementResult> {
 
   const walletClient = await client.getWalletClient({
     walletMetadata,
+    password: requiredEnv("DYNAMIC_WALLET_PASSWORD"),
     chain: baseSepolia,
     rpcUrl: process.env.BASE_SEPOLIA_RPC_URL || baseSepolia.rpcUrls.default.http[0],
   });
