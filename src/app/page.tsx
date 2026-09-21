@@ -570,6 +570,15 @@ export default function Home() {
                       <span className="text-purple-500 text-xs mt-0.5 shrink-0">▸</span>
                       <span className="text-slate-400 text-xs leading-relaxed">
                         Co-founder,{" "}
+                        <a href="https://bitbasel.com" target="_blank" rel="noreferrer"
+                           className="text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-2">BitBasel Inc</a>
+                        {" "}— the future of the arts on Web3 infrastructure
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-purple-500 text-xs mt-0.5 shrink-0">▸</span>
+                      <span className="text-slate-400 text-xs leading-relaxed">
+                        Co-founder,{" "}
                         <a href="https://linktr.ee/miamidadedao" target="_blank" rel="noreferrer"
                            className="text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-2">MiamiDadeDAO</a>
                         {" "}— civic digital credentials and community identity in South Florida; the groundwork behind Vero Protocol&apos;s zero-knowledge approach to agentic banking
