@@ -5,9 +5,9 @@ import { useEffect, useRef, useState } from "react";
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 const STARTERS = [
-  "How do I fork and deploy Vero?",
-  "How does Vero handle FATF R.16?",
+  "How does Vero handle FATF R.16 compliance?",
   "Why can't traditional KYC work for AI agents?",
+  "How do I fork and deploy Vero?",
 ];
 
 const MAX_INPUT = 2000;
@@ -98,7 +98,7 @@ export default function VeraChat() {
             {messages.length === 0 && (
               <div className="space-y-2">
                 <p className="text-sm text-slate-400 leading-relaxed mb-3">
-                  Hi, I&apos;m Vera. Ask me about deploying Vero, FATF R.16, or why ZK proofs beat traditional KYC for agents.
+                  Hi, I&apos;m Vera. Ask me about FATF R.16 compliance, why zero-knowledge proofs beat traditional KYC for AI agents, or how to deploy Vero yourself.
                 </p>
                 {STARTERS.map((s) => (
                   <button

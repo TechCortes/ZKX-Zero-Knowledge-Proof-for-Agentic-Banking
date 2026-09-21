@@ -49,7 +49,7 @@ export default function RegisterPage() {
           <div className="grid grid-cols-3 gap-3">
             {[
               { label: "0 bytes PII",    sub: "nothing transmitted"    },
-              { label: "Local compute",  sub: "Poseidon runs in-browser"},
+              { label: "Local compute",  sub: "runs entirely in your browser"},
               { label: "Shown once",     sub: "store your ows_key_"    },
             ].map((s) => (
               <div key={s.label} className="bg-white/[0.02] border border-white/[0.04] rounded-xl px-3 py-3 text-center">

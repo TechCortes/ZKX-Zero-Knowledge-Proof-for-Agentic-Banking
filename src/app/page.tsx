@@ -6,32 +6,32 @@ const zkxPrinciples = [
   {
     num: "01",
     title: "Proof-first",
-    body: "Agents never reveal identity. They prove facts about it. A Groth16 proof certifies credential validity without transmitting any underlying data — to anyone.",
+    body: "Agents don't reveal who they are — they prove what's true about them. A cryptographic proof confirms a credential is valid without transmitting any of the underlying data, to you or anyone else.",
   },
   {
     num: "02",
-    title: "No PII calls",
-    body: "No HTTP forms. No document uploads. No third-party data brokers. No retention database. If there is no PII, there is nothing to breach.",
+    title: "No PII to protect",
+    body: "No forms, no document uploads, no third-party data brokers, no database of personal records sitting on a server. If you never collect the data, there's nothing for a breach to expose.",
   },
   {
     num: "03",
     title: "Self-sovereign compliance",
-    body: "Your identity commitment lives in your wallet, not in a KYC vendor's silo. The circuit runs locally. The proof is yours.",
+    body: "The customer's identity stays in their own wallet, not in a KYC vendor's database. Verification runs on their device, and the resulting proof belongs to them — not to a third party you now have to trust and audit.",
   },
   {
     num: "04",
-    title: "Policy composable",
-    body: "Integrates natively with the Open Wallet Standard policy engine via the vero:kyc feature extension. Same wallet, same security model, compliance included.",
+    title: "Fits your existing stack",
+    body: "Integrates natively with the Open Wallet Standard (OWS) policy engine through a compliance extension called vero:kyc. Same wallet infrastructure, same security model — compliance comes with it, not bolted on after.",
   },
   {
     num: "05",
     title: "Zero-trust identity",
-    body: "Verifiers trust the math, not the data. The Poseidon commitment is the only anchor. Private inputs never cross the verification boundary — ever.",
+    body: "Your systems trust the math, not a data file. A one-way cryptographic fingerprint is the only thing that ever reaches your verifier — the private details behind it never leave the customer's device.",
   },
   {
     num: "06",
     title: "FATF-compatible",
-    body: "Designed around global AML thresholds, not despite them. The $1,000 daily limit follows FATF Recommendation 16. Compliance is the product, not a checkbox.",
+    body: "Built around the AML thresholds regulators already use, not around them. The $1,000 daily limit follows FATF Recommendation 16 — the same travel-rule standard banks report against today.",
   },
 ];
 
@@ -39,28 +39,28 @@ const steps = [
   {
     step: "01",
     title: "Agent submits payment",
-    description: "An autonomous agent calls POST /api/v1/payment with amount, recipient, and its OWS-issued bearer token. No identity data sent at entry.",
+    description: "An autonomous agent initiates a payment using its wallet's secure token. No identity information is sent at this stage — just the transaction request itself.",
     tag: "API call",
     color: "blue",
   },
   {
     step: "02",
     title: "Policy evaluation",
-    description: "The Vero Protocol compliance engine evaluates cumulative daily spend against the configured FATF threshold — sub-10ms, no network calls, no external APIs.",
+    description: "Vero checks the agent's cumulative spend for the day against your compliance threshold — instantly, with no network call and no third-party lookup.",
     tag: "< 10ms",
     color: "slate",
   },
   {
     step: "03",
-    title: "ZK proof generated locally",
-    description: "Above the threshold, the agent runs the kyc_credential circom circuit on-device. Private inputs never leave the execution environment. Zero bytes of PII transmitted.",
+    title: "Proof generated on-device",
+    description: "If the payment crosses the threshold, the agent generates a cryptographic proof of identity locally, on its own device. The underlying personal data never leaves that device — zero bytes of PII are transmitted.",
     tag: "Groth16",
     color: "purple",
   },
   {
     step: "04",
-    title: "Settlement — identity not required",
-    description: "The verifier confirms proof validity without learning identity. Payment settles. Compliance is logged cryptographically. No PII retained anywhere in the stack.",
+    title: "Settlement — no identity required",
+    description: "Your system checks that the proof is valid without ever learning who the customer is. The payment settles, compliance is logged cryptographically, and no personal data is stored anywhere in the stack.",
     tag: "Settled",
     color: "green",
   },
@@ -164,7 +164,7 @@ const sponsors: {
     name: "Dynamic",
     initial: "D",
     role: "Agent wallets",
-    body: "Planned: a Dynamic server wallet that signs the payment only after Vero's compliance gate approves it. No proof, no signature above the threshold. Not yet integrated.",
+    body: "Planned: a Dynamic-powered wallet that signs a payment only after Vero's compliance check approves it. No valid proof, no signature, above the reporting threshold. Not yet integrated.",
     status: "planned",
     card: "border-blue-500/25 bg-blue-500/[0.05] hover:border-blue-500/45",
     mark: "bg-blue-500/20 text-blue-300 border border-blue-500/30",
@@ -174,7 +174,7 @@ const sponsors: {
     name: "x402 + Base",
     initial: "x",
     role: "Micropayments · target rail",
-    body: "Target payment rail: HTTP 402 micropayments in USDC on Base. Vero's check is rail-agnostic and sits in front of any of them. Not yet integrated.",
+    body: "Target payment rail: instant, low-cost USDC micropayments on Base using the x402 standard. Vero's compliance check works in front of this rail, or any other. Not yet integrated.",
     status: "planned",
     card: "border-indigo-500/25 bg-indigo-500/[0.05] hover:border-indigo-500/45",
     mark: "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30",
@@ -184,7 +184,7 @@ const sponsors: {
     name: "Filecoin",
     initial: "F",
     role: "Audit trail",
-    body: "Planned: pin proof receipts to IPFS for an immutable, PII-free trail. Today the audit log is an append-only, in-memory reference implementation.",
+    body: "Planned: store proof receipts on decentralized storage for a tamper-proof, PII-free audit trail your regulators can independently verify. Today the audit log is a working reference implementation, not yet decentralized.",
     status: "planned",
     card: "border-cyan-500/25 bg-cyan-500/[0.05] hover:border-cyan-500/45",
     mark: "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30",
@@ -194,7 +194,7 @@ const sponsors: {
     name: "Anchorage Digital",
     initial: "A",
     role: "Institutional settlement",
-    body: "Planned: an institutional settlement path for regulated custody. Not built.",
+    body: "Planned: a settlement path through regulated, bank-grade custody. Not built yet.",
     status: "planned",
     card: "border-emerald-500/25 bg-emerald-500/[0.05] hover:border-emerald-500/45",
     mark: "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30",
@@ -206,11 +206,11 @@ const stackLayers: {
   layer: string; name: string; detail: string; status: Status;
   accent: string; bg: string; here: boolean;
 }[] = [
-  { layer: "Layer 1", name: "Dynamic",       detail: "Agent wallets and signing — planned",                            status: "planned",  accent: "border-blue-500/25 text-blue-300",       bg: "bg-blue-500/[0.06]",    here: false },
-  { layer: "Layer 2", name: "x402 on Base",  detail: "HTTP micropayments in USDC — target rail",                        status: "planned",  accent: "border-indigo-500/25 text-indigo-300",   bg: "bg-indigo-500/[0.06]",  here: false },
-  { layer: "Layer 3", name: "Vero Protocol", detail: "ZK compliance proof, FATF R.16, Groth16 circuit",                 status: "live",     accent: "border-purple-500/50 text-purple-300",   bg: "bg-purple-500/[0.12]",  here: true  },
-  { layer: "Layer 4", name: "Filecoin",      detail: "Proof receipts pinned to IPFS for an immutable audit trail",      status: "planned",  accent: "border-cyan-500/25 text-cyan-300",       bg: "bg-cyan-500/[0.06]",    here: false },
-  { layer: "Layer 5", name: "Anchorage",     detail: "Institutional settlement and regulated custody",                  status: "planned",  accent: "border-emerald-500/25 text-emerald-300", bg: "bg-emerald-500/[0.06]", here: false },
+  { layer: "Layer 1", name: "Dynamic",       detail: "Agent wallets and payment signing — planned",                     status: "planned",  accent: "border-blue-500/25 text-blue-300",       bg: "bg-blue-500/[0.06]",    here: false },
+  { layer: "Layer 2", name: "x402 on Base",  detail: "Low-cost USDC micropayments — target rail",                       status: "planned",  accent: "border-indigo-500/25 text-indigo-300",   bg: "bg-indigo-500/[0.06]",  here: false },
+  { layer: "Layer 3", name: "Vero Protocol", detail: "Compliance proof — FATF Rec. 16, live today",                     status: "live",     accent: "border-purple-500/50 text-purple-300",   bg: "bg-purple-500/[0.12]",  here: true  },
+  { layer: "Layer 4", name: "Filecoin",      detail: "Tamper-proof, PII-free audit trail — planned",                    status: "planned",  accent: "border-cyan-500/25 text-cyan-300",       bg: "bg-cyan-500/[0.06]",    here: false },
+  { layer: "Layer 5", name: "Anchorage",     detail: "Regulated institutional custody and settlement — planned",        status: "planned",  accent: "border-emerald-500/25 text-emerald-300", bg: "bg-emerald-500/[0.06]", here: false },
 ];
 
 export default function Home() {
@@ -289,14 +289,14 @@ export default function Home() {
               </h1>
 
               <p className="text-lg md:text-xl text-slate-400 max-w-xl mb-3 leading-relaxed font-light mx-auto lg:mx-0">
-                OWS gives every agent a wallet.{" "}
-                <span className="text-slate-300 font-normal">Vero Protocol gives every wallet compliance — without disclosing a single byte of identity data.</span>
+                AI agents are starting to make payments on their own.{" "}
+                <span className="text-slate-300 font-normal">Vero Protocol proves an agent is compliant — verified age, verified credential — without your systems ever touching the personal data behind it.</span>
               </p>
 
               <p className="text-sm text-slate-600 max-w-lg mb-8 leading-relaxed mx-auto lg:mx-0">
-                Agents authenticate with scoped API tokens. Verifiers receive cryptographic proofs.
-                Private inputs never cross the boundary — to anyone, ever. The full protocol — circuit,
-                verifier, and wallet integration — is open source. Fork it and ship your own.
+                No forms. No document uploads. No personal data stored on your servers or ours — every
+                check is a cryptographic proof, not a data transfer. The full protocol — proof circuit,
+                verifier, and wallet integration — is open source, so your security team can review it line by line.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3 mb-8">
@@ -329,7 +329,7 @@ export default function Home() {
 
               <div className="hidden lg:flex items-center gap-2 text-xs text-slate-600">
                 <span className="w-1 h-1 rounded-full bg-purple-500"/>
-                Guided by <span className="text-purple-400 font-medium ml-1">Vera</span> — KYA facilitator
+                Guided by <span className="text-purple-400 font-medium ml-1">Vera</span> — your Know-Your-Agent (KYA) facilitator
               </div>
             </div>
 
@@ -342,10 +342,10 @@ export default function Home() {
           {/* Stats bar */}
           <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.04] rounded-2xl overflow-hidden border border-white/[0.06]">
             {[
-              { value: "0 bytes",    label: "PII transmitted"   },
-              { value: "< 10ms",     label: "Anonymous approval" },
-              { value: "Groth16",    label: "ZK protocol"        },
-              { value: "OWS native", label: "Wallet standard"    },
+              { value: "0 bytes",    label: "Personal data ever transmitted" },
+              { value: "< 10ms",     label: "Time to approve a compliant payment" },
+              { value: "Groth16",    label: "Cryptographic proof system"     },
+              { value: "OWS native", label: "Built on an open wallet standard" },
             ].map((s) => (
               <div key={s.label} className="bg-[#04040a] px-6 py-5 text-center">
                 <p className="text-xl font-bold text-white mb-1 font-mono tracking-tight">{s.value}</p>
@@ -363,7 +363,7 @@ export default function Home() {
             <p className="text-xs font-semibold text-blue-400 uppercase tracking-[0.2em] mb-3">Ecosystem</p>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">Where Vero fits in the agent payment stack.</h2>
             <p className="text-sm text-slate-500 max-w-xl mx-auto leading-relaxed">
-              Vero&apos;s ZK compliance layer is built and running. The integrations below are labeled by their real status.
+              Vero&apos;s compliance layer is live today. The partner integrations below are labeled honestly — live, in progress, or planned — so you always know what&apos;s real.
             </p>
           </div>
 
@@ -391,8 +391,8 @@ export default function Home() {
               OWS
             </span>
             <p className="text-xs text-slate-500 leading-relaxed">
-              <span className="text-slate-300 font-semibold">Open Wallet Standard</span> · Key management. Vero extends OWS at the Policy Engine layer via the{" "}
-              <span className="font-mono text-purple-400">vero:kyc</span> feature.
+              <span className="text-slate-300 font-semibold">Open Wallet Standard</span> · Handles wallet key management. Vero adds a compliance layer on top of it, through a feature called{" "}
+              <span className="font-mono text-purple-400">vero:kyc</span>.
             </p>
           </div>
         </div>
@@ -404,13 +404,14 @@ export default function Home() {
           <div className="mb-12">
             <p className="text-xs font-semibold text-blue-400 uppercase tracking-[0.2em] mb-3">The Problem</p>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-5 max-w-2xl">
-              OWS solved key chaos.<br/>
+              OWS solved wallet key chaos.<br/>
               <span className="text-slate-500">The compliance gap remained.</span>
             </h2>
             <p className="text-slate-500 max-w-2xl text-sm leading-relaxed">
-              The Open Wallet Standard unified how agents manage keys: one vault, one interface, AES-256-GCM encryption.
-              But every agent wallet that touches financial rails still triggers a compliance question — and traditional KYC
-              requires disclosing the very identity that self-custody wallets exist to protect.
+              The Open Wallet Standard solved how AI agents manage cryptographic keys: one secure vault, one interface,
+              bank-grade encryption. But any agent wallet that touches the financial system still raises a compliance
+              question — and traditional KYC solves it the wrong way, by forcing disclosure of the very identity
+              a self-custody wallet exists to protect.
             </p>
           </div>
 
@@ -441,10 +442,10 @@ export default function Home() {
               <div className="space-y-3 font-mono text-xs">
                 {[
                   ["Collects",  "nothing"],
-                  ["Stores",    "Poseidon commitment only"],
-                  ["Requires",  "Groth16 proof — generated locally"],
+                  ["Stores",    "a one-way cryptographic fingerprint only"],
+                  ["Requires",  "a proof — generated on the customer's device"],
                   ["Exposes",   "no data — math is the anchor"],
-                  ["Extends",   "OWS vero:kyc natively"],
+                  ["Extends",   "works natively with OWS"],
                 ].map(([label, val]) => (
                   <div key={label} className="flex gap-3">
                     <span className="text-purple-500/50 shrink-0 w-16">{label}</span>
@@ -489,7 +490,7 @@ export default function Home() {
           <p className="text-slate-700 text-xs mt-3 text-center">
             x402 ecosystem totals as of April 2026, per Coinbase — since formalized as the Linux Foundation&apos;s
             x402 Foundation with Visa, Mastercard, Stripe, Google, and AWS as members. The gap isn&apos;t theoretical:
-            agent-to-agent payments already move real volume with no KYA standard and no AML framework attached.
+            agent-to-agent payments already move real volume with no Know-Your-Agent (KYA) standard and no AML framework attached.
           </p>
         </div>
       </section>
@@ -503,7 +504,7 @@ export default function Home() {
               Six principles that make Vero Protocol different.
             </h2>
             <p className="text-slate-500 text-sm max-w-xl leading-relaxed">
-              Modeled after the Open Wallet Standard&apos;s ethos — no new primitives, existing standards implemented in a compliance-native way.
+              Built in the same spirit as the Open Wallet Standard: no new, unproven primitives — existing, audited standards, applied to compliance.
             </p>
           </div>
 
@@ -682,8 +683,8 @@ export default function Home() {
               The Compliant Agent Payment Stack
             </h2>
             <p className="text-slate-500 max-w-xl mx-auto text-sm leading-relaxed">
-              From autonomous wallet to regulated settlement — Vero Protocol is the compliance layer in the middle.
-              Layer 3 is built and running; the layers around it are integration targets, marked by status.
+              From an autonomous wallet to regulated settlement, Vero Protocol is the compliance layer in between.
+              The middle layer is live today; the layers around it are integration targets, each labeled by its real status.
             </p>
           </div>
 
@@ -747,10 +748,10 @@ export default function Home() {
             <p className="text-xs font-semibold text-blue-400 uppercase tracking-[0.2em] mb-3">OWS Ecosystem</p>
             <h2 className="text-2xl font-bold text-white mb-2">One interface. Ten chains. Every agent framework.</h2>
             <p className="text-slate-600 text-sm max-w-xl leading-relaxed">
-              OWS gives every agent local key custody, multi-chain signing, and a pre-signing policy engine out of the box —
-              exposed as a CLI, Node.js/Python SDK, <span className="text-slate-400">and an MCP server</span>. Any MCP-speaking
-              framework (LangChain, AutoGPT, custom tool-callers) attaches an OWS wallet as a native tool, no custom
-              wallet code required. Vero Protocol adds the compliance layer to the same stack — no new primitives, no new infrastructure.
+              OWS gives every agent secure key storage, multi-chain signing, and a policy engine that checks rules before a
+              transaction is signed — available as a CLI, an SDK, <span className="text-slate-400">and a plug-in for AI agent frameworks</span>.
+              Any agent framework (LangChain, AutoGPT, custom tool-callers) can attach an OWS wallet as a tool, with no custom
+              wallet code required. Vero Protocol adds the compliance layer to that same stack — no new infrastructure to run, no new formats to learn.
             </p>
           </div>
 
@@ -808,7 +809,7 @@ export default function Home() {
                 </div>
                 <p className="text-slate-600 text-xs leading-relaxed font-mono">ows pay request</p>
                 <p className="text-slate-600 text-xs leading-relaxed mt-1">
-                  Agents make payments directly to API endpoints — no exchange, no manual steps. OWS signs and broadcasts atomically.
+                  Agents pay for API access directly and automatically — no exchange account, no manual approval step.
                 </p>
               </div>
 
@@ -819,8 +820,8 @@ export default function Home() {
                   <p className="text-slate-300 text-xs font-semibold">+ Agent Payments Protocol · MPP</p>
                 </div>
                 <p className="text-slate-600 text-xs leading-relaxed">
-                  OWS isn&apos;t locked to one rail — it also speaks Google&apos;s Agent Payments Protocol and Stripe/Tempo&apos;s
-                  Machine Payments Protocol for streaming micropayments. Vero Protocol&apos;s policy check sits in front of all three.
+                  OWS isn&apos;t locked to one payment rail — it also supports Google&apos;s Agent Payments Protocol and
+                  Stripe/Tempo&apos;s Machine Payments Protocol for streaming micropayments. Vero Protocol&apos;s compliance check works in front of all three.
                 </p>
               </div>
             </div>
@@ -852,8 +853,8 @@ export default function Home() {
               Risk-tiered by design.
             </h2>
             <p className="text-slate-500 max-w-lg mx-auto text-sm leading-relaxed">
-              Two tiers. One protocol. No PII — ever. Agents transact freely below the FATF threshold.
-              Above it, they prove identity without revealing it.
+              Two tiers, one protocol, no personal data — ever. Below the FATF threshold, agents transact freely.
+              Above it, they prove who they are without revealing who they are.
             </p>
           </div>
 
@@ -933,8 +934,8 @@ export default function Home() {
               Every payment, one of two paths.
             </h2>
             <p className="text-slate-500 max-w-xl mx-auto text-sm leading-relaxed">
-              Vero Protocol sits at the compliance boundary of the OWS access layer. The decision is made before settlement —
-              milliseconds for anonymous payments, ~2.5 seconds when the FATF threshold requires a proof.
+              Vero sits at the compliance checkpoint before a payment settles. Under the threshold, the decision
+              takes milliseconds. Above it, generating and checking a proof takes about 2.5 seconds — still faster than a manual compliance review.
             </p>
           </div>
 
@@ -979,7 +980,7 @@ export default function Home() {
               <p className="text-xs font-semibold text-blue-400 uppercase tracking-[0.2em] mb-3">Live Demo</p>
               <h2 className="text-3xl md:text-4xl font-bold text-white">Compliance engine in action.</h2>
               <p className="text-slate-500 text-sm mt-2 max-w-md leading-relaxed">
-                Send transfers as an autonomous agent. Cross the $1,000 daily threshold to trigger the Groth16 proof flow. No PII collected at any point.
+                Send transfers as an autonomous agent and watch what happens when you cross the $1,000 daily threshold — the proof flow triggers automatically. No personal data is collected at any point.
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -1003,7 +1004,8 @@ export default function Home() {
               Cryptographic proof, not disclosure.
             </h2>
             <p className="text-slate-500 max-w-lg mx-auto text-sm leading-relaxed">
-              The <span className="font-mono text-slate-400">kyc_credential</span> circuit proves two statements simultaneously — credential validity and age eligibility — without revealing the underlying data to anyone, anywhere.
+              A single proof establishes two facts at once — that the credential is valid, and that the holder meets the age requirement — without revealing the underlying data to anyone, anywhere.
+              (Under the hood: the <span className="font-mono text-slate-400">kyc_credential</span> circuit.)
             </p>
           </div>
 
@@ -1087,8 +1089,8 @@ export default function Home() {
             <p className="text-xs font-semibold text-blue-400 uppercase tracking-[0.2em] mb-2">Protocol Stack</p>
             <h2 className="text-2xl font-bold text-white mb-2">No new primitives.</h2>
             <p className="text-slate-600 text-sm max-w-xl leading-relaxed">
-              Vero Protocol implements existing BIP, CAIP, and FATF standards in a ZK-native, agent-friendly way.
-              Every component has a published spec — nothing proprietary, nothing invented here.
+              Vero doesn&apos;t invent new cryptographic or compliance standards — it applies existing, published
+              ones (BIP, CAIP, FATF) in a way that works natively for AI agents. Every component has a public spec your security team can review.
             </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -1117,9 +1119,9 @@ export default function Home() {
             <span className="text-purple-400">Every standard deserves compliance.</span>
           </blockquote>
           <p className="text-slate-600 text-sm max-w-xl mx-auto leading-relaxed mb-10">
-            The Open Wallet Standard unified key management. Vero Protocol closes the compliance gap —
+            The Open Wallet Standard unified wallet key management. Vero Protocol closes the compliance gap —
             adding identity verification to the stack without breaking the privacy-first principles
-            that make agent wallets worth building.
+            that make agent wallets worth trusting.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <a
@@ -1149,9 +1151,9 @@ export default function Home() {
               This isn&apos;t a mockup. Fork it.
             </h2>
             <p className="text-slate-500 max-w-2xl mx-auto text-sm leading-relaxed">
-              Everything on this page is wired end to end in the repo — a real Groth16 circuit with a completed
-              trusted setup, a live agent onboarding API, OWS wallet-standard integration, and the registration
-              UI you just saw in the demo. Clone it and you have a working ZK compliance stack on day one.
+              Everything described on this page is real and working in the repository — a completed cryptographic
+              proof circuit, a live agent onboarding API, OWS wallet-standard integration, and the registration
+              flow you just tried in the demo. Clone it and you have a working compliance stack on day one.
             </p>
           </div>
 
