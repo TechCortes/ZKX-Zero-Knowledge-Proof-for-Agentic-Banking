@@ -6,7 +6,7 @@ const zkxPrinciples = [
   {
     num: "01",
     title: "Proof-first",
-    body: "Agents don't reveal who they are — they prove what's true about them. A cryptographic proof confirms a credential is valid without transmitting any of the underlying data, to you or anyone else.",
+    body: "Agents don't reveal who they are — they prove what's true about them. A zero-knowledge proof confirms a credential is valid without transmitting any of the underlying data, to you or anyone else.",
   },
   {
     num: "02",
@@ -53,7 +53,7 @@ const steps = [
   {
     step: "03",
     title: "Proof generated on-device",
-    description: "If the payment crosses the threshold, the agent generates a cryptographic proof of identity locally, on its own device. The underlying personal data never leaves that device — zero bytes of PII are transmitted.",
+    description: "If the payment crosses the threshold, the agent generates a zero-knowledge proof of identity locally, on its own device. The underlying personal data never leaves that device — zero bytes of PII are transmitted.",
     tag: "Groth16",
     color: "purple",
   },
@@ -281,21 +281,21 @@ export default function Home() {
               </div>
 
               <h1 className="text-5xl md:text-[5rem] font-black tracking-tighter leading-[0.92] mb-6">
-                <span className="text-white">Zero-Knowledge</span>
+                <span className="text-white">Know Your Agent</span>
                 <br/>
                 <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-purple-300 bg-clip-text text-transparent">
-                  Agent Compliance
+                  (KYA) for Agentic Banking
                 </span>
               </h1>
 
               <p className="text-lg md:text-xl text-slate-400 max-w-xl mb-3 leading-relaxed font-light mx-auto lg:mx-0">
                 AI agents are starting to make payments on their own.{" "}
-                <span className="text-slate-300 font-normal">Vero Protocol proves an agent is compliant — verified age, verified credential — without your systems ever touching the personal data behind it.</span>
+                <span className="text-slate-300 font-normal">Vero Protocol proves an agent is compliant with a zero-knowledge proof — verified age, verified credential — without your systems ever touching the personal data behind it.</span>
               </p>
 
               <p className="text-sm text-slate-600 max-w-lg mb-8 leading-relaxed mx-auto lg:mx-0">
                 No forms. No document uploads. No personal data stored on your servers or ours — every
-                check is a cryptographic proof, not a data transfer. The full protocol — proof circuit,
+                check is a zero-knowledge proof, not a data transfer. The full protocol — proof circuit,
                 verifier, and wallet integration — is open source, so your security team can review it line by line.
               </p>
 
@@ -904,7 +904,7 @@ export default function Home() {
               <p className="text-sm text-slate-600 mb-6">cumulative per calendar day · FATF Rec. 16</p>
               <div className="space-y-2.5">
                 {[
-                  "Groth16 proof of identity — generated locally",
+                  "Zero-knowledge proof of identity (Groth16) — generated locally",
                   "Zero personal data transmitted — math only",
                   "Verifier learns: credential valid ✓",
                   "Verifier learns: age ≥ 18 ✓",
