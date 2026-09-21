@@ -21,22 +21,8 @@ export function renderOgImage() {
         {/* Mark + eyebrow */}
         <div style={{ display: "flex", alignItems: "center" }}>
           <svg width="76" height="76" viewBox="0 0 32 32" fill="none">
-            <defs>
-              <linearGradient id="g" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#2563EB" />
-                <stop offset="100%" stopColor="#6D28D9" />
-              </linearGradient>
-            </defs>
-            <rect width="32" height="32" rx="6" fill="url(#g)" />
-            <path
-              d="M16 4 L28 16 L16 28 L4 16 Z"
-              stroke="white"
-              strokeWidth="2"
-              strokeOpacity="0.5"
-              fill="white"
-              fillOpacity="0.09"
-            />
-            <path d="M16 10.5 L21.5 16 L16 21.5 L10.5 16 Z" fill="white" fillOpacity="0.93" />
+            <rect width="32" height="32" rx="6" fill="#3730A3" />
+            <path d="M16 7 L25 16 L16 25 L7 16 Z" fill="white" />
           </svg>
           <div
             style={{

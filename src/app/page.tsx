@@ -529,7 +529,8 @@ export default function Home() {
               Built at the intersection of civic identity and agentic finance.
             </h2>
             <p className="text-slate-500 text-sm max-w-2xl leading-relaxed">
-              Vero Protocol originated as a research project on zero-knowledge identity — extending prior work on civic digital credentials to autonomous agents and the Open Wallet Standard.
+              Vero Protocol grew directly out of two prior projects — MiamiDadeDAO and the Miami-Dade Community ID —
+              extending that civic zero-knowledge identity work into autonomous agents, the Open Wallet Standard, and agentic banking.
             </p>
           </div>
 
@@ -545,8 +546,8 @@ export default function Home() {
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-white text-base font-semibold">Jorge Cortes</p>
-                  <p className="text-slate-400 text-xs mt-0.5">Founder, Vero Protocol · Co-founder, MiamiDadeDAO</p>
-                  <p className="text-slate-600 text-xs mt-1 leading-relaxed">+15 years Innovation &amp; Tech Ecosystems · LinkedIn Top Voice Web3 &amp; Industry 4.0</p>
+                  <p className="text-slate-400 text-xs mt-0.5">Founder · Educator · Investor · Top Voice in Web3 &amp; Industry 4.0</p>
+                  <p className="text-slate-600 text-xs mt-1 leading-relaxed">+15 years Innovation &amp; Tech Ecosystems · Founder, Vero Protocol</p>
                   <div className="flex flex-wrap items-center gap-3 mt-3">
                     <a href="https://www.linkedin.com/in/jorgeandrescortes/" target="_blank" rel="noreferrer"
                        className="text-xs text-slate-500 hover:text-slate-300 transition-colors">LinkedIn ↗</a>
@@ -571,7 +572,7 @@ export default function Home() {
                         Co-founder,{" "}
                         <a href="https://linktr.ee/miamidadedao" target="_blank" rel="noreferrer"
                            className="text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-2">MiamiDadeDAO</a>
-                        {" "}— civic digital credentials and community identity in South Florida
+                        {" "}— civic digital credentials and community identity in South Florida; the groundwork behind Vero Protocol&apos;s zero-knowledge approach to agentic banking
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
@@ -609,7 +610,7 @@ export default function Home() {
                       Founded the{" "}
                       <a href="https://miamiid.org/" target="_blank" rel="noreferrer"
                          className="text-blue-400 hover:text-blue-300 transition-colors underline underline-offset-2">Miami-Dade Community ID</a>
-                      {" "}— a zero-knowledge credential system for digital and civic identity in Miami. Vero Protocol extends that work into agentic finance and cross-chain compliance.
+                      {" "}— a zero-knowledge credential system for digital and civic identity in Miami. Vero Protocol is the direct extension of that work: the same zero-knowledge approach, applied to agentic banking.
                     </p>
                   </div>
                   <div>
@@ -1200,7 +1201,7 @@ export default function Home() {
       <footer className="py-10 px-6 border-t border-white/[0.04]">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-700">
           <div className="flex items-center gap-2.5">
-            <LogoIcon size={20} id="zkx-footer"/>
+            <LogoIcon size={20}/>
             <span>Vero Protocol · Zero-Knowledge Agent Compliance</span>
             <span className="text-slate-800">·</span>
             <span>vero:kyc for Open Wallet Standard</span>

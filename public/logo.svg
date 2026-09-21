@@ -1,23 +1,7 @@
 <svg width="240" height="48" viewBox="0 0 240 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
-      <stop offset="0%"   stop-color="#2563EB"/>
-      <stop offset="100%" stop-color="#6D28D9"/>
-    </linearGradient>
-  </defs>
-
-  <!-- Icon: 48×48 — nested diamond scaled ×1.5 from the 32×32 master -->
-  <rect width="48" height="48" rx="9" fill="url(#g)"/>
-
-  <!-- Outer diamond: M24,6 L42,24 L24,42 L6,24 Z (×1.5 of M16,4 L28,16 L16,28 L4,16) -->
-  <path d="M24 6 L42 24 L24 42 L6 24 Z"
-        stroke="white" stroke-width="2.5" stroke-opacity="0.5"
-        fill="white" fill-opacity="0.09"
-        stroke-linejoin="miter"/>
-
-  <!-- Inner diamond: ×1.5 of M16,10.5 L21.5,16 L16,21.5 L10.5,16 -->
-  <path d="M24 15.75 L32.25 24 L24 32.25 L15.75 24 Z"
-        fill="white" fill-opacity="0.93"/>
+  <!-- Icon: 48×48 — flat single diamond, matches the favicon -->
+  <rect width="48" height="48" rx="9" fill="#3730A3"/>
+  <path d="M24 10.5 L37.5 24 L24 37.5 L10.5 24 Z" fill="white"/>
 
   <!-- Vero Protocol logotype -->
   <text
