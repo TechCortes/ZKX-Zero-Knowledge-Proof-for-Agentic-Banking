@@ -280,11 +280,11 @@ export default function Home() {
                 OWS Native · vero:kyc · FATF-Compatible · MIT Licensed
               </div>
 
-              <h1 className="text-5xl md:text-[5rem] font-black tracking-tighter leading-[0.92] mb-6">
-                <span className="text-white">Know Your Agent</span>
+              <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-[1.05] mb-6">
+                <span className="text-white">Know Your Agent KYA</span>
                 <br/>
                 <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-purple-300 bg-clip-text text-transparent">
-                  (KYA) for Agentic Banking
+                  for Agentic Banking
                 </span>
               </h1>
 
