@@ -4,8 +4,35 @@ import { verifyKYCProof } from "@/zkp/verifier";
 import { evaluatePayment, approveWithProof, computePolicyVersionHash } from "@/policy/engine";
 import { recordAuditEntry } from "@/policy/auditLog";
 import { logger } from "@/lib/logger";
+import { settleTestnetPayment, getSettlementWalletAddress } from "@/lib/dynamicWallet";
 
 const ROUTE = "POST /api/v1/verify-proof";
+
+// MPC signing round-trips over the network; give it real headroom.
+export const maxDuration = 60;
+
+type Settlement =
+  | { status: "sent"; txHash: string; explorerUrl: string; fromAddress: string }
+  | { status: "failed"; error: string; fundAddress?: string }
+  | { status: "unconfigured" };
+
+/** The real payment action behind a ZK-approved payment — never fails the approval itself. */
+async function attemptSettlement(): Promise<Settlement> {
+  if (!process.env.DYNAMIC_ENVIRONMENT_ID || !process.env.DYNAMIC_API_TOKEN) {
+    return { status: "unconfigured" };
+  }
+  try {
+    const result = await settleTestnetPayment();
+    return { status: "sent", ...result };
+  } catch (err) {
+    const fundAddress = await getSettlementWalletAddress().catch(() => undefined);
+    return {
+      status: "failed",
+      error: err instanceof Error ? err.message : String(err),
+      fundAddress,
+    };
+  }
+}
 
 export async function POST(req: NextRequest) {
   const auth = await authenticate(req);
@@ -87,11 +114,13 @@ export async function POST(req: NextRequest) {
 
   const approved = await approveWithProof(paymentRequest);
   const txId = `zkx_${Date.now()}`;
+  const settlement = await attemptSettlement();
   logger.info(ROUTE, "payment_approved_zk", {
     agentId: agent.id,
     amount,
     chainId: chainId ?? null,
     commitment: result.commitment,
+    settlementStatus: settlement.status,
   });
   await recordAuditEntry({
     agentId: agent.id,
@@ -110,6 +139,7 @@ export async function POST(req: NextRequest) {
     commitment: result.commitment,
     piiTransmitted: 0,
     decision: approved,
+    settlement,
     message: "Identity proven via ZK proof. No personal data disclosed.",
   });
 }

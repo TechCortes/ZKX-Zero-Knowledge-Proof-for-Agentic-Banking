@@ -15,6 +15,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",
+    "@dynamic-labs-wallet/node": "^1.1.15",
+    "@dynamic-labs-wallet/node-evm": "^1.1.15",
     "@upstash/redis": "^1.39.0",
     "@wallet-standard/core": "^1.0.3",
     "@wallet-standard/features": "^1.0.3",
@@ -24,7 +26,8 @@
     "next": "^16.2.2",
     "react": "^18",
     "react-dom": "^18",
-    "snarkjs": "^0.7.4"
+    "snarkjs": "^0.7.4",
+    "viem": "^2.56.8"
   },
   "devDependencies": {
     "@types/node": "^20",
