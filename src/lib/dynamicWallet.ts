@@ -23,6 +23,13 @@ import { kv } from "./kv";
 const WALLET_KEY = "dynamic:settlement-wallet";
 const SETTLEMENT_VALUE_WEI = parseEther("0.000001");
 
+// Every approved proof would otherwise make the server sign and broadcast a
+// transaction, and agent registration is open — so cap settlements per agent
+// and globally per UTC day. Redis-backed so the cap holds across instances.
+const MAX_SETTLEMENTS_PER_AGENT_PER_DAY = 1;
+const MAX_SETTLEMENTS_PER_DAY = 50;
+const BUDGET_TTL_SECONDS = 2 * 24 * 60 * 60;
+
 function requiredEnv(name: string): string {
   const value = process.env[name];
   if (!value) throw new Error(`${name} is not set`);
@@ -40,6 +47,11 @@ async function getAuthenticatedClient(): Promise<DynamicEvmWalletClient> {
       await client.authenticateApiToken(requiredEnv("DYNAMIC_API_TOKEN"));
       return client;
     })();
+    // Don't cache a failed login — otherwise one transient error breaks
+    // settlement on this instance until it's recycled.
+    clientPromise.catch(() => {
+      clientPromise = null;
+    });
   }
   return clientPromise;
 }
@@ -53,8 +65,31 @@ async function getOrCreateWalletMetadata(client: DynamicEvmWalletClient): Promis
     backUpToDynamic: true,
     password: requiredEnv("DYNAMIC_WALLET_PASSWORD"),
   });
-  await kv().set(WALLET_KEY, walletMetadata);
-  return walletMetadata;
+  // Two cold requests can both get here. Only the first write wins; the loser
+  // adopts the winner's wallet so there is only ever one (funded) wallet.
+  const stored = await kv().set(WALLET_KEY, walletMetadata, { nx: true });
+  if (stored) return walletMetadata;
+  const winner = await kv().get<WalletMetadata>(WALLET_KEY);
+  if (!winner) throw new Error("Settlement wallet record missing after create race.");
+  return winner;
+}
+
+/** Address of the settlement wallet if it already exists — never creates one. */
+export async function getExistingSettlementWalletAddress(): Promise<string | undefined> {
+  const cached = await kv().get<WalletMetadata>(WALLET_KEY);
+  return cached?.accountAddress;
+}
+
+/**
+ * Reserve one settlement from today's per-agent and global budgets.
+ * Returns false (and reserves nothing usable) when either is exhausted.
+ */
+export async function reserveSettlementBudget(agentId: string, now: Date = new Date()): Promise<boolean> {
+  const day = now.toISOString().slice(0, 10);
+  const agentCount = await kv().incrby(`dynamic:settlements:${day}:${agentId}`, 1, { ex: BUDGET_TTL_SECONDS });
+  if (agentCount > MAX_SETTLEMENTS_PER_AGENT_PER_DAY) return false;
+  const globalCount = await kv().incrby(`dynamic:settlements:${day}`, 1, { ex: BUDGET_TTL_SECONDS });
+  return globalCount <= MAX_SETTLEMENTS_PER_DAY;
 }
 
 /** Address of the settlement wallet, creating it on first call. */

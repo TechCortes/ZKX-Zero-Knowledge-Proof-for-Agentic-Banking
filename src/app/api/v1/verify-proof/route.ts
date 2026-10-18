@@ -4,33 +4,55 @@ import { verifyKYCProof } from "@/zkp/verifier";
 import { evaluatePayment, approveWithProof, computePolicyVersionHash } from "@/policy/engine";
 import { recordAuditEntry } from "@/policy/auditLog";
 import { logger } from "@/lib/logger";
-import { settleTestnetPayment, getSettlementWalletAddress } from "@/lib/dynamicWallet";
+import {
+  settleTestnetPayment,
+  getExistingSettlementWalletAddress,
+  reserveSettlementBudget,
+} from "@/lib/dynamicWallet";
 
 const ROUTE = "POST /api/v1/verify-proof";
 
 // MPC signing round-trips over the network; give it real headroom.
 export const maxDuration = 60;
 
+// Settlement gets a hard deadline well inside maxDuration, so a slow MPC
+// round-trip or RPC can never time out the function after approval.
+const SETTLEMENT_TIMEOUT_MS = 25_000;
+
 type Settlement =
   | { status: "sent"; txHash: string; explorerUrl: string; fromAddress: string }
   | { status: "failed"; error: string; fundAddress?: string }
+  | { status: "skipped"; reason: string }
   | { status: "unconfigured" };
 
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`Settlement timed out after ${ms}ms`)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 /** The real payment action behind a ZK-approved payment — never fails the approval itself. */
-async function attemptSettlement(): Promise<Settlement> {
+async function attemptSettlement(agentId: string): Promise<Settlement> {
   if (!process.env.DYNAMIC_ENVIRONMENT_ID || !process.env.DYNAMIC_API_TOKEN) {
     return { status: "unconfigured" };
   }
   try {
-    const result = await settleTestnetPayment();
+    if (!(await reserveSettlementBudget(agentId))) {
+      return { status: "skipped", reason: "Daily settlement limit reached." };
+    }
+    const result = await withTimeout(settleTestnetPayment(), SETTLEMENT_TIMEOUT_MS);
     return { status: "sent", ...result };
   } catch (err) {
-    const fundAddress = await getSettlementWalletAddress().catch(() => undefined);
-    return {
-      status: "failed",
+    // Full error stays server-side: SDK/RPC errors can include the RPC URL,
+    // which for hosted providers embeds an API key.
+    logger.error(ROUTE, "settlement_failed", {
+      agentId,
       error: err instanceof Error ? err.message : String(err),
-      fundAddress,
-    };
+    });
+    const fundAddress = await getExistingSettlementWalletAddress().catch(() => undefined);
+    return { status: "failed", error: "Settlement could not be completed.", fundAddress };
   }
 }
 
@@ -114,14 +136,8 @@ export async function POST(req: NextRequest) {
 
   const approved = await approveWithProof(paymentRequest);
   const txId = `zkx_${Date.now()}`;
-  const settlement = await attemptSettlement();
-  logger.info(ROUTE, "payment_approved_zk", {
-    agentId: agent.id,
-    amount,
-    chainId: chainId ?? null,
-    commitment: result.commitment,
-    settlementStatus: settlement.status,
-  });
+  // Audit the approval before any settlement work, so the compliance record
+  // exists even if settlement is slow or the function is cut short.
   await recordAuditEntry({
     agentId: agent.id,
     commitment: result.commitment,
@@ -130,6 +146,14 @@ export async function POST(req: NextRequest) {
     decision: "approved_proof",
     thresholdMet: true,
     dailyTotal: approved.dailyTotal,
+  });
+  const settlement = await attemptSettlement(agent.id);
+  logger.info(ROUTE, "payment_approved_zk", {
+    agentId: agent.id,
+    amount,
+    chainId: chainId ?? null,
+    commitment: result.commitment,
+    settlementStatus: settlement.status,
   });
 
   return NextResponse.json({
