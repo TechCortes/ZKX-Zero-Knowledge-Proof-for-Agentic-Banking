@@ -76,8 +76,13 @@ The result is accepted only if `Poseidon(idHash, salt)` equals the stored commit
 | 6 | `currentYear` | public input |
 | 7 | `minAge` | public input |
 | 8, 9 | `PK.x`, `PK.y` | public input |
+| 10 | `txNonce` | public input |
 
-`kyc_credential` is unchanged: `[commitment, currentYear, minAge]`.
+`kyc_credential`: `[commitment, currentYear, minAge, txNonce]`.
+
+`txNonce` is the single-use challenge from the 402 response (`src/policy/challenges.ts`). Every
+approved KYC payment therefore has its own proof and its own fresh ciphertext, and the audit
+record stores the nonce next to the ciphertext.
 
 ## Formats
 
@@ -123,8 +128,23 @@ npm run reveal -- demo     # all of the above in memory
 
 ## Known limits
 
-- The ciphertext is tied to a commitment, not to a transaction. A proof can be resubmitted by the
-  same agent for another payment and will carry the same ciphertext. Disclosure still reveals
-  the right person, but binding proofs to a server nonce or `txId` is a natural next step.
 - Rotating the consortium key means a new `VERO_REVEAL_PUBLIC_KEY`. Old ciphertexts stay
   decryptable only by the old consortium.
+
+## Challenge binding (`txNonce`)
+
+`POST /api/v1/payment` answers a KYC-tier payment with a 402 whose `challenge` carries:
+
+```jsonc
+{ "currentYear": 2026, "minAge": 18, "commitment": "…",
+  "txNonce": "…",                  // random field element, single use
+  "expiresInSeconds": 600,
+  "payment": { "amount": 1500, "recipient": "0x…" },   // what the nonce is bound to
+  "reveal": { "publicKey": ["x","y"] } }               // only when reveal is on
+```
+
+`POST /api/v1/verify-proof` reads `txNonce` from the proof's public signals and atomically
+deletes the stored challenge before verifying. It rejects the proof if the nonce is unknown,
+expired, already used, issued to another agent, or if `amount`, `recipient` or `chainId` differ
+from the challenged payment. A rejected attempt still spends the nonce, so the client has to
+request a new challenge.

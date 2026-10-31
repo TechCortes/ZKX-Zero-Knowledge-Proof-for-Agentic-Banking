@@ -52,6 +52,7 @@ Agent Payment Request
 The `kyc_credential` circuit (circom) proves:
 1. The holder knows a preimage `(idHash, salt)` that hashes to a public `commitment` (Poseidon hash)
 2. `currentYear - birthYear >= minAge` (age requirement)
+3. It was made for one specific payment: a single-use `txNonce` the server issues in its 402 challenge, bound to that payment's amount and recipient. A proof can't be replayed or reused for another payment.
 
 Private inputs never leave the browser.
 
