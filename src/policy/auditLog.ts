@@ -33,6 +33,8 @@ export interface AuditRecord {
   /** Whether this decision fell in the ZK-required tier (>= FATF threshold). */
   thresholdMet: boolean;
   dailyTotal: number;
+  /** The server challenge the approving proof was bound to (approved_proof only). */
+  txNonce?: string;
   /**
    * Threshold reveal (ROADMAP phase 2): the identity encrypted to the consortium key,
    * present on approved_proof when reveal is configured. Opaque unless k of n

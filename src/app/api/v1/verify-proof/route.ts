@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticate, isAuthFailure, unauthorized } from "@/lib/auth";
-import { verifyKYCProof, commitmentFromSignals } from "@/zkp/verifier";
+import { verifyKYCProof, commitmentFromSignals, txNonceFromSignals } from "@/zkp/verifier";
+import { consumeChallenge } from "@/policy/challenges";
 import { getRevealPublicKey } from "@/zkp/revealConfig";
 import { evaluatePayment, approveWithProof, computePolicyVersionHash } from "@/policy/engine";
 import { recordAuditEntry } from "@/policy/auditLog";
@@ -111,6 +112,30 @@ export async function POST(req: NextRequest) {
   const decision = await evaluatePayment(paymentRequest, agent.policies);
   const policyVersionHash = computePolicyVersionHash(agent.policies);
 
+  // Bind proof to the one payment it was challenged for — prevents replay and reuse.
+  // Consumed before verification so a failed attempt can't be retried on the same nonce.
+  const txNonce = txNonceFromSignals(publicSignals as string[], revealPublicKey);
+  const challenge = await consumeChallenge(agent.id, txNonce, {
+    amount,
+    recipient,
+    chainId: paymentRequest.chainId,
+  });
+  if (!challenge.ok) {
+    logger.warn(ROUTE, "challenge_rejected", { agentId: agent.id, error: challenge.error });
+    await recordAuditEntry({
+      agentId: agent.id,
+      commitment: proofCommitment,
+      policyVersionHash,
+      decision: "proof_rejected",
+      thresholdMet: true,
+      dailyTotal: decision.dailyTotal,
+    });
+    return NextResponse.json(
+      { status: "rejected", error: challenge.error, errorCode: "POLICY_DENIED" },
+      { status: 403 }
+    );
+  }
+
   const result = await verifyKYCProof(proof as object, publicSignals as string[], { revealPublicKey });
 
   if (!result.valid) {
@@ -149,6 +174,7 @@ export async function POST(req: NextRequest) {
     decision: "approved_proof",
     thresholdMet: true,
     dailyTotal: approved.dailyTotal,
+    txNonce: result.txNonce,
     ...(result.revealCiphertext ? { revealCiphertext: result.revealCiphertext } : {}),
   });
   const settlement = await attemptSettlement(agent.id);
