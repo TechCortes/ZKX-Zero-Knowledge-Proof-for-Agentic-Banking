@@ -11,8 +11,12 @@ circuits/*.ptau
 circuits/*.zkey
 
 # Public ZK files (wasm, zkey, verification key) are committed so the
-# browser can load them statically — this circuit's proving key is small
-# enough (~260KB) that there's no need to exclude it.
+# browser can load them statically. kyc_credential_final.zkey is ~260KB and
+# kyc_reveal_final.zkey ~4.9MB — both small enough to commit.
+
+# Threshold-reveal key shares from `npm run reveal -- keygen` (secret — never commit)
+consortium/
+share-*.json
 
 # Env
 .env

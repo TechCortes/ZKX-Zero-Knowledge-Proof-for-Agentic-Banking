@@ -17,7 +17,14 @@ npm run compile-circuit
 
 wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_12.ptau -O circuits/pot12_final.ptau
 npm run setup-zk
+
+# Optional: threshold-reveal circuit (larger — needs pot14)
+npm run compile-circuit:reveal
+wget https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_14.ptau -O circuits/pot14_final.ptau
+npm run setup-zk:reveal
 ```
+
+Node 20+ is required (Next 16 and Vitest 4).
 
 ## Tests
 
@@ -33,7 +40,8 @@ npm run test:coverage
 - **Policy logic** (thresholds, spend windows) lives in the OWS `vero:kyc` middleware — see the Architecture section in [README.md](./README.md).
 - **The circuit** is `circuits/kyc_credential.circom`. Adding a new private/public input means re-running `npm run compile-circuit` and `npm run setup-zk` to regenerate the wasm/zkey/verification key.
 - **Onboarding API** routes are under `src/app/api/v1/agents/` and `src/app/api/v1/payment/` — the reference agent registry lives here if you want to see how tokens and policy checks are wired.
-- **Audit log** — `src/policy/auditLog.ts` + `GET /api/v1/audit`. See [ROADMAP.md](./ROADMAP.md) for why this exists and what's still open (threshold reveal).
+- **Audit log** — `src/policy/auditLog.ts` + `GET /api/v1/audit`. See [ROADMAP.md](./ROADMAP.md) for why this exists.
+- **Threshold reveal** — `circuits/kyc_reveal.circom`, `src/zkp/reveal.ts`, `scripts/vero-reveal.ts` (`npm run reveal`). Spec: [docs/threshold-reveal.md](./docs/threshold-reveal.md). Opt-in via `VERO_REVEAL_PUBLIC_KEY`.
 - **UI** — `src/app/page.tsx` (landing page), `src/app/register/` + `src/components/AgentRegistrationWizard.tsx` (registration flow), `src/components/DemoWidget.tsx` (live demo).
 
 ## Proposing a change

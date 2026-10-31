@@ -55,6 +55,8 @@ The `kyc_credential` circuit (circom) proves:
 
 Private inputs never leave the browser.
 
+**Threshold reveal (opt-in).** Institutions that need a lawful-disclosure path can set `VERO_REVEAL_PUBLIC_KEY`. Proofs then use `kyc_reveal.circom`, which also encrypts the identity to a k-of-n consortium key and proves the ciphertext is honest. No single party, including the operator, can decrypt it. See [docs/threshold-reveal.md](./docs/threshold-reveal.md).
+
 ## Stack
 
 - **Next.js 16** — app + API routes

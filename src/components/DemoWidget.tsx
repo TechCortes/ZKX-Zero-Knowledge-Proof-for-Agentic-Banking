@@ -150,6 +150,7 @@ export default function DemoWidget() {
     commitment: string;
     currentYear: number;
     minAge: number;
+    reveal?: { publicKey: [string, string] };
   } | null>(null);
 
   const remaining      = Math.max(0, DAILY_LIMIT - dailySpend);
@@ -255,7 +256,8 @@ export default function DemoWidget() {
       const { proof, publicSignals } = await generateKYCProof(
         { idHash: session.idHash, salt: session.salt, birthYear: session.birthYear },
         session.commitment,
-        minAge
+        minAge,
+        challenge?.reveal
       );
 
       setProofStep(2);

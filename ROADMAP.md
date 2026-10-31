@@ -24,9 +24,11 @@ No PII in the log — `commitment` is already public and non-reversible on its o
 
 Implementation: `src/policy/auditLog.ts` (in-memory, DB-shaped — same convention as `registry.ts`, swap the array for a real append-only store in production), hooked into `POST /api/v1/payment` and `POST /api/v1/verify-proof`. Query your own trail via `GET /api/v1/audit` (bearer-authenticated, scoped to the calling agent). A real regulator-facing query path — as opposed to an agent reading its own log — is part of phase 2 below, not this phase.
 
-### 2. Threshold reveal (the actual ZK work)
+### 2. Threshold reveal (the actual ZK work) — ✅ shipped (opt-in)
 
 At proof-generation time, the circuit additionally encrypts the private inputs (`idHash`, `birthYear`, `salt`) under a **k-of-n threshold public key**, where the `n` key-holders are a consortium the *institution* designates — e.g., independent legal/compliance/custody parties, not Vero Protocol and not any single verifier. The resulting ciphertext is stored alongside the commitment. In the common case it's just opaque bytes; it becomes readable only if `k` of the `n` designated parties cooperate to decrypt it, which is the point — no single party (including the platform operator) can unilaterally deanonymize a user, but a legally-compelled, multi-party disclosure process is possible.
+
+**Status:** ✅ the circuit (`circuits/kyc_reveal.circom`), the ciphertext format and threshold-decryption contract ([docs/threshold-reveal.md](./docs/threshold-reveal.md)), server wiring behind `VERO_REVEAL_PUBLIC_KEY`, and a reference CLI (`npm run reveal`) are in. Circuit keys are generated (`public/zk/kyc_reveal*`, 9,030 constraints, PSE pot14) and real-proof tests pass.
 
 Vero Protocol's job here is to define the **interface** cleanly — the ciphertext format, the circuit extension, and the threshold-decryption contract — so that an institution forking this plugs in its *own* key-management/HSM infrastructure for the actual threshold ceremony. Vero Protocol does not run the ceremony; it defines the shape of the boundary.
 
@@ -37,8 +39,8 @@ A compliance team can pilot Vero Protocol and truthfully tell their regulator: "
 ## Sequencing
 
 1. ✅ Audit log — no cryptography, mechanical, ships independently of everything else.
-2. Threshold-reveal circuit extension + ciphertext format spec.
-3. Reference (non-production) threshold-decryption CLI so forkers can see the full round-trip before wiring up real HSM/consortium infra.
+2. ✅ Threshold-reveal circuit extension + ciphertext format spec.
+3. ✅ Reference (non-production) threshold-decryption CLI — `npm run reveal -- demo`.
 
 ## Explicitly out of scope for Vero Protocol itself
 
@@ -46,4 +48,4 @@ Running an actual threshold-decryption consortium, KYC document verification/iss
 
 ## Contributing
 
-The audit log (#1) is done — see `src/policy/auditLog.ts` and its tests for the pattern. If you're picking up #2 (threshold reveal), that's the real open item: circuit extension + ciphertext format + a reference decryption CLI. See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup.
+The audit log (#1) and the threshold-reveal code (#2, #3) are in. Open items: binding proofs to a transaction nonce, and a regulator-facing request flow. See [docs/threshold-reveal.md](./docs/threshold-reveal.md). See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup.

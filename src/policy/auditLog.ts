@@ -11,6 +11,7 @@
  */
 
 import { kv } from "@/lib/kv";
+import type { RevealCiphertext } from "@/zkp/reveal";
 
 export type AuditDecision =
   | "approved_anonymous"
@@ -32,6 +33,12 @@ export interface AuditRecord {
   /** Whether this decision fell in the ZK-required tier (>= FATF threshold). */
   thresholdMet: boolean;
   dailyTotal: number;
+  /**
+   * Threshold reveal (ROADMAP phase 2): the identity encrypted to the consortium key,
+   * present on approved_proof when reveal is configured. Opaque unless k of n
+   * consortium members cooperate — see docs/threshold-reveal.md.
+   */
+  revealCiphertext?: RevealCiphertext;
 }
 
 /** Cap per-agent history so a single agent's list can't grow unbounded. */
