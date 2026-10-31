@@ -71,16 +71,17 @@ export interface RevealedIdentity {
 
 /**
  * Layout of kyc_reveal's publicSignals (outputs first, then public inputs):
- * [R.x, R.y, c0, c1, c2, commitment, currentYear, minAge, PK.x, PK.y]
+ * [R.x, R.y, c0, c1, c2, commitment, currentYear, minAge, PK.x, PK.y, txNonce]
  */
 export const REVEAL_SIGNALS = {
-  count: 10,
+  count: 11,
   ephemeral: [0, 1],
   ciphertext: [2, 3, 4],
   commitment: 5,
   currentYear: 6,
   minAge: 7,
   publicKey: [8, 9],
+  txNonce: 10,
 } as const;
 
 // ---------------------------------------------------------------------------

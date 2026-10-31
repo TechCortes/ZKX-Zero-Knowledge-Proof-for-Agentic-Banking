@@ -25,11 +25,14 @@ include "../node_modules/circomlib/circuits/escalarmulany.circom";
  * circuit only sees one public key. See docs/threshold-reveal.md.
  *
  * Private inputs : idHash, birthYear, salt, revealNonce (r)
- * Public inputs  : commitment, currentYear, minAge, revealPubKey[2]
+ * Public inputs  : commitment, currentYear, minAge, revealPubKey[2], txNonce
  * Public outputs : revealEphemeral[2] (R), revealCiphertext[3] (c)
  *
  * snarkjs publicSignals order (outputs first, then public inputs):
- *   [R.x, R.y, c0, c1, c2, commitment, currentYear, minAge, PK.x, PK.y]
+ *   [R.x, R.y, c0, c1, c2, commitment, currentYear, minAge, PK.x, PK.y, txNonce]
+ *
+ * txNonce is the server's single-use challenge for one payment (see
+ * src/policy/challenges.ts), so each proof, and its ciphertext, is tied to it.
  */
 template KYCReveal() {
     // --- Private inputs ---
@@ -43,6 +46,7 @@ template KYCReveal() {
     signal input currentYear;
     signal input minAge;
     signal input revealPubKey[2];
+    signal input txNonce;
 
     // --- Public outputs ---
     signal output revealEphemeral[2];
@@ -62,7 +66,11 @@ template KYCReveal() {
     ageCheck.in[1] <== minAge;
     ageCheck.out === 1;
 
-    // --- 3. Threshold reveal ---
+    // --- 3. Bind txNonce (squared so it can't be optimized away or swapped) ---
+    signal txNonceSquared;
+    txNonceSquared <== txNonce * txNonce;
+
+    // --- 4. Threshold reveal ---
     // The server pins revealPubKey to the configured consortium key. Checking it
     // is on the curve here stops a malformed key from producing junk ciphertext.
     component pkCheck = BabyCheck();
@@ -101,4 +109,4 @@ template KYCReveal() {
     }
 }
 
-component main {public [commitment, currentYear, minAge, revealPubKey]} = KYCReveal();
+component main {public [commitment, currentYear, minAge, revealPubKey, txNonce]} = KYCReveal();

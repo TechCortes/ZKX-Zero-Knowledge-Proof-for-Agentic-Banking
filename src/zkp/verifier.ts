@@ -18,6 +18,8 @@ import { REVEAL_SIGNALS, ciphertextFromSignals, type RevealCiphertext } from "./
 export interface VerificationResult {
   valid: boolean;
   commitment?: string;
+  /** The server challenge this proof is bound to. Consume it before trusting the proof. */
+  txNonce?: string;
   /** Present only for a valid kyc_reveal proof. Store it next to the commitment. */
   revealCiphertext?: RevealCiphertext;
   error?: string;
@@ -30,7 +32,7 @@ type RevealPublicKey = [string, string];
 
 /** Where each circuit puts its public signals. */
 const LAYOUT = {
-  kyc_credential: { count: 3, commitment: 0, currentYear: 1, minAge: 2 },
+  kyc_credential: { count: 4, commitment: 0, currentYear: 1, minAge: 2, txNonce: 3 },
   kyc_reveal: REVEAL_SIGNALS,
 } as const;
 
@@ -46,6 +48,12 @@ const circuitFor = (revealKey?: RevealPublicKey | null): Circuit => (revealKey ?
 /** The commitment a proof claims, read from the right slot for the active circuit. */
 export function commitmentFromSignals(publicSignals: string[], revealKey?: RevealPublicKey | null): string | undefined {
   return publicSignals[LAYOUT[circuitFor(revealKey)].commitment];
+}
+
+/** The txNonce a proof was generated for (see src/policy/challenges.ts). */
+export function txNonceFromSignals(publicSignals: string[], revealKey?: RevealPublicKey | null): string | undefined {
+  const layout = LAYOUT[circuitFor(revealKey)];
+  return publicSignals.length === layout.count ? publicSignals[layout.txNonce] : undefined;
 }
 
 /**
@@ -65,7 +73,7 @@ export function checkChallengeSignals(
   if (publicSignals.length !== layout.count) {
     return circuit === "kyc_reveal"
       ? "Threshold reveal is required: expected a kyc_reveal proof."
-      : "Unexpected public signals: expected [commitment, currentYear, minAge].";
+      : "Unexpected public signals: expected [commitment, currentYear, minAge, txNonce].";
   }
   const year = now.getUTCFullYear();
   const proofYear = publicSignals[layout.currentYear];
@@ -130,9 +138,10 @@ export async function verifyKYCProof(
     }
 
     const commitment = publicSignals[LAYOUT[circuit].commitment];
+    const txNonce = publicSignals[LAYOUT[circuit].txNonce];
     return revealKey
-      ? { valid: true, commitment, revealCiphertext: ciphertextFromSignals(publicSignals) }
-      : { valid: true, commitment };
+      ? { valid: true, commitment, txNonce, revealCiphertext: ciphertextFromSignals(publicSignals) }
+      : { valid: true, commitment, txNonce };
   } catch (err) {
     return {
       valid: false,

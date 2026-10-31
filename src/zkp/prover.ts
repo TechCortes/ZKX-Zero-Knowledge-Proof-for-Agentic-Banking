@@ -26,6 +26,7 @@ export interface ProofInput {
   commitment: string;
   currentYear: number;
   minAge: number;
+  txNonce: string;
 }
 
 export interface ZKProof {
@@ -59,12 +60,14 @@ export interface RevealChallenge {
  * @param secret  - The user's private identity data (stays in browser)
  * @param commitment - The public commitment stored on-chain / with verifier
  * @param minAge  - Age requirement (default 18)
+ * @param txNonce - The challenge's `txNonce`; binds the proof to that one payment
  * @param reveal  - Pass the challenge's `reveal` field through untouched; omit when absent
  */
 export async function generateKYCProof(
   secret: IdentitySecret,
   commitment: string,
-  minAge = 18,
+  minAge: number,
+  txNonce: string,
   reveal?: RevealChallenge | null
 ): Promise<ZKProof> {
   const snarkjs = await import("snarkjs");
@@ -76,6 +79,7 @@ export async function generateKYCProof(
     commitment,
     currentYear: new Date().getUTCFullYear(),
     minAge,
+    txNonce,
   };
 
   let input: Record<string, unknown> = { ...base };

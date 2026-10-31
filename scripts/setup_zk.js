@@ -9,8 +9,8 @@
  *   node scripts/setup_zk.js [circuit] [--ptau <file>] [--local-ptau <power>]
  *
  *   circuit       kyc_credential (default) or kyc_reveal
- *   --ptau        Powers of Tau file. Default: circuits/pot12_final.ptau for
- *                 kyc_credential, circuits/pot14_final.ptau for kyc_reveal.
+ *   --ptau        Powers of Tau file. Default: circuits/pot14_final.ptau (big enough
+ *                 for both circuits).
  *   --local-ptau  Generate a throwaway Powers of Tau of size 2^power locally instead
  *                 of downloading one. DEV ONLY: a single-contributor ceremony gives no
  *                 security. Use the Hermez/PSE files for anything real.
@@ -20,8 +20,8 @@
  *   2. Compile: npm run compile-circuit (or compile-circuit:reveal)
  *   3. Download a Powers of Tau file large enough for the circuit (the Hermez
  *      buckets are gone; PSE Perpetual Powers of Tau is the maintained successor):
- *        kyc_credential (~300 constraints)  → pot12
- *        kyc_reveal     (~8k constraints)   → pot14
+ *        kyc_credential (~530 constraints)  → pot10+  (pot14 works too)
+ *        kyc_reveal     (~9k constraints)   → pot14
  *      wget https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_14.ptau -O circuits/pot14_final.ptau
  *   4. Run: npm run setup-zk (or setup-zk:reveal)
  *
@@ -34,7 +34,7 @@ const path = require("path");
 const crypto = require("crypto");
 
 const CIRCUITS = {
-  kyc_credential: { ptau: "pot12_final.ptau", vkey: "verification_key.json" },
+  kyc_credential: { ptau: "pot14_final.ptau", vkey: "verification_key.json" },
   kyc_reveal: { ptau: "pot14_final.ptau", vkey: "kyc_reveal_verification_key.json" },
 };
 

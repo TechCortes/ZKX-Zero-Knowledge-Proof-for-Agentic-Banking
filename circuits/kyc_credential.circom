@@ -19,6 +19,10 @@ include "../node_modules/circomlib/circuits/comparators.circom";
  *   - commitment  : Poseidon(idHash, salt) — ties proof to a specific credential
  *   - currentYear : Year the proof is generated
  *   - minAge      : Minimum age required (typically 18)
+ *   - txNonce     : Server-issued, single-use challenge for one payment. Binds the
+ *                   proof to that payment so it can't be replayed or reused.
+ *
+ * publicSignals: [commitment, currentYear, minAge, txNonce]
  */
 template KYCCredential() {
     // --- Private inputs ---
@@ -30,6 +34,7 @@ template KYCCredential() {
     signal input commitment;
     signal input currentYear;
     signal input minAge;
+    signal input txNonce;
 
     // --- Verify commitment: commitment == Poseidon(idHash, salt) ---
     component hasher = Poseidon(2);
@@ -45,6 +50,11 @@ template KYCCredential() {
     ageCheck.in[0] <== age;
     ageCheck.in[1] <== minAge;
     ageCheck.out === 1;
+
+    // --- Bind txNonce: a public input with no constraint could be dropped by the
+    // optimizer or swapped without invalidating the proof. Squaring it pins it.
+    signal txNonceSquared;
+    txNonceSquared <== txNonce * txNonce;
 }
 
-component main {public [commitment, currentYear, minAge]} = KYCCredential();
+component main {public [commitment, currentYear, minAge, txNonce]} = KYCCredential();

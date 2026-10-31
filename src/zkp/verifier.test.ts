@@ -19,7 +19,7 @@ async function prove(overrides: { birthYear: number; currentYear: number; minAge
   const poseidon = await buildPoseidon();
   const commitment = poseidon.F.toString(poseidon([BigInt(SECRET.idHash), BigInt(SECRET.salt)]));
   return snarkjs.groth16.fullProve(
-    { ...SECRET, commitment, ...overrides },
+    { ...SECRET, commitment, txNonce: "424242", ...overrides },
     path.join(ZK_DIR, "kyc_credential.wasm"),
     path.join(ZK_DIR, "kyc_credential_final.zkey")
   );
@@ -27,25 +27,27 @@ async function prove(overrides: { birthYear: number; currentYear: number; minAge
 
 describe("checkChallengeSignals", () => {
   it("accepts current year and required minAge", () => {
-    expect(checkChallengeSignals(["1", String(YEAR), String(REQUIRED_MIN_AGE)])).toBeNull();
+    expect(checkChallengeSignals(["1", String(YEAR), String(REQUIRED_MIN_AGE), "42"])).toBeNull();
   });
 
   it("tolerates the previous year (New Year UTC boundary)", () => {
-    expect(checkChallengeSignals(["1", String(YEAR - 1), "18"])).toBeNull();
+    expect(checkChallengeSignals(["1", String(YEAR - 1), "18", "42"])).toBeNull();
   });
 
   it("rejects minAge below the requirement", () => {
-    expect(checkChallengeSignals(["1", String(YEAR), "0"])).not.toBeNull();
-    expect(checkChallengeSignals(["1", String(YEAR), "17"])).not.toBeNull();
+    expect(checkChallengeSignals(["1", String(YEAR), "0", "42"])).not.toBeNull();
+    expect(checkChallengeSignals(["1", String(YEAR), "17", "42"])).not.toBeNull();
   });
 
   it("rejects a fabricated future year", () => {
-    expect(checkChallengeSignals(["1", String(YEAR + 8), "18"])).not.toBeNull();
+    expect(checkChallengeSignals(["1", String(YEAR + 8), "18", "42"])).not.toBeNull();
   });
 
   it("rejects the wrong number of public signals", () => {
     expect(checkChallengeSignals(["1"])).not.toBeNull();
-    expect(checkChallengeSignals(["1", String(YEAR), "18", "x"])).not.toBeNull();
+    // the pre-nonce 3-signal layout is no longer accepted
+    expect(checkChallengeSignals(["1", String(YEAR), "18"])).not.toBeNull();
+    expect(checkChallengeSignals(["1", String(YEAR), "18", "42", "x"])).not.toBeNull();
   });
 });
 
@@ -65,6 +67,14 @@ describe("verifyKYCProof — real proofs", () => {
     const res = await verifyKYCProof(good.proof, good.publicSignals);
     expect(res.valid).toBe(true);
     expect(res.commitment).toBe(good.publicSignals[0]);
+    expect(res.txNonce).toBe("424242");
+  });
+
+  it("rejects a valid proof whose txNonce was swapped for another challenge's", async () => {
+    const swapped = [...good.publicSignals];
+    swapped[3] = "999999";
+    const res = await verifyKYCProof(good.proof, swapped);
+    expect(res.valid).toBe(false);
   });
 
   it("rejects a tampered proof", async () => {
