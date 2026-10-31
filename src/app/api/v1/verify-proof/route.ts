@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticate, isAuthFailure, unauthorized } from "@/lib/auth";
-import { verifyKYCProof } from "@/zkp/verifier";
+import { verifyKYCProof, commitmentFromSignals } from "@/zkp/verifier";
+import { getRevealPublicKey } from "@/zkp/revealConfig";
 import { evaluatePayment, approveWithProof, computePolicyVersionHash } from "@/policy/engine";
 import { recordAuditEntry } from "@/policy/auditLog";
 import { logger } from "@/lib/logger";
@@ -88,8 +89,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "recipient is required." }, { status: 422 });
   }
 
+  const revealPublicKey = await getRevealPublicKey();
+
   // Bind proof to this agent's registered commitment — prevents cross-agent replay
-  const proofCommitment = publicSignals[0];
+  const proofCommitment = commitmentFromSignals(publicSignals as string[], revealPublicKey);
   if (proofCommitment !== agent.commitment) {
     logger.warn(ROUTE, "commitment_mismatch", { agentId: agent.id });
     return NextResponse.json(
@@ -108,7 +111,7 @@ export async function POST(req: NextRequest) {
   const decision = await evaluatePayment(paymentRequest, agent.policies);
   const policyVersionHash = computePolicyVersionHash(agent.policies);
 
-  const result = await verifyKYCProof(proof as object, publicSignals as string[]);
+  const result = await verifyKYCProof(proof as object, publicSignals as string[], { revealPublicKey });
 
   if (!result.valid) {
     logger.warn(ROUTE, "proof_rejected", { agentId: agent.id, error: result.error });
@@ -146,6 +149,7 @@ export async function POST(req: NextRequest) {
     decision: "approved_proof",
     thresholdMet: true,
     dailyTotal: approved.dailyTotal,
+    ...(result.revealCiphertext ? { revealCiphertext: result.revealCiphertext } : {}),
   });
   const settlement = await attemptSettlement(agent.id);
   logger.info(ROUTE, "payment_approved_zk", {
@@ -154,6 +158,7 @@ export async function POST(req: NextRequest) {
     chainId: chainId ?? null,
     commitment: result.commitment,
     settlementStatus: settlement.status,
+    revealEnabled: Boolean(result.revealCiphertext),
   });
 
   return NextResponse.json({
@@ -162,6 +167,7 @@ export async function POST(req: NextRequest) {
     type: "zk-verified",
     commitment: result.commitment,
     piiTransmitted: 0,
+    revealEscrowed: Boolean(result.revealCiphertext),
     decision: approved,
     settlement,
     message: "Identity proven via ZK proof. No personal data disclosed.",

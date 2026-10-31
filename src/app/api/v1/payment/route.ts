@@ -3,6 +3,8 @@ import { authenticate, isAuthFailure, unauthorized } from "@/lib/auth";
 import { evaluatePayment, recordSpend, computePolicyVersionHash } from "@/policy/engine";
 import { recordAuditEntry } from "@/policy/auditLog";
 import { logger } from "@/lib/logger";
+import { getRevealPublicKey } from "@/zkp/revealConfig";
+import { REQUIRED_MIN_AGE } from "@/zkp/verifier";
 
 const ROUTE = "POST /api/v1/payment";
 
@@ -87,6 +89,10 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  // When threshold reveal is configured, the proof must also encrypt the identity
+  // to this consortium key (kyc_reveal circuit). verify-proof pins the same key.
+  const revealPublicKey = await getRevealPublicKey();
+
   logger.info(ROUTE, "proof_required", { agentId: agent.id, amount, dailyTotal: decision.dailyTotal });
   await recordAuditEntry({
     agentId: agent.id,
@@ -101,8 +107,9 @@ export async function POST(req: NextRequest) {
       commitment: agent.commitment,
       challenge: {
         currentYear: new Date().getUTCFullYear(),
-        minAge: 18,
+        minAge: REQUIRED_MIN_AGE,
         commitment: agent.commitment,
+        ...(revealPublicKey ? { reveal: { publicKey: revealPublicKey } } : {}),
       },
       decision,
     },

@@ -5,7 +5,10 @@
  *   1. I know a preimage (idHash, salt) that hashes to `commitment`
  *   2. currentYear - birthYear >= minAge
  *
- * The user's idHash, birthYear, and salt never leave the browser.
+ * The user's idHash, birthYear, and salt never leave the browser in the clear.
+ * If the server's challenge includes a reveal key (threshold reveal, ROADMAP phase 2),
+ * the kyc_reveal circuit is used instead: same proof, plus the identity encrypted
+ * to the consortium key so k-of-n members can decrypt it under legal process.
  */
 
 export interface IdentitySecret {
@@ -45,21 +48,28 @@ export function randomFieldElement(): string {
   ).toString();
 }
 
+/** `challenge.reveal` from a 402 /api/v1/payment response, when the server requires reveal. */
+export interface RevealChallenge {
+  publicKey: [string, string];
+}
+
 /**
  * Generate a ZK proof of KYC credential in the browser.
  *
  * @param secret  - The user's private identity data (stays in browser)
  * @param commitment - The public commitment stored on-chain / with verifier
  * @param minAge  - Age requirement (default 18)
+ * @param reveal  - Pass the challenge's `reveal` field through untouched; omit when absent
  */
 export async function generateKYCProof(
   secret: IdentitySecret,
   commitment: string,
-  minAge = 18
+  minAge = 18,
+  reveal?: RevealChallenge | null
 ): Promise<ZKProof> {
   const snarkjs = await import("snarkjs");
 
-  const input: ProofInput = {
+  const base: ProofInput = {
     idHash: secret.idHash,
     birthYear: secret.birthYear,
     salt: secret.salt,
@@ -68,9 +78,18 @@ export async function generateKYCProof(
     minAge,
   };
 
+  let input: Record<string, unknown> = { ...base };
+  let circuit = "kyc_credential";
+  if (reveal) {
+    const { randomRevealNonce } = await import("./reveal");
+    // Fresh per proof: reusing the nonce would make two ciphertexts linkable.
+    input = { ...base, revealNonce: await randomRevealNonce(), revealPubKey: reveal.publicKey };
+    circuit = "kyc_reveal";
+  }
+
   // Wasm and zkey are served from /public/zk/
-  const wasmPath = "/zk/kyc_credential.wasm";
-  const zkeyPath = "/zk/kyc_credential_final.zkey";
+  const wasmPath = `/zk/${circuit}.wasm`;
+  const zkeyPath = `/zk/${circuit}_final.zkey`;
 
   const { proof, publicSignals } = await snarkjs.groth16.fullProve(
     input,
