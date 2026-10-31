@@ -9,7 +9,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import fs from "fs";
 import path from "path";
-import { verifyKYCProof, checkChallengeSignals, commitmentFromSignals } from "./verifier";
+import { verifyKYCProof, checkChallengeSignals, commitmentFromSignals, txNonceFromSignals } from "./verifier";
 import { dealKeyShares, partialDecrypt, combinePartials, randomRevealNonce, type ConsortiumKey, type KeyShare } from "./reveal";
 import { getRevealPublicKey } from "./revealConfig";
 
@@ -20,10 +20,10 @@ const HAVE_REVEAL_CIRCUIT =
 const YEAR = new Date().getUTCFullYear();
 const PK: [string, string] = ["11", "22"];
 
-/** [R.x, R.y, c0, c1, c2, commitment, currentYear, minAge, PK.x, PK.y] */
+/** [R.x, R.y, c0, c1, c2, commitment, currentYear, minAge, PK.x, PK.y, txNonce] */
 const revealSignals = (o: Partial<{ year: number; minAge: number; pk: [string, string] }> = {}) => [
   "1", "2", "3", "4", "5", "777",
-  String(o.year ?? YEAR), String(o.minAge ?? 18), ...(o.pk ?? PK),
+  String(o.year ?? YEAR), String(o.minAge ?? 18), ...(o.pk ?? PK), "42",
 ];
 
 describe("checkChallengeSignals — reveal mode", () => {
@@ -36,7 +36,7 @@ describe("checkChallengeSignals — reveal mode", () => {
   });
 
   it("rejects a plain kyc_credential proof when reveal is required", () => {
-    expect(checkChallengeSignals(["777", String(YEAR), "18"], new Date(), PK)).toMatch(/kyc_reveal/);
+    expect(checkChallengeSignals(["777", String(YEAR), "18", "42"], new Date(), PK)).toMatch(/kyc_reveal/);
   });
 
   it("still pins minAge and currentYear", () => {
@@ -46,7 +46,13 @@ describe("checkChallengeSignals — reveal mode", () => {
 
   it("reads the commitment from the right slot for each circuit", () => {
     expect(commitmentFromSignals(revealSignals(), PK)).toBe("777");
-    expect(commitmentFromSignals(["777", String(YEAR), "18"], null)).toBe("777");
+    expect(commitmentFromSignals(["777", String(YEAR), "18", "42"], null)).toBe("777");
+  });
+
+  it("reads the txNonce from the right slot for each circuit", () => {
+    expect(txNonceFromSignals(revealSignals(), PK)).toBe("42");
+    expect(txNonceFromSignals(["777", String(YEAR), "18", "42"], null)).toBe("42");
+    expect(txNonceFromSignals(["777", String(YEAR), "18"], null)).toBeUndefined();
   });
 });
 
@@ -78,7 +84,7 @@ describe.skipIf(!HAVE_REVEAL_CIRCUIT)("kyc_reveal — real proofs", () => {
     const snarkjs = await import("snarkjs");
     return snarkjs.groth16.fullProve(
       {
-        ...SECRET, commitment, currentYear: YEAR, minAge: 18,
+        ...SECRET, commitment, currentYear: YEAR, minAge: 18, txNonce: "424242",
         revealNonce: await randomRevealNonce(), revealPubKey: pk, ...overrides,
       },
       path.join(ZK_DIR, "kyc_reveal.wasm"),
@@ -98,6 +104,7 @@ describe.skipIf(!HAVE_REVEAL_CIRCUIT)("kyc_reveal — real proofs", () => {
     const res = await verifyKYCProof(proof, publicSignals, { revealPublicKey: consortium.publicKey });
     expect(res.valid).toBe(true);
     expect(res.commitment).toBe(commitment);
+    expect(res.txNonce).toBe("424242");
 
     const ct = res.revealCiphertext!;
     const partials = await Promise.all([partialDecrypt(shares[0], ct), partialDecrypt(shares[2], ct)]);
@@ -119,6 +126,14 @@ describe.skipIf(!HAVE_REVEAL_CIRCUIT)("kyc_reveal — real proofs", () => {
     const tampered = [...publicSignals];
     tampered[2] = (BigInt(tampered[2]) + BigInt(1)).toString();
     const res = await verifyKYCProof(proof, tampered, { revealPublicKey: consortium.publicKey });
+    expect(res.valid).toBe(false);
+  }, 120_000);
+
+  it("swapping the txNonce breaks the proof", async () => {
+    const { proof, publicSignals } = await prove(consortium.publicKey);
+    const swapped = [...publicSignals];
+    swapped[10] = "999999";
+    const res = await verifyKYCProof(proof, swapped, { revealPublicKey: consortium.publicKey });
     expect(res.valid).toBe(false);
   }, 120_000);
 

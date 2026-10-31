@@ -27,6 +27,8 @@ export interface Kv {
   /** Trim a list to its first `count` entries. */
   ltrim(key: string, count: number): Promise<void>;
   lrange<T>(key: string, start: number, stop: number): Promise<T[]>;
+  /** Atomically read and delete a key. Returns null if it didn't exist (or expired). */
+  getdel<T>(key: string): Promise<T | null>;
 }
 
 function redisCredentials(): { url: string; token: string } | null {
@@ -73,6 +75,10 @@ class RedisKv implements Kv {
   async lrange<T>(key: string, start: number, stop: number): Promise<T[]> {
     const raw = await this.client.lrange<string>(key, start, stop);
     return raw.map((r) => (typeof r === "string" ? (JSON.parse(r) as T) : (r as unknown as T)));
+  }
+
+  async getdel<T>(key: string): Promise<T | null> {
+    return (await this.client.getdel<T>(key)) ?? null;
   }
 }
 
@@ -129,6 +135,14 @@ class MemoryKv implements Kv {
     const list = this.lists.get(key) ?? [];
     const end = stop === -1 ? list.length : stop + 1;
     return list.slice(start, end).map((r) => JSON.parse(r) as T);
+  }
+
+  async getdel<T>(key: string): Promise<T | null> {
+    if (this.isExpired(key) || !this.store.has(key)) return null;
+    const value = this.store.get(key) as T;
+    this.store.delete(key);
+    this.expiry.delete(key);
+    return value;
   }
 }
 

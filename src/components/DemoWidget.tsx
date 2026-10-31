@@ -150,6 +150,7 @@ export default function DemoWidget() {
     commitment: string;
     currentYear: number;
     minAge: number;
+    txNonce: string;
     reveal?: { publicKey: [string, string] };
   } | null>(null);
 
@@ -244,6 +245,12 @@ export default function DemoWidget() {
 
   async function proveAndPay() {
     if (!session) return;
+    if (!challenge?.txNonce) {
+      // Proofs are bound to a single-use server challenge; without one, ask again.
+      setApiError("Challenge expired — send the payment again to get a new one.");
+      setStage("idle");
+      return;
+    }
     setStage("proving");
     setApiError("");
     setProofStep(0);
@@ -257,6 +264,7 @@ export default function DemoWidget() {
         { idHash: session.idHash, salt: session.salt, birthYear: session.birthYear },
         session.commitment,
         minAge,
+        challenge?.txNonce ?? "",
         challenge?.reveal
       );
 
@@ -303,15 +311,18 @@ export default function DemoWidget() {
         setLastTx(tx);
         setStage("kyc_approved");
       } else {
+        // The challenge nonce is single-use and now spent; a retry needs a fresh one.
         setApiError(data.error ?? "Proof verification failed.");
-        setStage("kyc_required");
+        setChallenge(null);
+        setStage("idle");
       }
     } catch (err) {
       setProofStep(-1);
       setApiError(
         err instanceof Error ? `Proof generation failed: ${err.message}` : "Proof generation failed."
       );
-      setStage("kyc_required");
+      setChallenge(null);
+      setStage("idle");
     }
   }
 

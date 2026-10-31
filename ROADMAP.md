@@ -48,4 +48,4 @@ Running an actual threshold-decryption consortium, KYC document verification/iss
 
 ## Contributing
 
-The audit log (#1) and the threshold-reveal code (#2, #3) are in. Open items: binding proofs to a transaction nonce, and a regulator-facing request flow. See [docs/threshold-reveal.md](./docs/threshold-reveal.md). See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup.
+The audit log (#1) and the threshold-reveal code (#2, #3) are in. Proofs are bound to a single-use, per-payment challenge nonce (`src/policy/challenges.ts`). Open item: a regulator-facing request flow. See [docs/threshold-reveal.md](./docs/threshold-reveal.md). See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup.

@@ -5,6 +5,7 @@ import { recordAuditEntry } from "@/policy/auditLog";
 import { logger } from "@/lib/logger";
 import { getRevealPublicKey } from "@/zkp/revealConfig";
 import { REQUIRED_MIN_AGE } from "@/zkp/verifier";
+import { issueChallenge, CHALLENGE_TTL_SECONDS } from "@/policy/challenges";
 
 const ROUTE = "POST /api/v1/payment";
 
@@ -93,6 +94,14 @@ export async function POST(req: NextRequest) {
   // to this consortium key (kyc_reveal circuit). verify-proof pins the same key.
   const revealPublicKey = await getRevealPublicKey();
 
+  // Single-use nonce bound to exactly this payment. The proof must commit to it,
+  // and verify-proof will only accept it for the same amount and recipient.
+  const txNonce = await issueChallenge(agent.id, {
+    amount,
+    recipient,
+    chainId: typeof chainId === "string" ? chainId : undefined,
+  });
+
   logger.info(ROUTE, "proof_required", { agentId: agent.id, amount, dailyTotal: decision.dailyTotal });
   await recordAuditEntry({
     agentId: agent.id,
@@ -109,6 +118,9 @@ export async function POST(req: NextRequest) {
         currentYear: new Date().getUTCFullYear(),
         minAge: REQUIRED_MIN_AGE,
         commitment: agent.commitment,
+        txNonce,
+        expiresInSeconds: CHALLENGE_TTL_SECONDS,
+        payment: { amount, recipient, ...(typeof chainId === "string" ? { chainId } : {}) },
         ...(revealPublicKey ? { reveal: { publicKey: revealPublicKey } } : {}),
       },
       decision,
