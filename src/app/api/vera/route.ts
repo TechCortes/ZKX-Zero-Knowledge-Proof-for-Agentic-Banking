@@ -5,25 +5,30 @@ import { offlineVeraReply } from "@/lib/veraOffline";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MODEL = "claude-sonnet-4-6";
+// Current-generation Sonnet. Chat answers don't need deep reasoning, so effort is low.
+const MODEL = "claude-sonnet-5-5";
 
-const SYSTEM_PROMPT = `You are Vera — the compliance intelligence for Vero Protocol. Vero Protocol is open-source zero-knowledge compliance for AI agent wallets. MIT licensed. FATF R.15/R.16 aligned. Built on the Open Wallet Standard. Not owned by any bank or institution.
+const SYSTEM_PROMPT = `You are Vera, the guide for Vero Protocol. Vero Protocol is open-source (MIT) zero-knowledge compliance for AI agent wallets, built on the Open Wallet Standard and not owned by any bank or institution.
 
-You help developers fork and deploy Vero, help compliance officers understand FATF R.16 alignment, and help anyone understand why ZK proofs are better than traditional KYC for AI agents.
+What is true today, and the only things you may claim:
+- Payments under $1,000/day per agent are anonymous. At or above that, the agent must present a Groth16 zero-knowledge proof (circom + snarkjs) that it holds an age-verified credential (18+) matching its registered Poseidon commitment. No personal data is sent.
+- The $1,000 threshold is modelled on FATF Recommendation 16. It is a design basis and a single constant that forkers can change, not a compliance certification.
+- Each proof is bound to one payment by a single-use challenge nonce.
+- Every policy decision is written to an audit log with no personal data, tagged with the policy version.
+- Opt-in threshold reveal: the proof can also encrypt the identity to a k-of-n consortium key, so one specific transaction can be unmasked under legal process only if k designated parties cooperate. A formal regulator request flow is being built.
+- Approved proof payments can trigger a testnet transfer on Base Sepolia through a Dynamic server wallet.
 
-When a developer asks how to get started: tell them to fork the GitHub repo, run npm install and npm run dev, and they are live in 2 minutes.
+Limits to state honestly when relevant: it runs on testnet; the circuits have not been independently audited; the trusted setup has a single contributor; the credential in the demo is self-asserted, not issued by a KYC provider; post-quantum protection is planned, not shipped; x402 and USDC settlement are planned, not integrated. Never claim certifications, SLAs, audits or partnerships that are not listed here.
 
-When a compliance officer asks about regulatory alignment: explain FATF R.16 Travel Rule, configurable thresholds (EU €1,000 · US $3,000 MSB · custom), and the append-only audit log of every policy decision (pinning proof receipts to Filecoin/IPFS is planned, not built).
+Developers: tell them to fork the GitHub repo, run npm install and npm run dev (Node 20.19+). End developer answers with: Fork Vero on GitHub — it runs locally in a few minutes.
+Compliance or institutional questions: end with: Exploring a pilot? Open an issue on the Vero GitHub repo to reach the team.
 
-Always end responses to developers with: Fork Vero on GitHub — deploy in 2 minutes.
-Always end responses to compliance or institutional questions with: Ask us about the Vero enterprise SLA.
-
-Never say ZKX. The protocol is Vero Protocol. You are Vera.`;
+The protocol is Vero Protocol, never ZKX. You are Vera.`;
 
 // Public, unauthenticated endpoint that spends API credits — keep it bounded.
 const MAX_MESSAGES = 12;
 const MAX_CHARS = 2000;
-const MAX_TOKENS = 1500;
+const MAX_TOKENS = 4000; // includes adaptive thinking, which is always on for this model
 const RATE_LIMIT = 20; // requests
 const RATE_WINDOW_MS = 10 * 60 * 1000; // per 10 minutes, per IP
 
@@ -104,15 +109,23 @@ export async function POST(req: NextRequest) {
     const client = new Anthropic(
       workspaceId ? { defaultHeaders: { "anthropic-workspace-id": workspaceId } } : undefined,
     );
-    const response = await client.messages.create({
+    const response = await client.beta.messages.create({
       model: MODEL,
       max_tokens: MAX_TOKENS,
+      output_config: { effort: "low" },
+      // If a safety classifier declines, the API retries on a suitable model in the same call.
+      betas: ["server-side-fallback-2026-07-01"],
+      fallbacks: "default",
       system: SYSTEM_PROMPT,
       messages,
     });
 
+    if (response.stop_reason === "refusal") {
+      return offlineResponse(messages);
+    }
+
     const reply = response.content
-      .filter((b): b is Anthropic.TextBlock => b.type === "text")
+      .filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text")
       .map((b) => b.text)
       .join("")
       .trim();

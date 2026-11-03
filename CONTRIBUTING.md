@@ -15,12 +15,12 @@ The verifier fails closed: without a compiled circuit, `POST /api/v1/verify-proo
 # Install circom: https://docs.circom.io/getting-started/installation/
 npm run compile-circuit
 
-wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_12.ptau -O circuits/pot12_final.ptau
+# PSE Perpetual Powers of Tau, 2^14 — covers both circuits
+wget https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_14.ptau -O circuits/pot14_final.ptau
 npm run setup-zk
 
-# Optional: threshold-reveal circuit (larger — needs pot14)
+# Optional: threshold-reveal circuit
 npm run compile-circuit:reveal
-wget https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_14.ptau -O circuits/pot14_final.ptau
 npm run setup-zk:reveal
 ```
 
@@ -50,4 +50,4 @@ Open a PR with a short description of what changed and why. For anything touchin
 
 ## Biggest open item: [ROADMAP.md](./ROADMAP.md)
 
-If you want to work on something with real impact, start there. Short version: the anonymous-tier ZK property is solid, but there's no lawful-disclosure path for institutions that need one (regulator research is clear they will). The audit log piece needs no new cryptography and is the best first PR for this.
+If you want to work on something with real impact, start there. The audit log and opt-in threshold reveal are shipped. Open items: a regulator-facing request flow, post-quantum protection (ML-KEM-768 / ML-DSA-65) for escrowed identity data and the audit trail, replacing the trusted-dealer keygen with a DKG, and a multi-party Groth16 setup ceremony.

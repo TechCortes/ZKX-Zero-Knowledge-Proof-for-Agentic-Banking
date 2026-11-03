@@ -4,8 +4,8 @@
  * of what the repo actually does, matched by keyword. Replies are labelled as offline.
  */
 
-const DEV_CTA = "Fork Vero on GitHub — deploy in 2 minutes.";
-const COMPLIANCE_CTA = "Ask us about the Vero enterprise SLA.";
+const DEV_CTA = "Fork Vero on GitHub — it runs locally in a few minutes.";
+const COMPLIANCE_CTA = "Exploring a pilot? Open an issue on the Vero GitHub repo to reach the team.";
 
 interface Rule {
   test: RegExp;
@@ -17,16 +17,17 @@ const RULES: Rule[] = [
   {
     test: /\b(fork|install|get started|getting started|setup|set up|run it|clone|deploy|npm|github|open.?source|license)\b/,
     answer:
-      "Vero Protocol is MIT-licensed. Fork the GitHub repo, run `npm install` and `npm run dev`, and you are live in about two minutes. " +
+      "Vero Protocol is MIT-licensed. Fork the GitHub repo, run `npm install` and `npm run dev` (Node 20.19+), and it runs locally in a few minutes. " +
       "The repo includes a working Groth16 setup, the agent onboarding API (`/api/v1/agents/register`, `/api/v1/payment`, `/api/v1/verify-proof`) and a registration UI at `/register`.\n\n" +
       DEV_CTA,
   },
   {
     test: /\b(fatf|r\.?16|travel rule|regulat|complian|audit|lawful|disclos|subpoena|eidas|aml|kya|kyc)\b/,
     answer:
-      "Vero uses a simple, regulator-aligned threshold: payments under $1,000/day stay anonymous, with no identity data collected. At or above that threshold — the FATF Recommendation 16 travel-rule benchmark — the agent must present a valid cryptographic proof of identity before the payment settles. " +
+      "Vero uses a simple threshold: payments under $1,000/day stay anonymous, with no identity data collected. At or above that threshold — modelled on the FATF Recommendation 16 travel-rule benchmark — the agent must present a valid cryptographic proof of identity before the payment settles. " +
       "Every decision (approved, proof required, rejected) is written to an audit log that contains zero personal data, tagged to the policy version active at the time. " +
-      "For institutions, the roadmap adds a threshold-reveal capability so a specific transaction can be unmasked under legal process by a designated multi-party group — never unilaterally, never in bulk.\n\n" +
+      "For institutions there is an opt-in threshold reveal: the proof also encrypts the identity to a k-of-n consortium key, so one specific transaction can be unmasked under legal process when k designated parties cooperate — never unilaterally, never in bulk. A formal regulator request flow is still being built. " +
+      "Vero is a testnet reference implementation: the circuits are not yet independently audited, and it is not a compliance certification.\n\n" +
       COMPLIANCE_CTA,
   },
   {
@@ -40,7 +41,7 @@ const RULES: Rule[] = [
     test: /\b(threshold|limit|\$?1,?000|spend|daily|anonymous|micropayment|policy)\b/,
     answer:
       "The policy is simple: under $1,000 of daily spend, payments go through as anonymous micropayments — no KYC, no data collected. At $1,000/day or more, a valid proof of identity is required before the payment settles. " +
-      "That $1,000 figure follows FATF Recommendation 16, and it's a single configurable constant, so you can point it at your own institution's risk model.\n\n" +
+      "That $1,000 figure is modelled on FATF Recommendation 16, and it's a single constant, so you can point it at your own institution's risk model.\n\n" +
       COMPLIANCE_CTA,
   },
   {
@@ -61,7 +62,7 @@ const RULES: Rule[] = [
 
 const OVERVIEW =
   "Vero Protocol is open-source zero-knowledge compliance for AI agent wallets. Small payments stay anonymous; larger ones require proof of a valid identity (age 18+) without revealing any personal data. " +
-  "It's open source (MIT-licensed), built on the Open Wallet Standard, and aligned with the FATF Recommendation 16 threshold model used in banking today. Ask me how the proof works, how the spending policy works, how compliance and audit work, or how to fork it.\n\n" +
+  "It's open source (MIT-licensed), built on the Open Wallet Standard, and its threshold is modelled on FATF Recommendation 16. It runs on testnet today. Ask me how the proof works, how the spending policy works, how compliance and audit work, or how to fork it.\n\n" +
   DEV_CTA;
 
 const OFFLINE_NOTE = "— Vera is in offline mode: this is a pre-written answer, not a live AI response.";
