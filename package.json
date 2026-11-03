@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:circuit": "vitest run src/zkp/",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "audit": "tsx scripts/vero-audit.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",

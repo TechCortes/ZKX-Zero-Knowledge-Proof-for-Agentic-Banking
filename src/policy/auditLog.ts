@@ -8,13 +8,20 @@
  *
  * Redis-backed (in-memory fallback for local dev/tests — see kv.ts). Each
  * record goes to two places:
+ *   - `audit_rec:<seq>`: every record under a global sequence number, never
+ *     trimmed — the compliance copy. Signed checkpoints chain these by seq
+ *     (auditCheckpoint.ts), which makes the log tamper-evident.
  *   - `audit:<agentId>`: the agent's own view, capped per agent
- *   - `audit_stream`: every record, never trimmed — the compliance copy
+ *
+ * Each record carries `recordHash` = SHA-256 of its canonical JSON (without
+ * the hash itself), so anyone holding a record can check it against a checkpoint.
  *
  * Reveal ciphertexts are not stored here; see escrow.ts.
  */
 
+import { createHash } from "crypto";
 import { kv } from "@/lib/kv";
+import { canonicalJson } from "@/lib/canonicalJson";
 import type { RevealCiphertext } from "@/zkp/reveal";
 import { storeRevealEscrow, type EscrowReference } from "./escrow";
 
@@ -27,6 +34,10 @@ export type AuditDecision =
 
 export interface AuditRecord {
   id: string;
+  /** Global sequence number. Absent on records written before the audit chain. */
+  seq?: number;
+  /** SHA-256 (hex) of the canonical record without this field. Absent on pre-chain records. */
+  recordHash?: string;
   agentId: string;
   /** Present only for decisions tied to a proof (approved_proof, proof_rejected). */
   commitment?: string;
@@ -55,19 +66,40 @@ type StoredAuditRecord = AuditRecord & { revealCiphertext?: RevealCiphertext };
 const MAX_ENTRIES_PER_AGENT = 500;
 
 const logKey = (agentId: string) => `audit:${agentId}`;
-const STREAM_KEY = "audit_stream";
+export const SEQ_KEY = "audit_seq";
+export const recordKey = (seq: number) => `audit_rec:${seq}`;
 
-export async function recordAuditEntry(entry: Omit<AuditRecord, "id" | "timestamp">): Promise<AuditRecord> {
-  const record: AuditRecord = {
-    ...entry,
-    id: crypto.randomUUID(),
-    timestamp: new Date().toISOString(),
-  };
-  const key = logKey(entry.agentId);
-  await kv().lpush(STREAM_KEY, record);
-  await kv().lpush(key, record);
-  await kv().ltrim(key, MAX_ENTRIES_PER_AGENT);
-  return record;
+/** Marker a checkpoint writes into a sequence slot whose writer never finished (see auditCheckpoint.ts). */
+export interface VoidedSlot {
+  void: true;
+  seq: number;
+}
+
+export function hashAuditRecord(record: AuditRecord): string {
+  const { recordHash: _omit, ...rest } = record;
+  return createHash("sha256").update(canonicalJson(rest)).digest("hex");
+}
+
+export async function recordAuditEntry(entry: Omit<AuditRecord, "id" | "timestamp" | "seq" | "recordHash">): Promise<AuditRecord> {
+  const id = crypto.randomUUID();
+  const timestamp = new Date().toISOString();
+  // A slot can only be lost to a checkpoint that voided it after a long stall; then take the next one.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const seq = await kv().incrby(SEQ_KEY, 1);
+    const unhashed: AuditRecord = { ...entry, id, seq, timestamp };
+    const record: AuditRecord = { ...unhashed, recordHash: hashAuditRecord(unhashed) };
+    if (await kv().set(recordKey(seq), record, { nx: true })) {
+      const key = logKey(entry.agentId);
+      await kv().lpush(key, record);
+      await kv().ltrim(key, MAX_ENTRIES_PER_AGENT);
+      return record;
+    }
+  }
+  throw new Error("Could not allocate an audit sequence number.");
+}
+
+export async function getAuditRecord(seq: number): Promise<AuditRecord | VoidedSlot | undefined> {
+  return (await kv().get<AuditRecord | VoidedSlot>(recordKey(seq))) ?? undefined;
 }
 
 /**
