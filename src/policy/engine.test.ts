@@ -5,6 +5,8 @@ import {
   getDailySpend,
   recordSpend,
   DAILY_ANONYMOUS_LIMIT,
+  MAX_PAYMENT_USD,
+  usdAmountError,
 } from "./engine";
 
 // Isolate tests: use unique agentIds per test to avoid ledger bleed
@@ -84,5 +86,46 @@ describe("Policy Engine — spend threshold", () => {
 
     const decision = await evaluatePayment({ agentId, amount: 50, recipient: "0xabc" });
     expect(decision.remainingAnonymous).toBe(0);
+  });
+});
+
+describe("Policy Engine — amounts", () => {
+  it("keeps cent-exact totals (no float drift)", async () => {
+    const agentId = freshAgent();
+    for (let i = 0; i < 10; i++) await recordSpend(agentId, 0.1);
+    expect(await getDailySpend(agentId)).toBe(1);
+    await recordSpend(agentId, 0.2);
+    expect(await getDailySpend(agentId)).toBe(1.2);
+  });
+
+  it("validates amounts", () => {
+    expect(usdAmountError(12.34)).toBeNull();
+    expect(usdAmountError(MAX_PAYMENT_USD)).toBeNull();
+    expect(usdAmountError(0)).toMatch(/positive/);
+    expect(usdAmountError(-5)).toMatch(/positive/);
+    expect(usdAmountError(Number.NaN)).toMatch(/positive/);
+    expect(usdAmountError(Infinity)).toMatch(/positive/);
+    expect(usdAmountError("10")).toMatch(/positive/);
+    expect(usdAmountError(MAX_PAYMENT_USD + 1)).toMatch(/at most/);
+    expect(usdAmountError(1.005)).toMatch(/two decimal/);
+  });
+});
+
+describe("Policy Engine — spending_limit rule", () => {
+  const limit = [{ type: "spending_limit" as const, value: 500 }];
+
+  it("denies a single payment that would overshoot the limit", async () => {
+    const agentId = freshAgent();
+    const decision = await evaluatePayment({ agentId, amount: 600, recipient: "0xabc" }, limit);
+    expect(decision.allowed).toBe(false);
+    expect(decision.requiresKYC).toBe(false);
+    expect(decision.reason).toMatch(/over the policy limit/);
+  });
+
+  it("counts today's spend plus this payment", async () => {
+    const agentId = freshAgent();
+    await recordSpend(agentId, 450);
+    expect((await evaluatePayment({ agentId, amount: 50, recipient: "0xabc" }, limit)).allowed).toBe(true);
+    expect((await evaluatePayment({ agentId, amount: 50.01, recipient: "0xabc" }, limit)).allowed).toBe(false);
   });
 });

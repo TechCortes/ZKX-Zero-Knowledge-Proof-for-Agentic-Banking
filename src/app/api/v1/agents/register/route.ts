@@ -1,13 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { registerAgent, AgentExistsError } from "@/lib/registry";
 import { logger } from "@/lib/logger";
-import type { PolicyRule, PolicyRuleType } from "@/policy/engine";
+import { usdAmountError, type PolicyRule, type PolicyRuleType } from "@/policy/engine";
 
 const ROUTE = "POST /api/v1/agents/register";
 const AGENT_ID_RE = /^[a-zA-Z0-9_-]{3,64}$/;
 const COMMITMENT_RE = /^\d{1,80}$/;
 const CAIP2_RE = /^[a-z0-9]+:[a-zA-Z0-9_-]+$/;
 const VALID_RULE_TYPES = new Set<PolicyRuleType>(["allowed_chains", "expires_at", "spending_limit"]);
+
+/** Each rule type's value must have the shape the policy engine expects. */
+function policyValueError(rule: PolicyRule): string | null {
+  switch (rule.type) {
+    case "allowed_chains":
+      return Array.isArray(rule.value) && rule.value.length > 0 &&
+        rule.value.every((c) => typeof c === "string" && CAIP2_RE.test(c))
+        ? null
+        : "allowed_chains value must be a non-empty array of CAIP-2 identifiers.";
+    case "expires_at":
+      return typeof rule.value === "string" && !isNaN(Date.parse(rule.value))
+        ? null
+        : "expires_at value must be an ISO-8601 date string.";
+    case "spending_limit": {
+      const error = usdAmountError(rule.value);
+      return error ? `spending_limit value: ${error.replace(/^amount /, "")}` : null;
+    }
+  }
+}
 
 export async function POST(req: NextRequest) {
   let body: unknown;
@@ -74,6 +93,11 @@ export async function POST(req: NextRequest) {
           { status: 422 }
         );
       }
+      const valueError = policyValueError(rule as PolicyRule);
+      if (valueError) {
+        logger.warn(ROUTE, "validation_failed", { field: "policies", agentId });
+        return NextResponse.json({ error: valueError }, { status: 422 });
+      }
     }
     resolvedPolicies = policies as PolicyRule[];
   }
@@ -89,7 +113,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const agent = await registerAgent(agentId, commitment, {
+    const { agent, apiKey } = await registerAgent(agentId, commitment, {
       chains: resolvedChains,
       policies: resolvedPolicies,
       expiresAt: resolvedExpiresAt,
@@ -98,7 +122,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         agentId: agent.id,
-        apiKey: agent.apiKey,
+        apiKey,
         commitment: agent.commitment,
         chains: agent.chains,
         policies: agent.policies,

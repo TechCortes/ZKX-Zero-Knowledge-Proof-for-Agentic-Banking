@@ -3,9 +3,10 @@ import { authenticate, isAuthFailure, unauthorized } from "@/lib/auth";
 import { verifyKYCProof, commitmentFromSignals, txNonceFromSignals } from "@/zkp/verifier";
 import { consumeChallenge } from "@/policy/challenges";
 import { getRevealPublicKey } from "@/zkp/revealConfig";
-import { evaluatePayment, approveWithProof, computePolicyVersionHash } from "@/policy/engine";
+import { evaluatePayment, approveWithProof, computePolicyVersionHash, usdAmountError } from "@/policy/engine";
 import { recordAuditEntry } from "@/policy/auditLog";
 import { logger } from "@/lib/logger";
+import { newTxId } from "@/lib/ids";
 import {
   settleTestnetPayment,
   getExistingSettlementWalletAddress,
@@ -81,9 +82,10 @@ export async function POST(req: NextRequest) {
     logger.warn(ROUTE, "validation_failed", { field: "proof|publicSignals", agentId: agent.id });
     return NextResponse.json({ error: "proof and publicSignals are required." }, { status: 422 });
   }
-  if (typeof amount !== "number" || amount <= 0) {
+  const amountError = usdAmountError(amount);
+  if (amountError || typeof amount !== "number") {
     logger.warn(ROUTE, "validation_failed", { field: "amount", agentId: agent.id });
-    return NextResponse.json({ error: "amount must be a positive number (USD)." }, { status: 422 });
+    return NextResponse.json({ error: amountError }, { status: 422 });
   }
   if (typeof recipient !== "string" || recipient.trim().length === 0) {
     logger.warn(ROUTE, "validation_failed", { field: "recipient", agentId: agent.id });
@@ -111,6 +113,23 @@ export async function POST(req: NextRequest) {
   };
   const decision = await evaluatePayment(paymentRequest, agent.policies);
   const policyVersionHash = computePolicyVersionHash(agent.policies);
+
+  // A policy rule (chain, expiry, spending limit) blocks this payment, proof or not.
+  if (!decision.allowed && !decision.requiresKYC) {
+    logger.warn(ROUTE, "policy_denied", { agentId: agent.id, errorCode: decision.errorCode });
+    await recordAuditEntry({
+      agentId: agent.id,
+      commitment: proofCommitment,
+      policyVersionHash,
+      decision: "policy_denied",
+      thresholdMet: true,
+      dailyTotal: decision.dailyTotal,
+    });
+    return NextResponse.json(
+      { error: decision.reason, errorCode: decision.errorCode },
+      { status: 403 }
+    );
+  }
 
   // Bind proof to the one payment it was challenged for — prevents replay and reuse.
   // Consumed before verification so a failed attempt can't be retried on the same nonce.
@@ -163,7 +182,7 @@ export async function POST(req: NextRequest) {
   }
 
   const approved = await approveWithProof(paymentRequest);
-  const txId = `zkx_${Date.now()}`;
+  const txId = newTxId();
   // Audit the approval before any settlement work, so the compliance record
   // exists even if settlement is slow or the function is cut short.
   await recordAuditEntry({

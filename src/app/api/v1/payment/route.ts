@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticate, isAuthFailure, unauthorized } from "@/lib/auth";
-import { evaluatePayment, recordSpend, computePolicyVersionHash } from "@/policy/engine";
+import { evaluatePayment, recordSpend, computePolicyVersionHash, usdAmountError } from "@/policy/engine";
 import { recordAuditEntry } from "@/policy/auditLog";
 import { logger } from "@/lib/logger";
+import { newTxId } from "@/lib/ids";
 import { getRevealPublicKey } from "@/zkp/revealConfig";
 import { REQUIRED_MIN_AGE } from "@/zkp/verifier";
 import { issueChallenge, CHALLENGE_TTL_SECONDS } from "@/policy/challenges";
@@ -27,9 +28,10 @@ export async function POST(req: NextRequest) {
 
   const { amount, recipient, memo, chainId } = (body ?? {}) as Record<string, unknown>;
 
-  if (typeof amount !== "number" || amount <= 0) {
+  const amountError = usdAmountError(amount);
+  if (amountError || typeof amount !== "number") {
     logger.warn(ROUTE, "validation_failed", { field: "amount", agentId: agent.id });
-    return NextResponse.json({ error: "amount must be a positive number (USD)." }, { status: 422 });
+    return NextResponse.json({ error: amountError }, { status: 422 });
   }
   if (typeof recipient !== "string" || recipient.trim().length === 0) {
     logger.warn(ROUTE, "validation_failed", { field: "recipient", agentId: agent.id });
@@ -67,7 +69,7 @@ export async function POST(req: NextRequest) {
 
   if (decision.allowed) {
     await recordSpend(agent.id, amount);
-    const txId = `zkx_${Date.now()}`;
+    const txId = newTxId();
     logger.info(ROUTE, "payment_approved_anonymous", {
       agentId: agent.id,
       amount,
