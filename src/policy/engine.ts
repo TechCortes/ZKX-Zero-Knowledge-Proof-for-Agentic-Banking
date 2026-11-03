@@ -28,6 +28,8 @@ export interface PolicyContext {
   agentId: string;
   timestamp: string; // ISO-8601
   spending: { dailyTotal: number; date: string };
+  /** USD amount of the payment being evaluated. */
+  amount?: number;
 }
 
 export interface RuleEvalResult {
@@ -65,10 +67,12 @@ export function evaluateRules(rules: PolicyRule[], context: PolicyContext): Rule
 
     if (rule.type === "spending_limit") {
       const limit = rule.value as number;
-      if (context.spending.dailyTotal >= limit) {
+      // Count the payment being evaluated, so one large payment can't overshoot the limit.
+      const projectedCents = toCents(context.spending.dailyTotal) + toCents(context.amount ?? 0);
+      if (projectedCents > toCents(limit)) {
         return {
           denied: true,
-          reason: `Daily spend of $${context.spending.dailyTotal.toLocaleString()} has reached the policy limit of $${limit.toLocaleString()}.`,
+          reason: `This payment would bring today's spend to $${fromCents(projectedCents).toLocaleString()}, over the policy limit of $${limit.toLocaleString()}.`,
           errorCode: OWSErrorCode.POLICY_DENIED,
         };
       }
@@ -102,20 +106,55 @@ export interface ProofSubmission {
   publicSignals: string[];
 }
 
+// --- Amounts ---
+
+/** Largest single payment the API accepts, in USD. */
+export const MAX_PAYMENT_USD = 1_000_000;
+
+/** USD → integer cents. Callers must pass amounts already checked by parseUsdAmount. */
+export function toCents(usd: number): number {
+  return Math.round(usd * 100);
+}
+
+export function fromCents(cents: number): number {
+  return cents / 100;
+}
+
+/**
+ * Validate a client-supplied USD amount: a finite number above zero, at most
+ * MAX_PAYMENT_USD, with no more than two decimal places. Returns an error
+ * message, or null if the amount is acceptable.
+ */
+export function usdAmountError(amount: unknown): string | null {
+  if (typeof amount !== "number" || !Number.isFinite(amount) || amount <= 0) {
+    return "amount must be a positive number (USD).";
+  }
+  if (amount > MAX_PAYMENT_USD) {
+    return `amount must be at most $${MAX_PAYMENT_USD.toLocaleString()}.`;
+  }
+  if (Math.abs(amount * 100 - Math.round(amount * 100)) > 1e-6) {
+    return "amount can have at most two decimal places.";
+  }
+  return null;
+}
+
 // Daily spend tracker (keyed by agentId + UTC date) — shared across serverless instances.
+// Stored as integer cents: Redis INCRBY only accepts integers, and float USD drifts.
 const LEDGER_TTL_SECONDS = 60 * 60 * 48; // 48h: outlives the UTC day boundary, then cleans up
 
 function ledgerKey(agentId: string): string {
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD UTC
-  return `spend:${agentId}::${today}`;
+  return `spend_cents:${agentId}::${today}`;
 }
 
+/** Today's spend for an agent, in USD. */
 export async function getDailySpend(agentId: string): Promise<number> {
-  return (await kv().get<number>(ledgerKey(agentId))) ?? 0;
+  return fromCents((await kv().get<number>(ledgerKey(agentId))) ?? 0);
 }
 
+/** Add a payment to today's ledger; returns the new daily total in USD. */
 export async function recordSpend(agentId: string, amount: number): Promise<number> {
-  return kv().incrby(ledgerKey(agentId), amount, { ex: LEDGER_TTL_SECONDS });
+  return fromCents(await kv().incrby(ledgerKey(agentId), toCents(amount), { ex: LEDGER_TTL_SECONDS }));
 }
 
 export const DAILY_ANONYMOUS_LIMIT = 1_000; // USD
@@ -145,13 +184,14 @@ export async function evaluatePayment(
   rules: PolicyRule[] = []
 ): Promise<PolicyDecision> {
   const daily = await getDailySpend(request.agentId);
-  const projectedTotal = daily + request.amount;
+  const projectedTotal = fromCents(toCents(daily) + toCents(request.amount));
   const remaining = Math.max(0, DAILY_ANONYMOUS_LIMIT - daily);
   const context: PolicyContext = {
     chainId: request.chainId,
     agentId: request.agentId,
     timestamp: new Date().toISOString(),
     spending: { dailyTotal: daily, date: new Date().toISOString().slice(0, 10) },
+    amount: request.amount,
   };
 
   // OWS rule evaluation — AND semantics
