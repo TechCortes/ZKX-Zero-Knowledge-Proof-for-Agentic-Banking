@@ -6,7 +6,8 @@
  * before wiring real HSM / consortium infrastructure. See docs/threshold-reveal.md.
  *
  *   npm run reveal -- keygen  --threshold 2 --parties 3 --out ./consortium
- *   npm run reveal -- extract --audit audit.json --tx <txId> --out ct.json
+ *   npm run reveal -- escrow  --tx <txId> --out ct.json      (operator: reads the escrow store)
+ *   npm run reveal -- extract --audit audit.json --tx <txId> --out ct.json   (older audit exports)
  *   npm run reveal -- partial --share ./consortium/share-1.json --ciphertext ct.json --out p1.json
  *   npm run reveal -- combine --consortium ./consortium/consortium.json --ciphertext ct.json p1.json p3.json
  *   npm run reveal -- demo    (everything above, in memory, with a sample identity)
@@ -27,6 +28,7 @@ import {
   type PartialDecryption,
   type RevealCiphertext,
 } from "../src/zkp/reveal";
+import { getRevealEscrow, hashRevealCiphertext } from "../src/policy/escrow";
 
 // Node 18 has no global WebCrypto by default; reveal.ts uses crypto.getRandomValues.
 if (!globalThis.crypto) (globalThis as { crypto: unknown }).crypto = webcrypto;
@@ -38,9 +40,13 @@ Commands:
            Deal a k-of-n consortium key (trusted dealer, reference only).
            Writes <dir>/consortium.json (public) and <dir>/share-<i>.json (secret, one per party).
 
+  escrow   --tx <txId> --out <file>
+           Operator only: read one transaction's ciphertext from the reveal escrow.
+           Needs the store credentials (KV_REST_API_URL / KV_REST_API_TOKEN) in the environment.
+
   extract  --audit <file> --tx <txId> --out <file>
-           Pull the reveal ciphertext for one transaction out of a GET /api/v1/audit response
-           (or a single audit record).
+           Pull the ciphertext out of a saved escrow record, or out of an audit export made
+           before ciphertexts moved to the escrow (current audit exports carry only a hash).
 
   partial  --share <file> --ciphertext <file> --out <file>
            Run by ONE consortium member: apply their share to one ciphertext.
@@ -108,18 +114,43 @@ async function keygen(flags: Flags) {
   console.log(`\nServer config:\n  VERO_REVEAL_PUBLIC_KEY="${consortium.publicKey.join(",")}"`);
 }
 
+function writeCiphertext(out: string, tx: string, ct: RevealCiphertext, expectedHash?: string) {
+  if (expectedHash && hashRevealCiphertext(ct) !== expectedHash) {
+    fail(`Ciphertext for ${tx} does not match its recorded hash. It was altered after escrow.`);
+  }
+  writeJson(out, ct);
+  console.log(`Wrote ciphertext for ${tx} (commitment ${ct.commitment.slice(0, 12)}…)`);
+}
+
+async function escrow(flags: Flags) {
+  const tx = need(flags, "tx");
+  if (!process.env.KV_REST_API_URL && !process.env.UPSTASH_REDIS_REST_URL) {
+    fail("No store credentials in the environment (KV_REST_API_URL / KV_REST_API_TOKEN).");
+  }
+  const record = await getRevealEscrow(tx);
+  if (!record) fail(`No escrow record for ${tx} (reveal was off for that payment, or the txId is wrong).`);
+  writeCiphertext(need(flags, "out"), tx, record.ciphertext, record.ciphertextHash);
+}
+
 async function extract(flags: Flags) {
   const tx = need(flags, "tx");
   const data = readJson<{ entries?: unknown[] }>(need(flags, "audit"), "audit log");
   const entries = (Array.isArray(data.entries) ? data.entries : [data]) as {
     txId?: string;
-    revealCiphertext?: RevealCiphertext;
+    revealCiphertext?: RevealCiphertext; // audit exports from before the escrow split
+    ciphertext?: RevealCiphertext;       // an escrow record
+    ciphertextHash?: string;
+    revealEscrow?: { ciphertextHash: string };
   }[];
   const entry = entries.find((e) => e.txId === tx);
-  if (!entry) fail(`No audit record with txId ${tx}.`);
-  if (!entry.revealCiphertext) fail(`Audit record ${tx} has no reveal ciphertext (reveal was off for that payment).`);
-  writeJson(need(flags, "out"), entry.revealCiphertext);
-  console.log(`Wrote ciphertext for ${tx} (commitment ${entry.revealCiphertext.commitment.slice(0, 12)}…)`);
+  if (!entry) fail(`No record with txId ${tx}.`);
+  const ct = entry.ciphertext ?? entry.revealCiphertext;
+  if (!ct) {
+    fail(entry.revealEscrow
+      ? `Record ${tx} only carries the ciphertext's hash. Ask the operator to run: npm run reveal -- escrow --tx ${tx}`
+      : `Record ${tx} has no reveal ciphertext (reveal was off for that payment).`);
+  }
+  writeCiphertext(need(flags, "out"), tx, ct, entry.ciphertextHash);
 }
 
 async function partial(flags: Flags) {
@@ -161,7 +192,7 @@ async function demo() {
   await combinePartials(consortium, ct, [partials[0]]).catch((e) => console.log(`   refused — ${e.message}`));
 }
 
-const COMMANDS: Record<string, (f: Flags) => Promise<void>> = { keygen, extract, partial, combine, demo };
+const COMMANDS: Record<string, (f: Flags) => Promise<void>> = { keygen, escrow, extract, partial, combine, demo };
 
 async function main() {
   const [cmd, ...rest] = process.argv.slice(2);

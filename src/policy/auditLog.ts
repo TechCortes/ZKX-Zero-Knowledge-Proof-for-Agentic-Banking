@@ -6,12 +6,17 @@
  * threshold was crossed. No PII — `commitment` is already public and
  * non-reversible on its own, and `agentId` is a handle, not an identity.
  *
- * Redis-backed (in-memory fallback for local dev/tests — see kv.ts), keyed
- * per agent so each agent's trail is its own bounded list.
+ * Redis-backed (in-memory fallback for local dev/tests — see kv.ts). Each
+ * record goes to two places:
+ *   - `audit:<agentId>`: the agent's own view, capped per agent
+ *   - `audit_stream`: every record, never trimmed — the compliance copy
+ *
+ * Reveal ciphertexts are not stored here; see escrow.ts.
  */
 
 import { kv } from "@/lib/kv";
 import type { RevealCiphertext } from "@/zkp/reveal";
+import { storeRevealEscrow, type EscrowReference } from "./escrow";
 
 export type AuditDecision =
   | "approved_anonymous"
@@ -36,17 +41,21 @@ export interface AuditRecord {
   /** The server challenge the approving proof was bound to (approved_proof only). */
   txNonce?: string;
   /**
-   * Threshold reveal (ROADMAP phase 2): the identity encrypted to the consortium key,
-   * present on approved_proof when reveal is configured. Opaque unless k of n
-   * consortium members cooperate — see docs/threshold-reveal.md.
+   * Threshold reveal (ROADMAP phase 2): present on approved_proof when reveal is
+   * configured. The ciphertext itself sits in the reveal escrow under this txId;
+   * the audit record only carries its hash. See docs/threshold-reveal.md.
    */
-  revealCiphertext?: RevealCiphertext;
+  revealEscrow?: EscrowReference;
 }
+
+/** Records written before the escrow split carried the ciphertext inline. */
+type StoredAuditRecord = AuditRecord & { revealCiphertext?: RevealCiphertext };
 
 /** Cap per-agent history so a single agent's list can't grow unbounded. */
 const MAX_ENTRIES_PER_AGENT = 500;
 
 const logKey = (agentId: string) => `audit:${agentId}`;
+const STREAM_KEY = "audit_stream";
 
 export async function recordAuditEntry(entry: Omit<AuditRecord, "id" | "timestamp">): Promise<AuditRecord> {
   const record: AuditRecord = {
@@ -55,12 +64,32 @@ export async function recordAuditEntry(entry: Omit<AuditRecord, "id" | "timestam
     timestamp: new Date().toISOString(),
   };
   const key = logKey(entry.agentId);
+  await kv().lpush(STREAM_KEY, record);
   await kv().lpush(key, record);
   await kv().ltrim(key, MAX_ENTRIES_PER_AGENT);
   return record;
 }
 
-/** An agent's own audit trail, most recent first. */
+/**
+ * An agent's own audit trail, most recent first. Never contains a reveal
+ * ciphertext: older records that carried one inline have it copied to the
+ * escrow (if not there already) and replaced by its hash.
+ */
 export async function getAuditLog(agentId: string): Promise<AuditRecord[]> {
-  return kv().lrange<AuditRecord>(logKey(agentId), 0, -1);
+  const records = await kv().lrange<StoredAuditRecord>(logKey(agentId), 0, -1);
+  return Promise.all(records.map(withoutInlineCiphertext));
+}
+
+async function withoutInlineCiphertext(stored: StoredAuditRecord): Promise<AuditRecord> {
+  const { revealCiphertext, ...record } = stored;
+  if (!revealCiphertext) return record;
+  if (!record.txId) return record; // can't be escrowed without a txId; drop it from the view
+  const revealEscrow = await storeRevealEscrow({
+    txId: record.txId,
+    agentId: record.agentId,
+    txNonce: record.txNonce,
+    ciphertext: revealCiphertext,
+    createdAt: record.timestamp,
+  });
+  return { ...record, revealEscrow };
 }
