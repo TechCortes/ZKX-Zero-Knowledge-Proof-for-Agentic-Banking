@@ -71,14 +71,14 @@ describe("Audit log — ciphertexts stay out of the agent view", () => {
     expect(escrowed?.createdAt).toBe("2026-10-31T00:00:00.000Z");
   });
 
-  it("writes every record to the untrimmed compliance stream", async () => {
+  it("gives every record a sequence number and keeps an untrimmed copy by seq", async () => {
     const agentId = fresh("agent");
     const record = await recordAuditEntry({
       agentId, policyVersionHash: computePolicyVersionHash(), decision: "approved_anonymous",
       thresholdMet: false, dailyTotal: 10,
     });
-    const stream = await kv().lrange<{ id: string }>("audit_stream", 0, 50);
-    expect(stream.some((r) => r.id === record.id)).toBe(true);
+    expect(record.seq).toBeGreaterThan(0);
+    expect(await kv().get(`audit_rec:${record.seq}`)).toEqual(record);
   });
 });
 

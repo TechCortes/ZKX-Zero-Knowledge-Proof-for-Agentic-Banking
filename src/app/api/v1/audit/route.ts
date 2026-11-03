@@ -8,9 +8,9 @@ const ROUTE = "GET /api/v1/audit";
 /**
  * Returns the authenticated agent's own compliance audit trail — every
  * policy decision made about it, with the policy version that made the
- * call. See ROADMAP.md: this is phase 1 (audit log). Phase 2 (threshold
- * reveal) is what would let a *regulator*, not just the agent itself,
- * request this under legal process — not implemented here.
+ * call. Records carry `seq` and `recordHash`, so an agent can check any of
+ * them against the signed public checkpoints (GET /api/v1/audit/checkpoints,
+ * docs/audit-chain.md). A regulator-facing request flow is separate.
  */
 export async function GET(req: NextRequest) {
   const auth = await authenticate(req);
