@@ -24,7 +24,7 @@ wget https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppo
 npm run setup-zk:reveal
 ```
 
-Node 20+ is required (Next 16 and Vitest 4).
+Node 20.19+ is required (Next 16, Vitest 4, `@noble/post-quantum`); `.nvmrc` pins 22.
 
 ## Tests
 

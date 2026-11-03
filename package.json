@@ -20,6 +20,7 @@
     "@anthropic-ai/sdk": "^0.127.0",
     "@dynamic-labs-wallet/node": "^1.1.15",
     "@dynamic-labs-wallet/node-evm": "^1.1.15",
+    "@noble/post-quantum": "^0.7.1",
     "@upstash/redis": "^1.39.0",
     "@wallet-standard/core": "^1.0.3",
     "@wallet-standard/features": "^1.0.3",
@@ -44,5 +45,8 @@
     "tsx": "^4.19.2",
     "typescript": "^5",
     "vitest": "^4.1.8"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   }
 }

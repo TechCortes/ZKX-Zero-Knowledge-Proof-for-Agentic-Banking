@@ -15,7 +15,6 @@
 
 import fs from "fs";
 import path from "path";
-import { webcrypto } from "crypto";
 import {
   REVEAL_FORMAT,
   dealKeyShares,
@@ -29,9 +28,6 @@ import {
   type RevealCiphertext,
 } from "../src/zkp/reveal";
 import { getRevealEscrow, hashRevealCiphertext } from "../src/policy/escrow";
-
-// Node 18 has no global WebCrypto by default; reveal.ts uses crypto.getRandomValues.
-if (!globalThis.crypto) (globalThis as { crypto: unknown }).crypto = webcrypto;
 
 const USAGE = `Usage: npm run reveal -- <command> [options]
 
