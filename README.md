@@ -89,8 +89,9 @@ npm run dev
 # 2. Compile the circuit
 npm run compile-circuit
 
-# 3. Download Powers of Tau (Hermez ceremony, 2^12)
-wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_12.ptau -O circuits/pot12_final.ptau
+# 3. Download Powers of Tau (PSE Perpetual Powers of Tau, 2^14 — covers both circuits;
+#    the old Hermez S3 bucket no longer serves files)
+wget https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_14.ptau -O circuits/pot14_final.ptau
 
 # 4. Generate proving + verification keys
 npm run setup-zk
@@ -137,7 +138,11 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup and how to propose change
 
 ## Roadmap
 
-The zero-knowledge property today means the verifier learns nothing beyond "credential valid, age ≥ 18" — great for the anonymous tier, not sufficient on its own for institutional piloting, which needs a lawful-disclosure path (EU eIDAS 2 and FATF Travel Rule guidance both expect one). See [ROADMAP.md](./ROADMAP.md) for the proposed threshold-reveal + audit-log design that closes that gap without breaking anonymity by default.
+By default the verifier learns nothing beyond "credential valid, age ≥ 18". Institutions also need a lawful-disclosure path (EU eIDAS 2 and FATF Travel Rule guidance both expect one), so the audit log and opt-in k-of-n threshold reveal are shipped. See [ROADMAP.md](./ROADMAP.md) and [docs/threshold-reveal.md](./docs/threshold-reveal.md).
+
+Next: a regulator request flow, post-quantum (ML-KEM / ML-DSA) protection for escrowed identity data and the audit trail, a multi-party trusted setup, and issuer-signed credentials.
+
+**Status:** testnet reference implementation. The circuits have not been independently audited, the Groth16 setup has a single contributor, and the demo credential is self-asserted. Don't use it to protect real funds or identities yet.
 
 ## License
 

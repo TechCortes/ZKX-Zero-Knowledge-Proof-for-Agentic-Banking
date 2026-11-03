@@ -30,8 +30,8 @@ const zkxPrinciples = [
   },
   {
     num: "06",
-    title: "FATF-compatible",
-    body: "Built around the AML thresholds regulators already use, not around them. The $1,000 daily limit follows FATF Recommendation 16 — the same travel-rule standard banks report against today.",
+    title: "Regulator-shaped thresholds",
+    body: "The $1,000 daily limit is modelled on the threshold in FATF Recommendation 16, the travel-rule standard banks report against today. It's one setting, so you can match your own jurisdiction. A design basis, not a compliance certification.",
   },
 ];
 
@@ -123,7 +123,7 @@ const neverLearnedItems = [
 const forkIdeas = [
   {
     title: "Swap the threshold",
-    body: "The $1,000 FATF Rec. 16 cutoff is one constant in the policy engine. Point it at your own risk model — per-jurisdiction limits, velocity checks, whatever your compliance team needs.",
+    body: "The $1,000 cutoff, modelled on FATF Rec. 16, is one constant in the policy engine. Point it at your own risk model — per-jurisdiction limits, velocity checks, whatever your compliance team needs.",
   },
   {
     title: "Extend the circuit",
@@ -163,9 +163,9 @@ const sponsors: {
   {
     name: "Dynamic",
     initial: "D",
-    role: "Agent wallets",
-    body: "Planned: a Dynamic-powered wallet that signs a payment only after Vero's compliance check approves it. No valid proof, no signature, above the reporting threshold. Not yet integrated.",
-    status: "planned",
+    role: "Agent wallets · testnet",
+    body: "Live on testnet: a Dynamic server wallet signs a Base Sepolia transaction only after Vero's compliance check approves the proof. No valid proof, no signature, above the reporting threshold. Testnet only, with fixed demo amounts.",
+    status: "building",
     card: "border-blue-500/25 bg-blue-500/[0.05] hover:border-blue-500/45",
     mark: "bg-blue-500/20 text-blue-300 border border-blue-500/30",
     roleText: "text-blue-400",
@@ -206,9 +206,9 @@ const stackLayers: {
   layer: string; name: string; detail: string; status: Status;
   accent: string; bg: string; here: boolean;
 }[] = [
-  { layer: "Layer 1", name: "Dynamic",       detail: "Agent wallets and payment signing — planned",                     status: "planned",  accent: "border-blue-500/25 text-blue-300",       bg: "bg-blue-500/[0.06]",    here: false },
+  { layer: "Layer 1", name: "Dynamic",       detail: "Agent wallets and payment signing — live on Base Sepolia testnet", status: "building", accent: "border-blue-500/25 text-blue-300",       bg: "bg-blue-500/[0.06]",    here: false },
   { layer: "Layer 2", name: "x402 on Base",  detail: "Low-cost USDC micropayments — target rail",                       status: "planned",  accent: "border-indigo-500/25 text-indigo-300",   bg: "bg-indigo-500/[0.06]",  here: false },
-  { layer: "Layer 3", name: "Vero Protocol", detail: "Compliance proof — FATF Rec. 16, live today",                     status: "live",     accent: "border-purple-500/50 text-purple-300",   bg: "bg-purple-500/[0.12]",  here: true  },
+  { layer: "Layer 3", name: "Vero Protocol", detail: "ZK compliance proof and threshold reveal — live on testnet",       status: "live",     accent: "border-purple-500/50 text-purple-300",   bg: "bg-purple-500/[0.12]",  here: true  },
   { layer: "Layer 4", name: "Filecoin",      detail: "Tamper-proof, PII-free audit trail — planned",                    status: "planned",  accent: "border-cyan-500/25 text-cyan-300",       bg: "bg-cyan-500/[0.06]",    here: false },
   { layer: "Layer 5", name: "Anchorage",     detail: "Regulated institutional custody and settlement — planned",        status: "planned",  accent: "border-emerald-500/25 text-emerald-300", bg: "bg-emerald-500/[0.06]", here: false },
 ];
@@ -277,7 +277,7 @@ export default function Home() {
             <div className="flex-1 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 text-xs px-3.5 py-1.5 rounded-full border border-blue-500/20 bg-blue-500/5 text-blue-300 font-medium mb-8">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"/>
-                OWS Native · vero:kyc · FATF-Compatible · MIT Licensed
+                OWS Native · vero:kyc · Testnet · MIT Licensed
               </div>
 
               <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-[1.05] mb-6">
@@ -490,7 +490,7 @@ export default function Home() {
           <p className="text-slate-700 text-xs mt-3 text-center">
             x402 ecosystem totals as of April 2026, per Coinbase — since formalized as the Linux Foundation&apos;s
             x402 Foundation with Visa, Mastercard, Stripe, Google, and AWS as members. The gap isn&apos;t theoretical:
-            agent-to-agent payments already move real volume with no Know-Your-Agent (KYA) standard and no AML framework attached.
+            agent-to-agent payments already move volume, and Know-Your-Agent (KYA) and AML standards for them are still being written.
           </p>
         </div>
       </section>
@@ -504,7 +504,7 @@ export default function Home() {
               Six principles that make Vero Protocol different.
             </h2>
             <p className="text-slate-500 text-sm max-w-xl leading-relaxed">
-              Built in the same spirit as the Open Wallet Standard: no new, unproven primitives — existing, audited standards, applied to compliance.
+              Built in the same spirit as the Open Wallet Standard: no new cryptographic primitives — well-studied building blocks (Groth16, Poseidon, ElGamal), applied to compliance. The circuits themselves have not been independently audited yet.
             </p>
           </div>
 
