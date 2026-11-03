@@ -6,7 +6,11 @@
  * before wiring real HSM / consortium infrastructure. See docs/threshold-reveal.md.
  *
  *   npm run reveal -- keygen  --threshold 2 --parties 3 --out ./consortium
- *   npm run reveal -- escrow  --tx <txId> --out ct.json      (operator: reads the escrow store)
+ *   npm run reveal -- kem-keygen --index 1 --out ./member-1          (each member, on their own machine)
+ *   npm run reveal -- escrow-keys --threshold 2 member-*.pub.json   (operator: prints VERO_ESCROW_KEYS)
+ *   npm run reveal -- escrow  --tx <txId> --out env.json     (operator: reads the escrow store)
+ *   npm run reveal -- unseal  --member-key ./member-1/member-1.key.json --envelope env.json --out part-1.json
+ *   npm run reveal -- open    --envelope env.json --out ct.json part-1.json part-3.json
  *   npm run reveal -- extract --audit audit.json --tx <txId> --out ct.json   (older audit exports)
  *   npm run reveal -- partial --share ./consortium/share-1.json --ciphertext ct.json --out p1.json
  *   npm run reveal -- combine --consortium ./consortium/consortium.json --ciphertext ct.json p1.json p3.json
@@ -27,7 +31,20 @@ import {
   type PartialDecryption,
   type RevealCiphertext,
 } from "../src/zkp/reveal";
-import { getRevealEscrow, hashRevealCiphertext } from "../src/policy/escrow";
+import { getRevealEscrow, hashRevealCiphertext, sealUnsealedEscrows, serializeRevealCiphertext } from "../src/policy/escrow";
+import {
+  ESCROW_FORMAT,
+  ESCROW_KEYS_FORMAT,
+  generateEscrowMemberKey,
+  parseEscrowKeySet,
+  sealEscrow,
+  unsealEscrowShare,
+  openEscrow,
+  type EscrowEnvelope,
+  type EscrowMemberKey,
+  type EscrowSharePart,
+} from "../src/zkp/escrowSeal";
+import { getEscrowKeySet } from "../src/zkp/revealConfig";
 
 const USAGE = `Usage: npm run reveal -- <command> [options]
 
@@ -36,9 +53,28 @@ Commands:
            Deal a k-of-n consortium key (trusted dealer, reference only).
            Writes <dir>/consortium.json (public) and <dir>/share-<i>.json (secret, one per party).
 
+  kem-keygen  --index <i> --out <dir>
+           Run by EACH consortium member on their own machine: make their post-quantum
+           (X-Wing: ML-KEM-768 + X25519) escrow key. Writes member-<i>.key.json (secret)
+           and member-<i>.pub.json (public, send to the operator).
+
+  escrow-keys --threshold <k> <member-*.pub.json...>
+           Operator: assemble the members' public keys into the VERO_ESCROW_KEYS value.
+
   escrow   --tx <txId> --out <file>
-           Operator only: read one transaction's ciphertext from the reveal escrow.
+           Operator only: read one transaction's record from the reveal escrow. Writes the
+           sealed envelope (vero-escrow/v2), or the bare ciphertext for unsealed records.
            Needs the store credentials (KV_REST_API_URL / KV_REST_API_TOKEN) in the environment.
+
+  seal-pending
+           Operator only: seal every unsealed escrow record with VERO_ESCROW_KEYS. Safe to re-run.
+
+  unseal   --member-key <file> --envelope <file> --out <file>
+           Run by ONE member: recover their share of the envelope key.
+
+  open     --envelope <file> --out <file> <share part files...>
+           Combine k share parts and write the inner ciphertext (checked against its hash).
+           Then run partial / combine on it as usual.
 
   extract  --audit <file> --tx <txId> --out <file>
            Pull the ciphertext out of a saved escrow record, or out of an audit export made
@@ -50,7 +86,8 @@ Commands:
   combine  --consortium <file> --ciphertext <file> <partial files...>
            Verify each partial and decrypt once at least k are valid.
 
-  demo     Run keygen → encrypt → partial ×k → combine in memory with a sample identity.`;
+  demo     Run the whole round-trip in memory with a sample identity:
+           keygen → encrypt → seal → unseal ×k → open → partial ×k → combine.`;
 
 type Flags = Record<string, string> & { _: string[] };
 
@@ -79,17 +116,23 @@ function need(flags: Flags, name: string): string {
   return flags[name];
 }
 
-function readJson<T>(file: string, what: string): T {
+function readJson<T>(file: string, what: string, format: string = REVEAL_FORMAT): T {
   let data: { format?: string };
   try {
     data = JSON.parse(fs.readFileSync(file, "utf-8"));
   } catch (err) {
     fail(`Could not read ${what} from ${file}: ${err instanceof Error ? err.message : err}`);
   }
-  if (data.format !== undefined && data.format !== REVEAL_FORMAT) {
-    fail(`${file} is format "${data.format}", expected "${REVEAL_FORMAT}".`);
+  if (data.format !== undefined && data.format !== format) {
+    fail(`${file} is format "${data.format}", expected "${format}".`);
   }
   return data as T;
+}
+
+function needStore() {
+  if (!process.env.KV_REST_API_URL && !process.env.UPSTASH_REDIS_REST_URL) {
+    fail("No store credentials in the environment (KV_REST_API_URL / KV_REST_API_TOKEN).");
+  }
 }
 
 function writeJson(file: string, data: unknown, secret = false) {
@@ -118,14 +161,80 @@ function writeCiphertext(out: string, tx: string, ct: RevealCiphertext, expected
   console.log(`Wrote ciphertext for ${tx} (commitment ${ct.commitment.slice(0, 12)}…)`);
 }
 
+async function kemKeygen(flags: Flags) {
+  const index = Number(need(flags, "index"));
+  const out = need(flags, "out");
+  const key = (() => {
+    try {
+      return generateEscrowMemberKey(index);
+    } catch (e) {
+      return fail((e as Error).message);
+    }
+  })();
+  writeJson(path.join(out, `member-${index}.key.json`), key, true);
+  writeJson(path.join(out, `member-${index}.pub.json`), { format: key.format, index, publicKey: key.publicKey });
+  console.log(`Member ${index}: escrow key written to ${out}/`);
+  console.log(`  member-${index}.key.json  SECRET — keep it (an HSM in production); never send it anywhere`);
+  console.log(`  member-${index}.pub.json  public — send to the operator`);
+}
+
+async function escrowKeys(flags: Flags) {
+  const threshold = Number(need(flags, "threshold"));
+  if (flags._.length === 0) fail("Pass the members' public key files.");
+  const members = flags._.map((f) => readJson<{ index: number; publicKey: string }>(f, "member public key", ESCROW_KEYS_FORMAT));
+  try {
+    const ks = parseEscrowKeySet({ format: ESCROW_KEYS_FORMAT, threshold, members });
+    console.log(`Server config (${threshold}-of-${members.length}):\n  VERO_ESCROW_KEYS='${JSON.stringify(ks)}'`);
+  } catch (e) {
+    fail((e as Error).message);
+  }
+}
+
 async function escrow(flags: Flags) {
   const tx = need(flags, "tx");
-  if (!process.env.KV_REST_API_URL && !process.env.UPSTASH_REDIS_REST_URL) {
-    fail("No store credentials in the environment (KV_REST_API_URL / KV_REST_API_TOKEN).");
-  }
+  needStore();
   const record = await getRevealEscrow(tx);
   if (!record) fail(`No escrow record for ${tx} (reveal was off for that payment, or the txId is wrong).`);
+  if (record.envelope) {
+    writeJson(need(flags, "out"), record.envelope);
+    console.log(`Wrote sealed envelope for ${tx} (${record.envelope.threshold}-of-${record.envelope.parties}). Each member runs: unseal`);
+    return;
+  }
   writeCiphertext(need(flags, "out"), tx, record.ciphertext, record.ciphertextHash);
+}
+
+async function sealPending() {
+  needStore();
+  const keys = getEscrowKeySet();
+  if (!keys) fail("VERO_ESCROW_KEYS is not set.");
+  const { sealed, alreadySealed } = await sealUnsealedEscrows(keys);
+  console.log(`Sealed ${sealed} record(s); ${alreadySealed} were already sealed.`);
+}
+
+async function unseal(flags: Flags) {
+  const member = readJson<EscrowMemberKey>(need(flags, "member-key"), "member key", ESCROW_KEYS_FORMAT);
+  const env = readJson<EscrowEnvelope>(need(flags, "envelope"), "envelope", ESCROW_FORMAT);
+  let part: EscrowSharePart;
+  try {
+    part = unsealEscrowShare(member, env);
+  } catch (e) {
+    fail((e as Error).message);
+  }
+  writeJson(need(flags, "out"), part, true);
+  console.log(`Member ${member.index}: share part written. Send it only to whoever runs \`open\`.`);
+}
+
+async function openCmd(flags: Flags) {
+  const env = readJson<EscrowEnvelope>(need(flags, "envelope"), "envelope", ESCROW_FORMAT);
+  if (flags._.length === 0) fail("Pass the share part files.");
+  const parts = flags._.map((f) => readJson<EscrowSharePart>(f, "share part", ESCROW_FORMAT));
+  let ct: RevealCiphertext;
+  try {
+    ct = JSON.parse(openEscrow(env, parts).toString("utf-8"));
+  } catch (e) {
+    fail((e as Error).message);
+  }
+  writeCiphertext(need(flags, "out"), env.txId, ct, env.ciphertextHash);
 }
 
 async function extract(flags: Flags) {
@@ -179,16 +288,47 @@ async function demo() {
   const { consortium, shares } = await dealKeyShares(2, 3);
   console.log("2. Encrypt the identity (the kyc_reveal circuit does this inside the proof)");
   const ct = await encryptForReveal(consortium.publicKey, identity, commitment, await randomRevealNonce());
-  console.log("3. Parties 1 and 3 each make a partial decryption");
-  const partials = await Promise.all([partialDecrypt(shares[0], ct), partialDecrypt(shares[2], ct)]);
-  console.log("4. Combine");
-  const out = await combinePartials(consortium, ct, partials);
+  console.log("3. Each member makes their own post-quantum escrow key; the server seals the ciphertext");
+  const members = [1, 2, 3].map(generateEscrowMemberKey);
+  const escrowKeySet = parseEscrowKeySet({
+    format: ESCROW_KEYS_FORMAT,
+    threshold: 2,
+    members: members.map(({ index, publicKey }) => ({ index, publicKey })),
+  });
+  const envelope = sealEscrow(escrowKeySet, "zkx_demo", serializeRevealCiphertext(ct), hashRevealCiphertext(ct));
+  console.log(`   envelope: ${JSON.stringify(envelope).length} bytes, ${envelope.parties} sealed shares`);
+  console.log("4. Members 1 and 3 unseal their shares; the envelope opens");
+  const opened: RevealCiphertext = JSON.parse(
+    openEscrow(envelope, [unsealEscrowShare(members[0], envelope), unsealEscrowShare(members[2], envelope)]).toString("utf-8")
+  );
+  console.log(`   inner ciphertext matches: ${hashRevealCiphertext(opened) === envelope.ciphertextHash}`);
+  console.log("5. Parties 1 and 3 each make a partial decryption");
+  const partials = await Promise.all([partialDecrypt(shares[0], opened), partialDecrypt(shares[2], opened)]);
+  console.log("6. Combine");
+  const out = await combinePartials(consortium, opened, partials);
   console.log(JSON.stringify(out, null, 2));
-  console.log("\n5. One party alone:");
-  await combinePartials(consortium, ct, [partials[0]]).catch((e) => console.log(`   refused — ${e.message}`));
+  console.log("\n7. One party alone:");
+  await combinePartials(consortium, opened, [partials[0]]).catch((e) => console.log(`   refused — ${e.message}`));
+  try {
+    openEscrow(envelope, [unsealEscrowShare(members[0], envelope)]);
+  } catch (e) {
+    console.log(`   refused — ${(e as Error).message}`);
+  }
 }
 
-const COMMANDS: Record<string, (f: Flags) => Promise<void>> = { keygen, escrow, extract, partial, combine, demo };
+const COMMANDS: Record<string, (f: Flags) => Promise<void>> = {
+  keygen,
+  "kem-keygen": kemKeygen,
+  "escrow-keys": escrowKeys,
+  escrow,
+  "seal-pending": sealPending,
+  unseal,
+  open: openCmd,
+  extract,
+  partial,
+  combine,
+  demo,
+};
 
 async function main() {
   const [cmd, ...rest] = process.argv.slice(2);

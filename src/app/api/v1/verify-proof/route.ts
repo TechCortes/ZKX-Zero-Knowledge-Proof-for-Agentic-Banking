@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticate, isAuthFailure, unauthorized } from "@/lib/auth";
 import { verifyKYCProof, commitmentFromSignals, txNonceFromSignals } from "@/zkp/verifier";
 import { consumeChallenge } from "@/policy/challenges";
-import { getRevealPublicKey } from "@/zkp/revealConfig";
+import { getRevealPublicKey, getEscrowKeySet } from "@/zkp/revealConfig";
 import { evaluatePayment, approveWithProof, computePolicyVersionHash, usdAmountError } from "@/policy/engine";
 import { recordAuditEntry } from "@/policy/auditLog";
 import { storeRevealEscrow } from "@/policy/escrow";
@@ -94,6 +94,8 @@ export async function POST(req: NextRequest) {
   }
 
   const revealPublicKey = await getRevealPublicKey();
+  // Throws on a malformed VERO_ESCROW_KEYS now, before any challenge or spend is touched.
+  getEscrowKeySet();
 
   // Bind proof to this agent's registered commitment — prevents cross-agent replay
   const proofCommitment = commitmentFromSignals(publicSignals as string[], revealPublicKey);

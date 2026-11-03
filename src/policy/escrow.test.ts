@@ -1,5 +1,13 @@
-import { describe, it, expect } from "vitest";
-import { storeRevealEscrow, getRevealEscrow, hashRevealCiphertext } from "./escrow";
+import { describe, it, expect, afterEach } from "vitest";
+import { storeRevealEscrow, getRevealEscrow, hashRevealCiphertext, sealUnsealedEscrows } from "./escrow";
+import {
+  ESCROW_KEYS_FORMAT,
+  generateEscrowMemberKey,
+  parseEscrowKeySet,
+  unsealEscrowShare,
+  openEscrow,
+} from "@/zkp/escrowSeal";
+import { getEscrowKeySet } from "@/zkp/revealConfig";
 import { recordAuditEntry, getAuditLog } from "./auditLog";
 import { computePolicyVersionHash } from "./engine";
 import { kv } from "@/lib/kv";
@@ -20,7 +28,7 @@ describe("Reveal escrow", () => {
   it("stores the ciphertext under its txId and returns only a hash", async () => {
     const txId = fresh("tx");
     const ref = await storeRevealEscrow({ txId, agentId: "a", txNonce: "9", ciphertext: sampleCt() });
-    expect(ref).toEqual({ format: "vero-reveal/v1", ciphertextHash: hashRevealCiphertext(sampleCt()) });
+    expect(ref).toEqual({ format: "vero-reveal/v1", ciphertextHash: hashRevealCiphertext(sampleCt()), sealed: false });
 
     const record = await getRevealEscrow(txId);
     expect(record?.ciphertext).toEqual(sampleCt());
@@ -71,5 +79,56 @@ describe("Audit log — ciphertexts stay out of the agent view", () => {
     });
     const stream = await kv().lrange<{ id: string }>("audit_stream", 0, 50);
     expect(stream.some((r) => r.id === record.id)).toBe(true);
+  });
+});
+
+describe("Reveal escrow — post-quantum sealing", () => {
+  const members = [1, 2, 3].map(generateEscrowMemberKey);
+  const keySet = {
+    format: ESCROW_KEYS_FORMAT,
+    threshold: 2,
+    members: members.map(({ index, publicKey }) => ({ index, publicKey })),
+  };
+
+  afterEach(() => {
+    delete process.env.VERO_ESCROW_KEYS;
+  });
+
+  it("seals when VERO_ESCROW_KEYS is set; the store never holds the ciphertext", async () => {
+    process.env.VERO_ESCROW_KEYS = JSON.stringify(keySet);
+    const txId = fresh("tx");
+    const ref = await storeRevealEscrow({ txId, agentId: "a", ciphertext: sampleCt() });
+    expect(ref.sealed).toBe(true);
+
+    const record = await getRevealEscrow(txId);
+    expect(record?.ciphertext).toBeUndefined();
+    expect(JSON.stringify(record)).not.toContain('"ephemeral"');
+
+    const env = record!.envelope!;
+    const opened = openEscrow(env, [unsealEscrowShare(members[0], env), unsealEscrowShare(members[2], env)]);
+    expect(JSON.parse(opened.toString("utf-8"))).toEqual(sampleCt());
+    expect(env.ciphertextHash).toBe(hashRevealCiphertext(sampleCt()));
+  });
+
+  it("seal-pending seals older unsealed records and skips sealed ones", async () => {
+    const txId = fresh("tx");
+    const ref = await storeRevealEscrow({ txId, agentId: "a", ciphertext: sampleCt() });
+    expect(ref.sealed).toBe(false);
+
+    const first = await sealUnsealedEscrows(parseEscrowKeySet(keySet));
+    expect(first.sealed).toBeGreaterThanOrEqual(1);
+    const record = await getRevealEscrow(txId);
+    expect(record?.ciphertext).toBeUndefined();
+    expect(record?.envelope?.txId).toBe(txId);
+
+    const second = await sealUnsealedEscrows(parseEscrowKeySet(keySet));
+    expect(second.sealed).toBe(0);
+  });
+
+  it("refuses to run with a malformed key set", () => {
+    process.env.VERO_ESCROW_KEYS = '{"format":"vero-escrow-keys/v1","threshold":5,"members":[]}';
+    expect(() => getEscrowKeySet()).toThrow(/VERO_ESCROW_KEYS/);
+    process.env.VERO_ESCROW_KEYS = "not json";
+    expect(() => getEscrowKeySet()).toThrow(/valid JSON/);
   });
 });
