@@ -107,15 +107,65 @@ All JSON, decimal strings for field elements, `"format": "vero-reveal/v1"`.
   "proof": { "a1": ["x","y"], "a2": ["x","y"], "z": "…" } }
 ```
 
+## Post-quantum escrow (`vero-escrow/v2`)
+
+The ElGamal ciphertext above is classical: anyone who copies it today could decrypt it with a
+future quantum computer ("harvest now, decrypt later"). Identity data has to stay confidential
+for years, so the server seals each ciphertext in a post-quantum envelope before storing it.
+
+```
+K            = random 256-bit AES key
+body         = AES-256-GCM(K, inner ciphertext JSON, AAD = header)
+s_1..s_n     = Shamir k-of-n split of K over GF(2^521 − 1)
+share_i      = AES-256-GCM(HKDF(X-Wing.Encaps(ek_i).ss, txId, i), s_i, AAD = header)
+header       = [format, txId, k, n, ciphertextHash, keySetId]
+```
+
+- **KEM:** X-Wing (ML-KEM-768 + X25519, `draft-connolly-cfrg-xwing-kem`), from
+  `@noble/post-quantum`. It stays secure if either ML-KEM or X25519 holds.
+- **No dealer:** each member generates their own X-Wing key and sends only the public half.
+- **Binding:** every share and the body authenticate the header, so a share can't be moved to
+  another transaction and the recorded `ciphertextHash` can't be swapped. After opening, the
+  inner ciphertext is checked against that hash.
+- **Two layers:** opening the envelope needs k members' X-Wing keys, and reading the identity
+  still needs k ElGamal partials. A future quantum attacker who stole the store faces ML-KEM first.
+- **What stays classical:** Groth16 proof soundness (BN254) and the BabyJubJub ElGamal layer.
+  The server briefly holds K and the inner ciphertext at seal time.
+
+Turn it on:
+
+```bash
+npm run reveal -- kem-keygen --index 1 --out ./member-1        # each member, own machine
+npm run reveal -- escrow-keys --threshold 2 member-*.pub.json  # operator
+export VERO_ESCROW_KEYS='{"format":"vero-escrow-keys/v1",…}'   # printed above
+npm run reveal -- seal-pending                                 # seal records stored before this
+```
+
+Unset, ciphertexts are stored unsealed and the server logs a warning. A set-but-malformed value
+makes `verify-proof` fail instead of storing unsealed.
+
+```jsonc
+// EscrowEnvelope — stored at escrow:<txId>, never trimmed
+{ "format": "vero-escrow/v2", "txId": "…", "threshold": 2, "parties": 3,
+  "ciphertextHash": "<sha256 hex>", "keySetId": "<sha256 hex>",
+  "body": { "iv": "…", "data": "…" },
+  "shares": [{ "index": 1, "kem": "<X-Wing ciphertext>", "iv": "…", "data": "…" }, …] }
+```
+
 ## Disclosure round-trip (reference CLI)
 
 ```bash
-npm run reveal -- escrow --tx zkx_123 --out ct.json        # operator, reads the escrow store
+npm run reveal -- escrow --tx zkx_123 --out env.json       # operator, reads the escrow store
+npm run reveal -- unseal --member-key member-1.key.json --envelope env.json --out part-1.json  # member 1
+npm run reveal -- unseal --member-key member-3.key.json --envelope env.json --out part-3.json  # member 3
+npm run reveal -- open --envelope env.json --out ct.json part-1.json part-3.json
 npm run reveal -- partial --share share-1.json --ciphertext ct.json --out p1.json   # party 1
 npm run reveal -- partial --share share-3.json --ciphertext ct.json --out p3.json   # party 3
 npm run reveal -- combine --consortium consortium.json --ciphertext ct.json p1.json p3.json
 npm run reveal -- demo     # all of the above in memory
 ```
+
+For unsealed records, `escrow` writes `ct.json` directly; skip `unseal` and `open`.
 
 ## What a production deployment replaces
 
@@ -123,15 +173,22 @@ npm run reveal -- demo     # all of the above in memory
   (Pedersen/Feldman) or an HSM ceremony that outputs the same `ConsortiumKey` / `KeyShare` shapes.
 - **Share files.** Shares belong in each party's HSM/KMS. `partialDecrypt` is the one
   operation the HSM needs to expose.
+- **Member X-Wing keys.** `member-<i>.key.json` belongs in an HSM; `unsealEscrowShare` is the
+  one operation it needs to expose.
 - **The trusted setup.** `setup-zk` makes a single-contributor Groth16 key. Run a real phase-2
   ceremony before trusting proofs in production.
-- **Access to ciphertexts.** Today the only read path is an agent reading its own audit trail.
-  A regulator-facing request flow, and the legal process around it, is the institution's to build.
+- **Access to ciphertexts.** Today the only read path is the operator reading the escrow store.
+  A regulator-facing request flow is next on the roadmap; the legal process around it is the
+  institution's to build.
 
 ## Known limits
 
 - Rotating the consortium key means a new `VERO_REVEAL_PUBLIC_KEY`. Old ciphertexts stay
-  decryptable only by the old consortium.
+  decryptable only by the old consortium. The same holds for `VERO_ESCROW_KEYS`.
+- `@noble/post-quantum` is pure JavaScript: not independently audited, not constant-time, not
+  FIPS-validated. Fine for a reference implementation; an institution would seal inside an HSM.
+- Ciphertexts already handed out before the escrow split (through `GET /api/v1/audit`) can't
+  be recalled.
 
 ## Challenge binding (`txNonce`)
 

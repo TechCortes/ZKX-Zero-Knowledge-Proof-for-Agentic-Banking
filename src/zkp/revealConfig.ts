@@ -10,6 +10,7 @@
  */
 
 import { isValidRevealPublicKey } from "./reveal";
+import { parseEscrowKeySet, type EscrowKeySet } from "./escrowSeal";
 
 export type RevealPublicKey = [string, string];
 
@@ -29,4 +30,36 @@ export async function getRevealPublicKey(): Promise<RevealPublicKey | null> {
   }
   cached = { raw, key };
   return key;
+}
+
+/**
+ * VERO_ESCROW_KEYS — the consortium's X-Wing public keys (JSON, `vero-escrow-keys/v1`,
+ * printed by `npm run reveal -- escrow-keys`). When set, every reveal ciphertext is
+ * sealed in a post-quantum envelope before it is stored. Unset means ciphertexts are
+ * stored unsealed (`vero-reveal/v1` only), and a warning is logged once.
+ *
+ * A set-but-invalid value throws, for the same reason as above.
+ */
+let escrowCached: { raw: string | undefined; keys: EscrowKeySet | null } | null = null;
+
+export function getEscrowKeySet(): EscrowKeySet | null {
+  const raw = process.env.VERO_ESCROW_KEYS?.trim() || undefined;
+  if (escrowCached && escrowCached.raw === raw) return escrowCached.keys;
+
+  let keys: EscrowKeySet | null = null;
+  if (raw) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      throw new Error("VERO_ESCROW_KEYS is set but is not valid JSON.");
+    }
+    try {
+      keys = parseEscrowKeySet(parsed);
+    } catch (e) {
+      throw new Error(`VERO_ESCROW_KEYS is set but invalid: ${(e as Error).message}`);
+    }
+  }
+  escrowCached = { raw, keys };
+  return keys;
 }
