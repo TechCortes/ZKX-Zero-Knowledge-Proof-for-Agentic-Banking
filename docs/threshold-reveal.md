@@ -31,7 +31,9 @@ With `VERO_REVEAL_PUBLIC_KEY` set:
 - The browser prover sees it and switches to `kyc_reveal`.
 - `POST /api/v1/verify-proof` accepts **only** `kyc_reveal` proofs encrypted to that exact key.
   A plain `kyc_credential` proof, or one encrypted to any other key, is rejected.
-- The approval's audit record gets a `revealCiphertext` field.
+- The ciphertext goes to the reveal escrow (`escrow:<txId>`, never trimmed). The approval's
+  audit record gets only `revealEscrow: { format, ciphertextHash }`, so agents reading their
+  own trail (`GET /api/v1/audit`) never receive the ciphertext.
 
 Unset, nothing changes. A set-but-malformed key makes both routes error instead of quietly
 turning reveal off.
@@ -89,7 +91,7 @@ record stores the nonce next to the ciphertext.
 All JSON, decimal strings for field elements, `"format": "vero-reveal/v1"`.
 
 ```jsonc
-// RevealCiphertext — stored as auditRecord.revealCiphertext
+// RevealCiphertext — stored in the reveal escrow under its txId (src/policy/escrow.ts)
 { "format": "vero-reveal/v1", "commitment": "…", "publicKey": ["x","y"],
   "ephemeral": ["Rx","Ry"], "ciphertext": ["c0","c1","c2"] }
 
@@ -108,7 +110,7 @@ All JSON, decimal strings for field elements, `"format": "vero-reveal/v1"`.
 ## Disclosure round-trip (reference CLI)
 
 ```bash
-npm run reveal -- extract --audit audit.json --tx zkx_123 --out ct.json
+npm run reveal -- escrow --tx zkx_123 --out ct.json        # operator, reads the escrow store
 npm run reveal -- partial --share share-1.json --ciphertext ct.json --out p1.json   # party 1
 npm run reveal -- partial --share share-3.json --ciphertext ct.json --out p3.json   # party 3
 npm run reveal -- combine --consortium consortium.json --ciphertext ct.json p1.json p3.json

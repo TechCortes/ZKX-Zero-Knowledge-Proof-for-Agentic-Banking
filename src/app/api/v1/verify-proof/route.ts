@@ -5,6 +5,7 @@ import { consumeChallenge } from "@/policy/challenges";
 import { getRevealPublicKey } from "@/zkp/revealConfig";
 import { evaluatePayment, approveWithProof, computePolicyVersionHash, usdAmountError } from "@/policy/engine";
 import { recordAuditEntry } from "@/policy/auditLog";
+import { storeRevealEscrow } from "@/policy/escrow";
 import { logger } from "@/lib/logger";
 import { newTxId } from "@/lib/ids";
 import {
@@ -183,6 +184,15 @@ export async function POST(req: NextRequest) {
 
   const approved = await approveWithProof(paymentRequest);
   const txId = newTxId();
+  // Escrow the identity ciphertext apart from the agent-readable audit log.
+  const revealEscrow = result.revealCiphertext
+    ? await storeRevealEscrow({
+        txId,
+        agentId: agent.id,
+        txNonce: result.txNonce,
+        ciphertext: result.revealCiphertext,
+      })
+    : undefined;
   // Audit the approval before any settlement work, so the compliance record
   // exists even if settlement is slow or the function is cut short.
   await recordAuditEntry({
@@ -194,7 +204,7 @@ export async function POST(req: NextRequest) {
     thresholdMet: true,
     dailyTotal: approved.dailyTotal,
     txNonce: result.txNonce,
-    ...(result.revealCiphertext ? { revealCiphertext: result.revealCiphertext } : {}),
+    ...(revealEscrow ? { revealEscrow } : {}),
   });
   const settlement = await attemptSettlement(agent.id);
   logger.info(ROUTE, "payment_approved_zk", {
