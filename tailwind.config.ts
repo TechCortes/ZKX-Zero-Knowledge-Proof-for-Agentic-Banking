@@ -1,33 +1,40 @@
 import type { Config } from "tailwindcss";
 
 /**
- * ZQUENT design tokens — "Sovereign": light, private-bank clarity.
- * Cobalt (zq-accent) is the action colour; green (zq-success) is reserved for
- * verified / approved states. All text tokens pass WCAG AA on zq-bg and zq-surface.
+ * ZQUENT design tokens — "Sovereign": light, private-bank clarity, with a dark
+ * navy reading mode. Cobalt (zq-accent) is the action colour; green (zq-success)
+ * is reserved for verified / approved states. All text tokens pass WCAG AA on
+ * zq-bg, zq-surface and zq-raise in both themes.
+ *
+ * Values live in src/app/globals.css as RGB channels (light on :root, dark on
+ * [data-theme="dark"]), so opacity modifiers like `bg-zq-accent/10` still work.
  */
+const token = (name: string) => `rgb(var(--zq-${name}) / <alpha-value>)`;
+
 const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
       colors: {
         zq: {
-          bg: "#F5F7FA",
-          surface: "#FFFFFF",
-          raise: "#EEF2F7",
-          line: "#D9DFE8",
-          "line-strong": "#C3CCD8",
-          text: "#0B1F3A",
-          soft: "#33415A",
-          muted: "#4A5668",
-          faint: "#5A6678",
-          accent: "#1F4FD8",
-          "accent-strong": "#1A43B8",
-          "on-accent": "#FFFFFF",
-          success: "#0E8A5F",
-          "success-bg": "#E3F4EC",
-          warn: "#A15C07",
-          danger: "#C62828",
-          navy: "#0B1F3A",
+          bg: token("bg"),
+          surface: token("surface"),
+          raise: token("raise"),
+          line: token("line"),
+          "line-strong": token("line-strong"),
+          text: token("text"),
+          soft: token("soft"),
+          muted: token("muted"),
+          faint: token("faint"),
+          accent: token("accent"),
+          "accent-strong": token("accent-strong"),
+          "on-accent": token("on-accent"),
+          success: token("success"),
+          "success-bg": token("success-bg"),
+          warn: token("warn"),
+          "warn-bg": token("warn-bg"),
+          danger: token("danger"),
+          navy: token("navy"),
         },
       },
       fontFamily: {
@@ -41,8 +48,8 @@ const config: Config = {
         lg: "14px",
       },
       boxShadow: {
-        card: "0 1px 2px rgba(11,31,58,0.06), 0 12px 32px rgba(11,31,58,0.06)",
-        float: "0 8px 24px rgba(11,31,58,0.14)",
+        card: "var(--zq-shadow-card)",
+        float: "var(--zq-shadow-float)",
       },
       maxWidth: {
         page: "75rem",

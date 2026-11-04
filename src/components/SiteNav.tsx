@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { LogoWordmark } from "@/components/Logo";
 import { GITHUB_URL, OWS_URL } from "@/components/ui";
+import ThemeToggle from "@/components/ThemeToggle";
 
 /**
  * Site header. Desktop: inline links. Below 1024 px: a menu button opening a
@@ -69,6 +70,7 @@ export default function SiteNav({ base = "" }: { base?: "" | "/" }) {
         </div>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <a
             href="/register"
             className="hidden sm:inline-flex items-center whitespace-nowrap min-h-[40px] px-4 rounded border border-zq-line-strong text-sm text-zq-text hover:border-zq-soft transition-colors"

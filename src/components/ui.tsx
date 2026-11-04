@@ -8,7 +8,7 @@ export type Status = "live" | "optin" | "building" | "planned" | "classical";
 const STATUS: Record<Status, { label: string; cls: string }> = {
   live:      { label: "Live",             cls: "bg-zq-success-bg text-zq-success" },
   optin:     { label: "Shipped · opt-in", cls: "bg-zq-success-bg text-zq-success" },
-  building:  { label: "Building today",   cls: "bg-[#FBF0DF] text-zq-warn" },
+  building:  { label: "Building today",   cls: "bg-zq-warn-bg text-zq-warn" },
   planned:   { label: "Planned",          cls: "bg-zq-raise text-zq-muted" },
   classical: { label: "Classical",        cls: "bg-zq-raise text-zq-soft" },
 };
