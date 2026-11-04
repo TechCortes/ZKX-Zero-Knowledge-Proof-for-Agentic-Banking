@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuditSigner } from "@/lib/auditSigning";
 import { createAuditCheckpoint, type AuditCheckpoint } from "@/policy/auditCheckpoint";
 import { logger } from "@/lib/logger";
+import { envLabel } from "@/lib/env";
 
 const ROUTE = "GET /api/cron/audit-checkpoint";
 export const maxDuration = 60;
@@ -27,7 +28,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Audit signing is misconfigured." }, { status: 500 });
   }
   if (!signer) {
-    return NextResponse.json({ error: "VERO_AUDIT_SIGNING_KEY is not set." }, { status: 503 });
+    return NextResponse.json({ error: `${envLabel("AUDIT_SIGNING_KEY")} is not set.` }, { status: 503 });
   }
 
   const made: AuditCheckpoint[] = [];

@@ -12,7 +12,7 @@ const STARTERS = [
 
 const MAX_INPUT = 2000;
 
-export default function VeraChat() {
+export default function AssistantChat() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -46,7 +46,7 @@ export default function VeraChat() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/vera", {
+      const res = await fetch("/api/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: next }),

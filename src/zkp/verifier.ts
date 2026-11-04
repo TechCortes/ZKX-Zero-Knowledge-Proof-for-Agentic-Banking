@@ -1,12 +1,12 @@
 /**
- * Vero Protocol Verifier — server-side ZK proof verification using snarkjs
+ * ZQUENT Verifier — server-side ZK proof verification using snarkjs
  *
  * Runs in the Next.js API route. Verifies Groth16 proofs against
  * the compiled verification key.
  *
  * Two circuits:
  *   - kyc_credential : the default. Proves commitment + age, nothing else.
- *   - kyc_reveal     : opt-in (VERO_REVEAL_PUBLIC_KEY set). Same proof, plus a
+ *   - kyc_reveal     : opt-in (ZQUENT_REVEAL_PUBLIC_KEY set). Same proof, plus a
  *                      ciphertext of the identity encrypted to the consortium key.
  *                      See src/zkp/reveal.ts and docs/threshold-reveal.md.
  */

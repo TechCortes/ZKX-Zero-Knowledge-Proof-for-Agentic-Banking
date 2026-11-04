@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import VeraChat from "@/components/VeraChat";
+import AssistantChat from "@/components/AssistantChat";
 
 const title = "Vero Protocol — Zero-Knowledge Compliance for AI Agent Wallets";
 const description =
@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body suppressHydrationWarning>
         {children}
-        <VeraChat />
+        <AssistantChat />
       </body>
     </html>
   );

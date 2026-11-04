@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import clsx from "clsx";
 import { randomFieldElement } from "@/zkp/prover";
+import { AGENT_STORAGE_KEY } from "@/lib/agentStorage";
 
 type Step = "agent" | "identity" | "review" | "success";
 
@@ -94,7 +95,7 @@ export default function AgentRegistrationWizard() {
       // real proofs against this registration — idHash/salt never leave the browser.
       try {
         localStorage.setItem(
-          "zkx_agent",
+          AGENT_STORAGE_KEY,
           JSON.stringify({
             agentId: data.agentId,
             apiKey: data.apiKey,

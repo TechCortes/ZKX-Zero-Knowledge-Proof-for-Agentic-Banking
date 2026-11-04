@@ -1,12 +1,12 @@
 /**
- * Vero Protocol — audit chain CLI.
+ * ZQUENT — audit chain CLI.
  *
  *   npm run audit -- keygen
- *       Make a VERO_AUDIT_SIGNING_KEY seed and print its public key.
+ *       Make a ZQUENT_AUDIT_SIGNING_KEY seed and print its public key.
  *
  *   npm run audit -- checkpoint
  *       Operator: sign checkpoints now (the daily cron does the same).
- *       Needs VERO_AUDIT_SIGNING_KEY and the store credentials.
+ *       Needs ZQUENT_AUDIT_SIGNING_KEY (or legacy VERO_AUDIT_SIGNING_KEY) and the store credentials.
  *
  *   npm run audit -- verify --url https://<deployment> [--key pub.json] [--record record.json]
  *       Anyone: download the published checkpoints and check every signature
@@ -52,7 +52,7 @@ async function keygen() {
   const seed = generateAuditSigningSeed();
   const { publicKey } = signerFromSeed(seed);
   console.log("Server config (SECRET — store it like a private key):");
-  console.log(`  VERO_AUDIT_SIGNING_KEY="${seed}"\n`);
+  console.log(`  ZQUENT_AUDIT_SIGNING_KEY="${seed}"\n`);
   console.log("Public key (publish it; verifiers pin it with --key):");
   console.log(JSON.stringify(publicKey, null, 2));
 }
@@ -62,7 +62,7 @@ async function checkpoint() {
     fail("No store credentials in the environment (KV_REST_API_URL / KV_REST_API_TOKEN).");
   }
   const signer = getAuditSigner();
-  if (!signer) fail("VERO_AUDIT_SIGNING_KEY is not set.");
+  if (!signer) fail("ZQUENT_AUDIT_SIGNING_KEY (or legacy VERO_AUDIT_SIGNING_KEY) is not set.");
   let count = 0;
   for (let cp = await createAuditCheckpoint(signer); cp; cp = await createAuditCheckpoint(signer)) {
     console.log(`Checkpoint ${cp.index}: seq ${cp.fromSeq}–${cp.toSeq}${cp.voided.length ? ` (${cp.voided.length} voided)` : ""}`);

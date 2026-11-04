@@ -3,11 +3,12 @@
 import { useState, useEffect } from "react";
 import clsx from "clsx";
 import { deriveCommitment, generateKYCProof, randomFieldElement } from "@/zkp/prover";
+import { AGENT_STORAGE_KEY, migrateLegacyAgentStorage } from "@/lib/agentStorage";
 
 const DAILY_LIMIT    = 1000;
 const DEMO_BIRTH_YEAR = 1990;
 const DEMO_RECIPIENT  = "0x7f3ac4d2e8b19c5f6a23d40";
-const LS_KEY          = "zkx_agent";
+const LS_KEY          = AGENT_STORAGE_KEY;
 
 const PRESETS = [
   { label: "$200",   amount: 200,  description: "Micropayment" },
@@ -110,6 +111,7 @@ async function registerDemoAgent(): Promise<DemoSession | null> {
  */
 async function loadRegisteredSession(): Promise<{ session: DemoSession; dailySpend: number } | null> {
   try {
+    migrateLegacyAgentStorage(localStorage);
     const raw = localStorage.getItem(LS_KEY);
     if (!raw) return null;
     const stored = JSON.parse(raw) as Partial<StoredSession>;

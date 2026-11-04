@@ -1,5 +1,5 @@
 {
-  "name": "zkx",
+  "name": "zquent",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,12 +10,12 @@
     "compile-circuit:reveal": "circom circuits/kyc_reveal.circom --r1cs --wasm --sym -o circuits/build",
     "setup-zk": "node scripts/setup_zk.js",
     "setup-zk:reveal": "node scripts/setup_zk.js kyc_reveal",
-    "reveal": "tsx scripts/vero-reveal.ts",
+    "reveal": "tsx scripts/zquent-reveal.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:circuit": "vitest run src/zkp/",
     "test:coverage": "vitest run --coverage",
-    "audit": "tsx scripts/vero-audit.ts",
+    "audit": "tsx scripts/zquent-audit.ts",
     "registry": "tsx scripts/vero-registry.ts"
   },
   "dependencies": {

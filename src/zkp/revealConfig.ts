@@ -1,7 +1,7 @@
 /**
  * Server-side threshold reveal config.
  *
- * VERO_REVEAL_PUBLIC_KEY="<x>,<y>" — the consortium public key from
+ * ZQUENT_REVEAL_PUBLIC_KEY="<x>,<y>" (legacy name VERO_REVEAL_PUBLIC_KEY still read) — the consortium public key from
  * `npm run reveal -- keygen` (consortium.json → publicKey). Unset means reveal is off
  * and the server keeps using the plain kyc_credential circuit.
  *
@@ -11,20 +11,21 @@
 
 import { isValidRevealPublicKey } from "./reveal";
 import { parseEscrowKeySet, type EscrowKeySet } from "./escrowSeal";
+import { envLabel, readProtocolEnv } from "@/lib/env";
 
 export type RevealPublicKey = [string, string];
 
 let cached: { raw: string | undefined; key: RevealPublicKey | null } | null = null;
 
 export async function getRevealPublicKey(): Promise<RevealPublicKey | null> {
-  const raw = process.env.VERO_REVEAL_PUBLIC_KEY?.trim() || undefined;
+  const raw = readProtocolEnv("REVEAL_PUBLIC_KEY");
   if (cached && cached.raw === raw) return cached.key;
 
   let key: RevealPublicKey | null = null;
   if (raw) {
     const parts = raw.split(",").map((s) => s.trim());
     if (parts.length !== 2 || !parts.every((p) => /^\d+$/.test(p)) || !(await isValidRevealPublicKey([parts[0], parts[1]]))) {
-      throw new Error("VERO_REVEAL_PUBLIC_KEY is set but is not a valid BabyJubJub point \"<x>,<y>\".");
+      throw new Error(`${envLabel("REVEAL_PUBLIC_KEY")} is set but is not a valid BabyJubJub point "<x>,<y>".`);
     }
     key = [parts[0], parts[1]];
   }
@@ -33,7 +34,7 @@ export async function getRevealPublicKey(): Promise<RevealPublicKey | null> {
 }
 
 /**
- * VERO_ESCROW_KEYS — the consortium's X-Wing public keys (JSON, `vero-escrow-keys/v1`,
+ * ZQUENT_ESCROW_KEYS (legacy name VERO_ESCROW_KEYS still read) — the consortium's X-Wing public keys (JSON, `vero-escrow-keys/v1`,
  * printed by `npm run reveal -- escrow-keys`). When set, every reveal ciphertext is
  * sealed in a post-quantum envelope before it is stored. Unset means ciphertexts are
  * stored unsealed (`vero-reveal/v1` only), and a warning is logged once.
@@ -43,7 +44,7 @@ export async function getRevealPublicKey(): Promise<RevealPublicKey | null> {
 let escrowCached: { raw: string | undefined; keys: EscrowKeySet | null } | null = null;
 
 export function getEscrowKeySet(): EscrowKeySet | null {
-  const raw = process.env.VERO_ESCROW_KEYS?.trim() || undefined;
+  const raw = readProtocolEnv("ESCROW_KEYS");
   if (escrowCached && escrowCached.raw === raw) return escrowCached.keys;
 
   let keys: EscrowKeySet | null = null;
@@ -52,12 +53,12 @@ export function getEscrowKeySet(): EscrowKeySet | null {
     try {
       parsed = JSON.parse(raw);
     } catch {
-      throw new Error("VERO_ESCROW_KEYS is set but is not valid JSON.");
+      throw new Error(`${envLabel("ESCROW_KEYS")} is set but is not valid JSON.`);
     }
     try {
       keys = parseEscrowKeySet(parsed);
     } catch (e) {
-      throw new Error(`VERO_ESCROW_KEYS is set but invalid: ${(e as Error).message}`);
+      throw new Error(`${envLabel("ESCROW_KEYS")} is set but invalid: ${(e as Error).message}`);
     }
   }
   escrowCached = { raw, keys };

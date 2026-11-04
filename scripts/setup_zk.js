@@ -1,5 +1,5 @@
 /**
- * Vero Protocol — ZK Circuit Setup Script
+ * ZQUENT — ZK Circuit Setup Script
  *
  * Run this once after compiling a circuit to generate:
  *   1. Groth16 proving key (.zkey)
@@ -64,7 +64,7 @@ async function makeLocalPtau(power, outPath) {
   const p0 = path.join(BUILD_DIR, `local_pot${power}_0.ptau`);
   const p1 = path.join(BUILD_DIR, `local_pot${power}_1.ptau`);
   await snarkjs.powersOfTau.newAccumulator(await snarkjs.curves.getCurveFromName("bn128"), power, p0);
-  await snarkjs.powersOfTau.contribute(p0, p1, "Vero local dev", crypto.randomBytes(32).toString("hex"));
+  await snarkjs.powersOfTau.contribute(p0, p1, "ZQUENT local dev", crypto.randomBytes(32).toString("hex"));
   await snarkjs.powersOfTau.preparePhase2(p1, outPath);
   fs.rmSync(p0);
   fs.rmSync(p1);
@@ -103,7 +103,7 @@ async function main() {
   console.log("✓ Phase 2 key generated");
 
   // Contribute randomness (in production: use a real MPC ceremony)
-  await snarkjs.zKey.contribute(zkey0Path, zkeyFinalPath, "ZKX Demo Contributor", crypto.randomBytes(32).toString("hex"));
+  await snarkjs.zKey.contribute(zkey0Path, zkeyFinalPath, "ZQUENT Demo Contributor", crypto.randomBytes(32).toString("hex"));
   console.log("✓ Contribution complete");
 
   // Export verification key

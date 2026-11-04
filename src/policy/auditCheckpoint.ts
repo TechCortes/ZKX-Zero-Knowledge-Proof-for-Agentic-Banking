@@ -13,7 +13,7 @@
  * After that, changing, removing or reordering any covered record, or any
  * earlier checkpoint, breaks a hash or a signature.
  *
- * What it doesn't stop: whoever holds VERO_AUDIT_SIGNING_KEY can sign a
+ * What it doesn't stop: whoever holds ZQUENT_AUDIT_SIGNING_KEY can sign a
  * different history. Publishing checkpoints (and, next, anchoring their
  * hashes on-chain) is what makes that visible.
  *
@@ -30,6 +30,8 @@ import type { HybridPublicKey, HybridSignature, HybridSigner } from "@/lib/audit
 import { verifyHybrid } from "@/lib/auditSigning";
 import { SEQ_KEY, recordKey, getAuditRecord, hashAuditRecord, type AuditRecord, type VoidedSlot } from "./auditLog";
 
+// Frozen wire-format tag: written into stored records and checked on read.
+// It keeps the pre-rename "vero-" prefix on purpose — changing it would orphan existing data.
 export const CHECKPOINT_FORMAT = "vero-audit-checkpoint/v1";
 export const GAP_TIMEOUT_MS = 10 * 60 * 1000;
 /** Most records one checkpoint covers, so a single run stays well inside a serverless time limit. */
