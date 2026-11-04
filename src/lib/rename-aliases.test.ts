@@ -1,4 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
+import { REGISTRY_FORMAT, SIGNING_KEY_FORMAT, KEM_KEY_FORMAT, REGISTRY_SIGNING_DOMAIN } from "@/disclosure/keyRegistry";
+import { REQUEST_FORMAT, APPROVAL_TAG } from "@/disclosure/requests";
 import { readProtocolEnv, envLabel } from "./env";
 import { AGENT_STORAGE_KEY, LEGACY_AGENT_STORAGE_KEY, migrateLegacyAgentStorage } from "./agentStorage";
 import { createZquentWallet, createVeroWallet, ZQUENT_KYC_FEATURE, VERO_KYC_FEATURE } from "@/wallet/ows-wallet";
@@ -96,5 +98,12 @@ describe("frozen wire formats", () => {
     expect(ESCROW_FORMAT).toBe("vero-escrow/v2");
     expect(ESCROW_KEYS_FORMAT).toBe("vero-escrow-keys/v1");
     expect(CHECKPOINT_FORMAT).toBe("vero-audit-checkpoint/v1");
+    // Disclosure: signed registry entries, key files, requests and approvals.
+    expect(REGISTRY_FORMAT).toBe("vero-registry/v1");
+    expect(SIGNING_KEY_FORMAT).toBe("vero-signing-key/v1");
+    expect(KEM_KEY_FORMAT).toBe("vero-kem-key/v1");
+    expect(REGISTRY_SIGNING_DOMAIN).toBe("vero-registry-signing");
+    expect(REQUEST_FORMAT).toBe("vero-disclosure-request/v1");
+    expect(APPROVAL_TAG).toBe("vero-disclosure-approval/v1");
   });
 });

@@ -138,9 +138,9 @@ describe("vero-registry/v1", () => {
     expect(disclosureReadiness({ ...base, approvers: base.approvers.slice(0, 1) })[0]).toMatch(/1 active approvers/);
   });
 
-  it("cross-checks the members' X-Wing keys against VERO_ESCROW_KEYS", () => {
+  it("cross-checks the members' X-Wing keys against ZQUENT_ESCROW_KEYS", () => {
     const other = parseEscrowKeySet({ format: ESCROW_KEYS_FORMAT, threshold: 2, members: [1, 2, 3].map(generateEscrowMemberKey).map(({ index, publicKey }) => ({ index, publicKey })) });
-    expect(verifyRegistry(base, { escrowKeys: other }).join()).toMatch(/don't match VERO_ESCROW_KEYS/);
+    expect(verifyRegistry(base, { escrowKeys: other }).join()).toMatch(/don't match ZQUENT_ESCROW_KEYS/);
   });
 
   it("membersId is stable when regulators are added; registryId is not", () => {

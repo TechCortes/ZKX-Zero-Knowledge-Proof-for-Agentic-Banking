@@ -30,7 +30,10 @@ export type AuditDecision =
   | "kyc_required"
   | "approved_proof"
   | "proof_rejected"
-  | "policy_denied";
+  | "policy_denied"
+  | "disclosure_requested"
+  | "disclosure_approval"
+  | "disclosure_approved";
 
 export interface AuditRecord {
   id: string;
@@ -57,6 +60,8 @@ export interface AuditRecord {
    * the audit record only carries its hash. See docs/threshold-reveal.md.
    */
   revealEscrow?: EscrowReference;
+  /** Disclosure flow events (agentId "system:disclosure"). Only the requestHash; never the txId. */
+  disclosure?: { requestHash: string; regulatorId?: string; approverId?: string };
 }
 
 /** Records written before the escrow split carried the ciphertext inline. */

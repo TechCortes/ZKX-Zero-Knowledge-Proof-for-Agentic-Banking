@@ -10,7 +10,7 @@ const ROUTE = "GET /api/v1/audit";
  * policy decision made about it, with the policy version that made the
  * call. Records carry `seq` and `recordHash`, so an agent can check any of
  * them against the signed public checkpoints (GET /api/v1/audit/checkpoints,
- * docs/audit-chain.md). A regulator-facing request flow is separate.
+ * docs/audit-chain.md). Regulators use /api/v1/disclosure/requests instead.
  */
 export async function GET(req: NextRequest) {
   const auth = await authenticate(req);

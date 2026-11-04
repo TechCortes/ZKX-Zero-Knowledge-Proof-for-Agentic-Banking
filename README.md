@@ -154,16 +154,16 @@ The project was renamed from Vero Protocol to **ZQUENT**. Nothing already deploy
 
 | What | New | Still accepted |
 | --- | --- | --- |
-| Env vars | `ZQUENT_REVEAL_PUBLIC_KEY`, `ZQUENT_ESCROW_KEYS`, `ZQUENT_AUDIT_SIGNING_KEY` | `VERO_*` names (read as fallback, one-time warning) |
+| Env vars | `ZQUENT_REVEAL_PUBLIC_KEY`, `ZQUENT_ESCROW_KEYS`, `ZQUENT_AUDIT_SIGNING_KEY`, `ZQUENT_REGISTRY_FILE`, `ZQUENT_REGISTRY_MEMBERS_ID`, `ZQUENT_DISCLOSURE_DAILY_LIMIT` | `VERO_*` names (read as fallback, one-time warning) |
 | Wallet-standard feature | `zquent:kyc` | `vero:kyc` (registered as an alias of the same feature) |
 | Assistant API | `/api/assistant` | `/api/vera` (same handler) |
 | Browser storage | `zquent_agent` | `zkx_agent` (migrated once on load) |
 | Transaction ids | `zquent_<uuid>` | `zkx_…` ids in existing audit records |
-| CLIs | `scripts/zquent-reveal.ts`, `scripts/zquent-audit.ts` | `npm run reveal` / `npm run audit` unchanged |
+| CLIs | `scripts/zquent-reveal.ts`, `scripts/zquent-audit.ts`, `scripts/zquent-registry.ts`, `scripts/zquent-disclosure.ts` | `npm run reveal` / `audit` / `registry` / `disclosure` unchanged |
 
 The aliases are deprecated and will be removed in a cleanup release about 90 days after the rename.
 
-**Not renamed, on purpose:** the wire-format tags `vero-reveal/v1`, `vero-escrow/v2`, `vero-escrow-keys/v1`, `vero-audit-checkpoint/v1` and the `vero-audit-signing` HKDF label. They are written into stored ciphertexts, sealed envelopes and signed checkpoints, so changing them would orphan existing data. A test pins them.
+**Not renamed, on purpose:** the wire-format tags `vero-reveal/v1`, `vero-escrow/v2`, `vero-escrow-keys/v1`, `vero-audit-checkpoint/v1`, the disclosure formats (`vero-registry/v1`, `vero-signing-key/v1`, `vero-kem-key/v1`, `vero-disclosure-request/v1`, `vero-disclosure-approval/v1`) and the `vero-audit-signing` and `vero-registry-signing` HKDF labels. They are written into stored ciphertexts, sealed envelopes, signed checkpoints and signed registry entries, so changing them would orphan existing data. A test pins them.
 
 ## License
 

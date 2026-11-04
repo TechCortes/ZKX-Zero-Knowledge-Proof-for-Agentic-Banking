@@ -9,7 +9,13 @@
 
 import { logger } from "./logger";
 
-export type ProtocolEnvName = "REVEAL_PUBLIC_KEY" | "ESCROW_KEYS" | "AUDIT_SIGNING_KEY";
+export type ProtocolEnvName =
+  | "REVEAL_PUBLIC_KEY"
+  | "ESCROW_KEYS"
+  | "AUDIT_SIGNING_KEY"
+  | "REGISTRY_FILE"
+  | "REGISTRY_MEMBERS_ID"
+  | "DISCLOSURE_DAILY_LIMIT";
 
 const warned = new Set<ProtocolEnvName>();
 

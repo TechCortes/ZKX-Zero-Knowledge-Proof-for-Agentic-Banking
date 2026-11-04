@@ -52,7 +52,7 @@ type PointStr = [string, string];
 export interface MemberEntry {
   index: number;
   name: string;
-  /** X-Wing (ML-KEM-768 + X25519) public key, base64. Same key as in VERO_ESCROW_KEYS. */
+  /** X-Wing (ML-KEM-768 + X25519) public key, base64. Same key as in ZQUENT_ESCROW_KEYS. */
   kem: string;
   signing: HybridPublicKey;
   /** This member's BabyJubJub verification key Y_i from consortium.json, if they hold a reveal share. */
@@ -253,7 +253,7 @@ export function endorse<T extends Endorsable>(
 // --- Verification ---
 
 export interface VerifyOptions {
-  /** If given, the members' X-Wing keys and threshold must equal this escrow key set (VERO_ESCROW_KEYS). */
+  /** If given, the members' X-Wing keys and threshold must equal this escrow key set (ZQUENT_ESCROW_KEYS). */
   escrowKeys?: EscrowKeySet;
   /** If given, members' reveal keys must match these verification keys (consortium.json). */
   revealVerificationKeys?: { index: number; publicKey: PointStr }[];
@@ -416,7 +416,7 @@ export function verifyRegistry(raw: unknown, opts: VerifyOptions = {}): string[]
   if (opts.escrowKeys) {
     const derived: EscrowKeySet = { format: opts.escrowKeys.format, threshold: k, members: members.map((m) => ({ index: m.index, publicKey: m.kem })) };
     if (opts.escrowKeys.threshold !== k) errors.push(`Escrow threshold is ${opts.escrowKeys.threshold}, registry threshold is ${k}.`);
-    if (keySetId(derived) !== keySetId(opts.escrowKeys)) errors.push("Members' X-Wing keys don't match VERO_ESCROW_KEYS.");
+    if (keySetId(derived) !== keySetId(opts.escrowKeys)) errors.push("Members' X-Wing keys don't match ZQUENT_ESCROW_KEYS.");
   }
   if (opts.revealVerificationKeys) {
     for (const vk of opts.revealVerificationKeys) {
