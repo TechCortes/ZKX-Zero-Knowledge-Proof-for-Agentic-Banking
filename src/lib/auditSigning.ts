@@ -107,6 +107,13 @@ export function isValidHybridPublicKey(key: unknown): key is HybridPublicKey {
   return ed.length === 32 && pq.length === 1952 && keyIdOf(ed, pq) === k.keyId;
 }
 
+/** Structural check of a hybrid signature: the right suite and string fields. Says nothing about validity. */
+export function isValidHybridSignature(sig: unknown): sig is HybridSignature {
+  const s = sig as Partial<HybridSignature> | null;
+  return Boolean(s) && typeof s === "object" && s!.suite === SIGNATURE_SUITE &&
+    typeof s!.keyId === "string" && typeof s!.ed25519 === "string" && typeof s!.mlDsa65 === "string";
+}
+
 /** True only if both signatures verify under `key`. */
 export function verifyHybrid(key: HybridPublicKey, message: Uint8Array, sig: HybridSignature): boolean {
   if (sig.suite !== SIGNATURE_SUITE || key.suite !== SIGNATURE_SUITE || sig.keyId !== key.keyId) return false;

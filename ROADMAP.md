@@ -44,7 +44,8 @@ A compliance team can pilot ZQUENT and truthfully tell their regulator: "we can 
 4. ✅ Post-quantum escrow: each reveal ciphertext is sealed k-of-n to the consortium's X-Wing (ML-KEM-768 + X25519) keys before storage (`vero-escrow/v2`, `ZQUENT_ESCROW_KEYS`).
 5. ✅ Tamper-evident audit log: every record is sequenced and hashed, and daily checkpoints chain them and are signed with Ed25519 + ML-DSA-65 ([docs/audit-chain.md](./docs/audit-chain.md)).
 6. ✅ Key registries: one signed public document lists the consortium members, approvers and regulators. Every approver and regulator needs k member endorsements ([docs/key-registry.md](./docs/key-registry.md)).
-7. Next: the regulator request API (`POST /api/v1/disclosure/requests`) with k-of-n hybrid-signed approvals, then sealed delivery, then anchoring checkpoint hashes on Base.
+7. ✅ Disclosure requests: a registered regulator submits a hybrid-signed request for one transaction (`POST /api/v1/disclosure/requests`); it is approved once `approvalThreshold` registered approvers sign its `requestHash`. Rate limited per regulator; the public log shows hashes only ([docs/disclosure-requests.md](./docs/disclosure-requests.md)).
+8. Next: sealed delivery (members unseal, check the approvals themselves, combine partial decryptions and seal the result to the regulator), then anchoring checkpoint hashes on Base.
 
 ## Explicitly out of scope for ZQUENT itself
 

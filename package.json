@@ -16,7 +16,8 @@
     "test:circuit": "vitest run src/zkp/",
     "test:coverage": "vitest run --coverage",
     "audit": "tsx scripts/zquent-audit.ts",
-    "registry": "tsx scripts/vero-registry.ts"
+    "registry": "tsx scripts/vero-registry.ts",
+    "disclosure": "tsx scripts/vero-disclosure.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",
