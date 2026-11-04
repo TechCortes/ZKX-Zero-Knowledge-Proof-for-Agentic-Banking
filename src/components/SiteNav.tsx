@@ -49,7 +49,7 @@ export default function SiteNav({ base = "" }: { base?: "" | "/" }) {
   }, [open]);
 
   return (
-    <nav className="fixed top-0 inset-x-0 z-50 border-b border-zq-line bg-zq-bg/90 backdrop-blur">
+    <nav className="fixed top-0 inset-x-0 z-50 border-b border-zq-line bg-zq-surface/90 backdrop-blur">
       <div className="max-w-page mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         <a href={base || "/"} className="shrink-0" aria-label="ZQUENT home">
           <LogoWordmark />
@@ -77,7 +77,7 @@ export default function SiteNav({ base = "" }: { base?: "" | "/" }) {
           </a>
           <a
             href={`${base}#demo`}
-            className="inline-flex items-center whitespace-nowrap min-h-[40px] px-4 rounded bg-zq-accent text-zq-bg text-sm font-medium hover:bg-zq-accent-strong transition-colors"
+            className="inline-flex items-center whitespace-nowrap min-h-[40px] px-4 rounded bg-zq-accent text-zq-on-accent text-sm font-medium hover:bg-zq-accent-strong transition-colors"
           >
             Live demo
           </a>

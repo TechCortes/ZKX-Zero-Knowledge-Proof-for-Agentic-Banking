@@ -152,7 +152,7 @@ export function createZquentWallet(
     ows_version: 2,
     version: "1.0.0",
     name: "ZQUENT Agent Wallet",
-    icon: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI0IiBmaWxsPSIjMEEwQjBEIi8+PHJlY3QgeD0iMC41IiB5PSIwLjUiIHdpZHRoPSIzMSIgaGVpZ2h0PSIzMSIgcng9IjMuNSIgc3Ryb2tlPSIjM0REQzk3Ii8+PHBhdGggZD0iTTEwIDEwaDEyTDEwIDIyaDEyIiBzdHJva2U9IiNFREVFRjAiIHN0cm9rZS13aWR0aD0iMi40IiBzdHJva2UtbGluZWNhcD0ic3F1YXJlIi8+PC9zdmc+",
+    icon: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI3IiBmaWxsPSIjMEIxRjNBIi8+PHBhdGggZD0iTTkgOC41SDIzVjExLjVMMTMuMiAyMC41SDIzVjIzLjVIOVYyMC41TDE4LjggMTEuNUg5WiIgZmlsbD0iI0ZGRkZGRiIvPjwvc3ZnPg==",
     chains: (chains.length > 0 ? chains : ["solana:mainnet", "eip155:1"]) as `${string}:${string}`[],
     features: {
       [ZQUENT_KYC_FEATURE]: feature,

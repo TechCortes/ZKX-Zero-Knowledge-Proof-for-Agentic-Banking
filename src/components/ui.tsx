@@ -1,22 +1,22 @@
 import type { ReactNode } from "react";
 import clsx from "clsx";
 
-/** Shared presentational primitives for the ZQUENT institutional look. No state, no data. */
+/** Shared presentational primitives for the ZQUENT "Sovereign" look. No state, no data. */
 
 export type Status = "live" | "optin" | "building" | "planned" | "classical";
 
 const STATUS: Record<Status, { label: string; cls: string }> = {
-  live:      { label: "Live",            cls: "border-zq-accent/40 text-zq-accent" },
-  optin:     { label: "Shipped · opt-in", cls: "border-zq-accent/40 text-zq-accent" },
-  building:  { label: "Building today",  cls: "border-zq-warn/40 text-zq-warn" },
-  planned:   { label: "Planned",         cls: "border-zq-line-strong text-zq-muted" },
-  classical: { label: "Classical",       cls: "border-zq-line-strong text-zq-soft" },
+  live:      { label: "Live",             cls: "bg-zq-success-bg text-zq-success" },
+  optin:     { label: "Shipped · opt-in", cls: "bg-zq-success-bg text-zq-success" },
+  building:  { label: "Building today",   cls: "bg-[#FBF0DF] text-zq-warn" },
+  planned:   { label: "Planned",          cls: "bg-zq-raise text-zq-muted" },
+  classical: { label: "Classical",        cls: "bg-zq-raise text-zq-soft" },
 };
 
 export function StatusBadge({ status }: { status: Status }) {
   const s = STATUS[status];
   return (
-    <span className={clsx("font-mono text-xs uppercase tracking-[0.08em] px-2 py-0.5 rounded border shrink-0 whitespace-nowrap", s.cls)}>
+    <span className={clsx("text-xs font-medium px-2.5 py-1 rounded-full shrink-0 whitespace-nowrap", s.cls)}>
       {s.label}
     </span>
   );
@@ -46,15 +46,15 @@ export function SectionHeader({
   return (
     <div className="mb-10 md:mb-14 grid gap-6 md:grid-cols-12 md:items-end">
       <div className="md:col-span-8">
-        <p className="font-mono text-xs uppercase tracking-[0.16em] text-zq-muted mb-4">
-          <span className="text-zq-accent">{index}</span>
-          <span className="mx-2 text-zq-faint">—</span>
+        <p className="text-sm font-medium text-zq-muted mb-4">
+          <span className="font-mono text-zq-accent">{index}</span>
+          <span className="mx-2 text-zq-line-strong">/</span>
           {label}
         </p>
-        <h2 className="font-display text-[26px] sm:text-3xl md:text-[40px] leading-[1.1] font-semibold tracking-[-0.02em] text-zq-text max-w-3xl">
+        <h2 className="font-display text-[28px] sm:text-3xl md:text-[42px] leading-[1.1] font-semibold tracking-[-0.03em] text-zq-text max-w-3xl">
           {title}
         </h2>
-        {lead && <p className="mt-4 text-[15px] md:text-base leading-relaxed text-zq-muted max-w-2xl">{lead}</p>}
+        {lead && <p className="mt-4 text-base md:text-lg leading-relaxed text-zq-muted max-w-2xl">{lead}</p>}
       </div>
       {aside && <div className="md:col-span-4 md:justify-self-end">{aside}</div>}
     </div>
@@ -64,12 +64,12 @@ export function SectionHeader({
 /** Mono, uppercase micro-label used above data. */
 export function Label({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <p className={clsx("font-mono text-xs uppercase tracking-[0.12em] text-zq-muted", className)}>{children}</p>
+    <p className={clsx("text-sm font-medium text-zq-muted", className)}>{children}</p>
   );
 }
 
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={clsx("rounded-md border border-zq-line bg-zq-surface", className)}>{children}</div>;
+  return <div className={clsx("rounded-md border border-zq-line bg-zq-surface shadow-card", className)}>{children}</div>;
 }
 
 /** Panel header for code / terminal blocks (replaces the old traffic-light dots). */
@@ -84,11 +84,11 @@ export function PanelHeader({ children }: { children: ReactNode }) {
 
 const BUTTON = {
   primary:
-    "bg-zq-accent text-zq-bg hover:bg-zq-accent-strong border border-zq-accent",
+    "bg-zq-accent text-zq-on-accent hover:bg-zq-accent-strong border border-zq-accent",
   secondary:
-    "border border-zq-line-strong text-zq-text hover:border-zq-soft",
+    "border border-zq-line-strong bg-zq-surface text-zq-text hover:border-zq-muted",
   ghost:
-    "text-zq-soft hover:text-zq-text",
+    "text-zq-accent hover:text-zq-accent-strong",
 };
 
 export function ButtonLink({
@@ -109,7 +109,7 @@ export function ButtonLink({
       href={href}
       {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
       className={clsx(
-        "inline-flex items-center justify-center gap-2 min-h-[44px] px-5 rounded text-sm font-medium transition-colors",
+        "inline-flex items-center justify-center gap-2 min-h-[48px] px-6 rounded text-[15px] font-medium transition-colors",
         BUTTON[variant],
         className,
       )}

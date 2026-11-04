@@ -71,7 +71,7 @@ export default function AssistantChat() {
         <div
           role="dialog"
           aria-label="Ask ZQUENT"
-          className="w-[24rem] max-w-[calc(100vw-2rem)] h-[34rem] max-h-[calc(100dvh-6.5rem)] flex flex-col rounded-md border border-zq-line-strong bg-zq-bg shadow-2xl shadow-black/60 overflow-hidden"
+          className="w-[24rem] max-w-[calc(100vw-2rem)] h-[34rem] max-h-[calc(100dvh-6.5rem)] flex flex-col rounded-md border border-zq-line-strong bg-zq-bg shadow-float overflow-hidden"
         >
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-zq-line bg-zq-surface">
@@ -164,7 +164,7 @@ export default function AssistantChat() {
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="min-h-[44px] px-4 rounded bg-zq-accent hover:bg-zq-accent-strong disabled:opacity-40 disabled:hover:bg-zq-accent text-zq-bg text-sm font-medium transition-colors"
+              className="min-h-[44px] px-4 rounded bg-zq-accent hover:bg-zq-accent-strong disabled:opacity-40 disabled:hover:bg-zq-accent text-zq-on-accent text-sm font-medium transition-colors"
             >
               Send
             </button>
@@ -177,7 +177,7 @@ export default function AssistantChat() {
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? "Close the ZQUENT Assistant" : "Ask ZQUENT"}
         aria-expanded={open}
-        className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-2.5 p-2 sm:pr-4 rounded border border-zq-line-strong bg-zq-surface hover:border-zq-soft shadow-lg shadow-black/50 text-sm text-zq-text transition-colors"
+        className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-2.5 p-2 sm:pr-4 rounded border border-zq-line-strong bg-zq-surface hover:border-zq-soft shadow-float text-sm text-zq-text transition-colors"
       >
         <LogoIcon size={26}/>
         <span className="hidden sm:inline">{open ? "Close" : "Ask ZQUENT"}</span>

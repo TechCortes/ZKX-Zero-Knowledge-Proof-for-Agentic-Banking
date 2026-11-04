@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import "@fontsource-variable/inter";
-import "@fontsource-variable/inter-tight";
-import "@fontsource-variable/jetbrains-mono";
+import "@fontsource-variable/geist";
+import "@fontsource-variable/geist-mono";
 import "./globals.css";
 import AssistantChat from "@/components/AssistantChat";
 
@@ -29,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  themeColor: "#0A0B0D",
+  themeColor: "#FFFFFF",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

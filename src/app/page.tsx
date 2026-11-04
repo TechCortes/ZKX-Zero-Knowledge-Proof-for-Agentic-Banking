@@ -199,86 +199,74 @@ export default function Home() {
         <div className="max-w-page mx-auto">
           <div className="grid gap-12 lg:grid-cols-12 lg:gap-10 items-start">
             <div className="lg:col-span-7">
-              <p className="font-mono text-xs uppercase tracking-[0.16em] text-zq-muted mb-8 flex flex-wrap items-center gap-x-3 gap-y-2">
-                <span className="inline-flex items-center gap-2 text-zq-accent">
-                  <span className="w-1.5 h-1.5 bg-zq-accent" aria-hidden="true"/>
-                  Testnet · MIT licensed
-                </span>
-                <span className="hidden sm:inline text-zq-faint">/</span>
-                <span className="basis-full sm:basis-auto">Trust protocol for agentic banking &amp; micropayments</span>
+              <p className="inline-flex items-center gap-2.5 px-3 py-1.5 mb-8 rounded-full border border-zq-line-strong bg-zq-surface text-sm text-zq-muted">
+                <span className="w-2 h-2 rounded-full bg-zq-success" aria-hidden="true"/>
+                Live on testnet · Open source, MIT
               </p>
 
-              <h1 className="font-display text-[34px] leading-[1.08] sm:text-5xl md:text-[64px] md:leading-[1.04] font-semibold tracking-[-0.025em] text-zq-text">
-                Every agent payment,<br/>proven.
+              <h1 className="font-display text-[36px] leading-[1.08] sm:text-5xl md:text-[64px] md:leading-[1.04] font-semibold tracking-[-0.03em] text-zq-text">
+                Every agent payment, <span className="text-zq-accent">proven.</span>
               </h1>
 
-              <p className="mt-6 text-base md:text-lg text-zq-soft leading-relaxed max-w-xl">
-                ZQUENT is the zero-knowledge, post-quantum trust protocol for agentic banking and micropayments.
-                Agents prove they are verified and eligible to pay. Your systems never touch the personal data behind them.
+              <p className="mt-6 text-lg md:text-[19px] text-zq-muted leading-relaxed max-w-xl">
+                ZQUENT lets AI agents prove they are verified and allowed to pay — without sharing who is behind them.
+                Built for banks, payment providers and compliance teams.
               </p>
-              <p className="mt-4 text-[15px] text-zq-muted leading-relaxed max-w-xl">
-                Know Your Agent (KYA) without collecting PII. The proof circuit, verifier and wallet integration are
-                open source, so your security team can review them line by line.
+              <p className="mt-4 text-[15px] text-zq-faint leading-relaxed max-w-xl">
+                The zero-knowledge, post-quantum trust protocol for agentic banking and micropayments. Open source, so
+                your security team can review the circuit, verifier and wallet integration line by line.
               </p>
 
               <div className="mt-9 flex flex-col sm:flex-row gap-3">
                 <ButtonLink href="#demo">Run the live demo</ButtonLink>
                 <ButtonLink href="/register" variant="secondary">Register an agent</ButtonLink>
-                <ButtonLink href={GITHUB_URL} variant="ghost" external>View on GitHub ↗</ButtonLink>
               </div>
+
+              <ul className="mt-10 flex flex-wrap gap-x-8 gap-y-3 text-sm text-zq-muted">
+                {["No personal data collected", "FATF R.16 threshold", "Post-quantum escrow"].map((t) => (
+                  <li key={t} className="flex items-center gap-2"><Check className="text-zq-success"/>{t}</li>
+                ))}
+              </ul>
             </div>
 
-            {/* Verification receipt — what a verifier actually receives */}
+            {/* Payment check — what a bank actually receives */}
             <div className="lg:col-span-5">
-              <Card className="font-mono text-xs">
-                <div className="flex items-center justify-between px-5 py-3 border-b border-zq-line">
-                  <span className="uppercase tracking-[0.12em] text-zq-muted">Verification receipt</span>
-                  <span className="text-zq-faint">zquent:kyc</span>
+              <Card className="overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-zq-line">
+                  <span className="text-[15px] font-semibold text-zq-text">Payment check</span>
+                  <span className="px-2.5 py-1 rounded-full bg-zq-success-bg text-zq-success text-sm font-medium">Approved</span>
                 </div>
-                <dl className="divide-y divide-zq-line">
-                  <div className="px-5 py-4 flex items-baseline justify-between gap-4">
-                    <dt className="text-zq-muted uppercase tracking-[0.1em]">Payment</dt>
-                    <dd className="text-zq-text text-sm">$1,200 · Tier 2</dd>
-                  </div>
-                  <div className="px-5 py-4">
-                    <dt className="text-zq-muted uppercase tracking-[0.1em] mb-3">Verifier learns</dt>
-                    <dd className="space-y-2">
-                      {["Credential valid", "Age ≥ 18", "Bound to this payment (single-use nonce)"].map((t) => (
-                        <p key={t} className="flex items-center gap-2.5 text-zq-text"><Check className="text-zq-accent"/>{t}</p>
-                      ))}
-                    </dd>
-                  </div>
-                  <div className="px-5 py-4">
-                    <dt className="text-zq-muted uppercase tracking-[0.1em] mb-3">Never learns</dt>
-                    <dd className="flex flex-wrap gap-x-4 gap-y-2 text-zq-faint">
-                      {["Name", "Date of birth", "Government ID", "Address"].map((t) => (
-                        <span key={t} className="flex items-center gap-1.5"><Cross/>{t}</span>
-                      ))}
-                    </dd>
-                  </div>
-                  <div className="px-5 py-4 grid grid-cols-[auto,1fr] gap-x-4 gap-y-2">
-                    <dt className="text-zq-muted uppercase tracking-[0.1em]">Escrow</dt>
-                    <dd className="text-zq-soft text-right">k-of-n · ML-KEM-768</dd>
-                    <dt className="text-zq-muted uppercase tracking-[0.1em]">Audit</dt>
-                    <dd className="text-zq-soft text-right">Ed25519 + ML-DSA-65</dd>
-                  </div>
-                </dl>
-                <p className="px-5 py-3 border-t border-zq-line text-zq-faint">Illustrative. The live demo below generates a real proof.</p>
+                <div className="px-6 py-5 border-b border-zq-line">
+                  <p className="text-sm text-zq-faint">Amount</p>
+                  <p className="mt-1 font-mono text-3xl font-medium text-zq-text">$1,200.00</p>
+                  <p className="mt-1 text-sm text-zq-faint">Above $1,000/day — proof required</p>
+                </div>
+                <div className="px-6 py-5 border-b border-zq-line">
+                  <p className="text-sm text-zq-faint mb-3">What the bank learns</p>
+                  <ul className="space-y-2.5 text-[15px] text-zq-text">
+                    {["The agent's credential is valid", "Its owner is over 18", "The proof is for this payment only"].map((t) => (
+                      <li key={t} className="flex items-center gap-2.5"><Check className="text-zq-success"/>{t}</li>
+                    ))}
+                  </ul>
+                </div>
+                <p className="px-6 py-4 bg-zq-bg text-sm text-zq-muted">
+                  Name, date of birth and ID never leave the customer&apos;s device. Illustrative — the live demo below makes a real proof.
+                </p>
               </Card>
             </div>
           </div>
 
-          {/* Proof strip */}
-          <dl className="mt-14 md:mt-20 grid grid-cols-2 md:grid-cols-4 border-y border-zq-line divide-zq-line [&>div]:border-zq-line">
+          {/* Key numbers */}
+          <dl className="mt-14 md:mt-20 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             {[
-              { value: "0 bytes",    label: "Personal data transmitted" },
-              { value: "< 10 ms",    label: "Anonymous-tier decision" },
-              { value: "~2.5 s",     label: "Proof generated and verified" },
-              { value: "ML-KEM-768", label: "Post-quantum identity escrow" },
-            ].map((s, i) => (
-              <div key={s.label} className={`px-4 sm:px-6 py-6 ${i % 2 === 1 ? "border-l" : ""} ${i >= 2 ? "border-t md:border-t-0" : ""} ${i === 2 ? "md:border-l" : ""}`}>
-                <dd className="font-mono text-xl md:text-2xl text-zq-text tracking-tight">{s.value}</dd>
-                <dt className="mt-1.5 text-xs uppercase tracking-[0.1em] text-zq-muted">{s.label}</dt>
+              { value: "0 bytes",    label: "of personal data sent" },
+              { value: "< 10 ms",    label: "to approve a small payment" },
+              { value: "~2.5 s",     label: "to prove a large one" },
+              { value: "ML-KEM-768", label: "quantum-safe identity escrow" },
+            ].map((s) => (
+              <div key={s.label} className="px-5 py-5 rounded-md border border-zq-line bg-zq-surface">
+                <dd className="font-mono text-xl md:text-[26px] font-medium text-zq-text tracking-tight">{s.value}</dd>
+                <dt className="mt-1.5 text-sm text-zq-faint">{s.label}</dt>
               </div>
             ))}
           </dl>
@@ -341,7 +329,7 @@ export default function Home() {
             </dl>
           </div>
           <div className="bg-zq-surface p-6">
-            <Label className="mb-5 text-zq-accent">ZQUENT · zero-knowledge agent compliance</Label>
+            <Label className="mb-5 text-zq-success">ZQUENT · zero-knowledge agent compliance</Label>
             <dl className="space-y-3 font-mono text-sm">
               {[
                 ["Collects", "nothing"],
@@ -360,11 +348,11 @@ export default function Home() {
         </div>
 
         <div className="mt-4 grid md:grid-cols-2 gap-px bg-zq-line border border-zq-line rounded-md overflow-hidden">
-          <blockquote className="bg-zq-bg p-6">
+          <blockquote className="bg-zq-surface p-6">
             <Label className="mb-3">Open Wallet Standard</Label>
             <p className="text-zq-soft leading-relaxed">&ldquo;Agents never see plaintext keys. Instead, they authenticate with scoped API tokens.&rdquo;</p>
           </blockquote>
-          <blockquote className="bg-zq-bg p-6">
+          <blockquote className="bg-zq-surface p-6">
             <Label className="mb-3 text-zq-accent">ZQUENT</Label>
             <p className="text-zq-text leading-relaxed">&ldquo;Compliance never sees plaintext identity. Instead, verifiers receive cryptographic proofs.&rdquo;</p>
           </blockquote>
@@ -420,8 +408,8 @@ export default function Home() {
           title="Watch a proof clear."
           lead="Send transfers as an autonomous agent and cross the $1,000 daily threshold. The proof flow triggers automatically and runs in your browser. No personal data is collected at any point."
           aside={
-            <span className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-zq-accent border border-zq-accent/40 rounded px-3 py-1.5">
-              <span className="w-1.5 h-1.5 bg-zq-accent" aria-hidden="true"/>
+            <span className="inline-flex items-center gap-2 text-sm font-medium text-zq-success bg-zq-success-bg rounded-full px-3 py-1.5">
+              <span className="w-2 h-2 rounded-full bg-zq-success" aria-hidden="true"/>
               Demo mode · no real funds
             </span>
           }
@@ -470,7 +458,7 @@ export default function Home() {
               <ul className="mt-6 space-y-2.5">
                 {t.items.map((item) => (
                   <li key={item} className="flex items-start gap-2.5 text-sm text-zq-soft">
-                    <Check className="mt-0.5 text-zq-accent"/>{item}
+                    <Check className="mt-0.5 text-zq-success"/>{item}
                   </li>
                 ))}
               </ul>
@@ -534,7 +522,7 @@ export default function Home() {
                   { label: "Age requirement met", detail: "currentYear − birthYear ≥ minAge" },
                 ].map((item) => (
                   <div key={item.label} className="flex items-start gap-3">
-                    <Check className="mt-1 text-zq-accent"/>
+                    <Check className="mt-1 text-zq-success"/>
                     <div>
                       <p className="text-sm text-zq-text">{item.label}</p>
                       <p className="font-mono text-xs text-zq-muted mt-1">{item.detail}</p>
@@ -837,7 +825,7 @@ wallet.registerFeature({"({"}{"\n"}
       {/* ═══════════════ MISSION ═══════════════ */}
       <Section>
         <div className="max-w-3xl">
-          <Label className="mb-8"><span className="text-zq-accent">13</span><span className="mx-2 text-zq-faint">—</span>The mission</Label>
+          <Label className="mb-8"><span className="font-mono text-zq-accent">13</span><span className="mx-2 text-zq-line-strong">/</span>The mission</Label>
           <blockquote className="font-display text-2xl md:text-4xl leading-tight font-semibold tracking-[-0.02em] text-zq-text">
             Every agent deserves a wallet.<br/>
             Every wallet deserves a standard.<br/>

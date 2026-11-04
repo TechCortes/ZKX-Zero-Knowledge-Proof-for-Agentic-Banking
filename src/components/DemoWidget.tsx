@@ -369,8 +369,8 @@ export default function DemoWidget() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-zq-accent animate-pulse" />
-            <span className="text-xs text-zq-accent font-medium font-mono">agent_live</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-zq-success animate-pulse" />
+            <span className="text-xs text-zq-success font-medium font-mono">agent_live</span>
           </div>
           <span className="text-zq-faint">·</span>
           <span className="text-xs text-zq-muted font-mono">{session?.agentId ?? "…"}</span>
@@ -474,7 +474,7 @@ export default function DemoWidget() {
                       {p.label}
                     </p>
                     <p className="text-xs text-zq-muted mt-0.5">{p.description}</p>
-                    <p className={clsx("text-xs mt-1.5 font-medium", triggers ? "text-zq-warn" : "text-zq-accent")}>
+                    <p className={clsx("text-xs mt-1.5 font-medium", triggers ? "text-zq-warn" : "text-zq-success")}>
                       {triggers ? "ZK required" : "Anonymous"}
                     </p>
                   </button>
@@ -502,9 +502,9 @@ export default function DemoWidget() {
               "flex items-center gap-2 px-3 py-2 rounded border text-xs mb-4 transition-colors",
               wouldTriggerKyc
                 ? "bg-zq-warn/10 border-zq-warn/30 text-zq-warn"
-                : "bg-zq-accent/10 border-zq-accent/30 text-zq-accent"
+                : "bg-zq-success/10 border-zq-success/30 text-zq-success"
             )}>
-              <span className={clsx("w-1 h-1 rounded-full shrink-0", wouldTriggerKyc ? "bg-zq-warn" : "bg-zq-accent")} />
+              <span className={clsx("w-1 h-1 rounded-full shrink-0", wouldTriggerKyc ? "bg-zq-warn" : "bg-zq-success")} />
               {wouldTriggerKyc
                 ? `$${amount.toLocaleString()} transfer requires ZK identity proof`
                 : `$${amount.toLocaleString()} transfer will settle anonymously`}
@@ -521,7 +521,7 @@ export default function DemoWidget() {
             {(stage === "idle" || stage === "approved" || stage === "kyc_approved") && (
               <button
                 onClick={sendPayment}
-                className="w-full bg-zq-accent hover:bg-zq-accent-strong text-zq-bg font-semibold min-h-[44px] py-2.5 rounded transition-colors text-sm"
+                className="w-full bg-zq-accent hover:bg-zq-accent-strong text-zq-on-accent font-semibold min-h-[44px] py-2.5 rounded transition-colors text-sm"
               >
                 Initiate transfer
               </button>
@@ -554,13 +554,13 @@ export default function DemoWidget() {
                     </div>
                     <div>
                       <p className="text-zq-faint">PII transmitted</p>
-                      <p className="text-zq-accent font-mono mt-0.5">0 bytes</p>
+                      <p className="text-zq-success font-mono mt-0.5">0 bytes</p>
                     </div>
                   </div>
                 </div>
                 <button
                   onClick={proveAndPay}
-                  className="w-full bg-zq-accent hover:bg-zq-accent-strong text-zq-bg font-semibold min-h-[44px] py-2.5 rounded transition-all text-sm"
+                  className="w-full bg-zq-accent hover:bg-zq-accent-strong text-zq-on-accent font-semibold min-h-[44px] py-2.5 rounded transition-all text-sm"
                 >
                   Generate proof and authorize
                 </button>
@@ -578,7 +578,7 @@ export default function DemoWidget() {
               <div ref={progressRef} className="bg-zq-accent/10 border border-zq-accent/30 rounded-md p-4 space-y-3">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-zq-accent animate-pulse" />
-                  <p className="text-zq-accent text-xs font-semibold uppercase tracking-wider">Generating zero-knowledge proof</p>
+                  <p className="text-zq-accent text-sm font-semibold">Generating zero-knowledge proof</p>
                 </div>
                 {PROOF_STEPS.map((step, i) => (
                   <div key={i} className="flex items-center gap-3">
@@ -616,14 +616,14 @@ export default function DemoWidget() {
               <div ref={stage === "kyc_approved" ? progressRef : undefined} className={clsx(
                 "rounded-md p-4 border",
                 stage === "kyc_approved"
-                  ? "bg-zq-accent/10 border-zq-accent/30"
-                  : "bg-zq-accent/10 border-zq-accent/30"
+                  ? "bg-zq-success/10 border-zq-success/30"
+                  : "bg-zq-success/10 border-zq-success/30"
               )}>
                 <div className="flex items-center gap-2 mb-3">
-                  <svg className={clsx("w-4 h-4 shrink-0", stage === "kyc_approved" ? "text-zq-accent" : "text-zq-accent")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className={clsx("w-4 h-4 shrink-0", stage === "kyc_approved" ? "text-zq-success" : "text-zq-success")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <p className={clsx("text-xs font-semibold", stage === "kyc_approved" ? "text-zq-accent" : "text-zq-accent")}>
+                  <p className={clsx("text-xs font-semibold", stage === "kyc_approved" ? "text-zq-success" : "text-zq-success")}>
                     {stage === "kyc_approved" ? "Authorized via zero-knowledge proof · settled" : "Anonymous transfer settled"}
                   </p>
                 </div>
@@ -638,7 +638,7 @@ export default function DemoWidget() {
                   </div>
                   <div>
                     <p className="text-zq-faint">PII transmitted</p>
-                    <p className="text-zq-accent font-mono mt-0.5">0 bytes</p>
+                    <p className="text-zq-success font-mono mt-0.5">0 bytes</p>
                   </div>
                   {lastTx.proof && (
                     <div>
@@ -661,25 +661,25 @@ export default function DemoWidget() {
             <div className="space-y-2">
               <div className={clsx(
                 "flex items-center gap-3 p-3 rounded-md border transition-colors",
-                dailySpend < DAILY_LIMIT ? "bg-zq-accent/10 border-zq-accent/30" : "bg-zq-surface border-zq-line"
+                dailySpend < DAILY_LIMIT ? "bg-zq-success/10 border-zq-success/30" : "bg-zq-surface border-zq-line"
               )}>
-                <span className={clsx("w-1.5 h-1.5 rounded-full shrink-0", dailySpend < DAILY_LIMIT ? "bg-zq-accent" : "bg-zq-accent/20")} />
+                <span className={clsx("w-1.5 h-1.5 rounded-full shrink-0", dailySpend < DAILY_LIMIT ? "bg-zq-success" : "bg-zq-success/20")} />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-zq-text">Tier 1 · Anonymous</p>
                   <p className="text-xs text-zq-muted mt-0.5">&lt; $1,000 / day · 0 bytes PII</p>
                 </div>
-                {dailySpend < DAILY_LIMIT && <span className="text-xs text-zq-accent font-semibold shrink-0">Active</span>}
+                {dailySpend < DAILY_LIMIT && <span className="text-xs text-zq-success font-semibold shrink-0">Active</span>}
               </div>
               <div className={clsx(
                 "flex items-center gap-3 p-3 rounded-md border transition-colors",
-                dailySpend >= DAILY_LIMIT ? "bg-zq-accent/10 border-zq-accent/30" : "bg-zq-surface border-zq-line"
+                dailySpend >= DAILY_LIMIT ? "bg-zq-success/10 border-zq-success/30" : "bg-zq-surface border-zq-line"
               )}>
-                <span className={clsx("w-1.5 h-1.5 rounded-full shrink-0", dailySpend >= DAILY_LIMIT ? "bg-zq-accent" : "bg-zq-accent/20")} />
+                <span className={clsx("w-1.5 h-1.5 rounded-full shrink-0", dailySpend >= DAILY_LIMIT ? "bg-zq-success" : "bg-zq-success/20")} />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-zq-text">Tier 2 · ZK Verified</p>
                   <p className="text-xs text-zq-muted mt-0.5">≥ $1,000 / day · Proof required</p>
                 </div>
-                {dailySpend >= DAILY_LIMIT && <span className="text-xs text-zq-accent font-semibold shrink-0">Active</span>}
+                {dailySpend >= DAILY_LIMIT && <span className="text-xs text-zq-success font-semibold shrink-0">Active</span>}
               </div>
             </div>
             <div className="mt-4 pt-4 border-t border-zq-line grid grid-cols-2 gap-3">
@@ -707,7 +707,7 @@ export default function DemoWidget() {
                     <div className="flex items-start gap-2 min-w-0">
                       <span className={clsx(
                         "w-1 h-1 rounded-full shrink-0 mt-1.5",
-                        tx.type === "zk-verified" ? "bg-zq-accent" : "bg-zq-accent"
+                        tx.type === "zk-verified" ? "bg-zq-success" : "bg-zq-success"
                       )} />
                       <div className="min-w-0">
                         <p className="text-xs text-zq-soft font-mono truncate">{tx.id}</p>
@@ -717,7 +717,7 @@ export default function DemoWidget() {
                     <div className="text-right shrink-0">
                       <p className="text-xs font-semibold text-zq-text font-mono">${tx.amount.toLocaleString()}</p>
                       <p className={clsx("text-xs font-medium mt-0.5",
-                        tx.type === "zk-verified" ? "text-zq-accent" : "text-zq-accent"
+                        tx.type === "zk-verified" ? "text-zq-success" : "text-zq-success"
                       )}>
                         {tx.type === "zk-verified" ? "zk-verified" : "anon"}
                       </p>

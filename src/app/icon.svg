@@ -1,6 +1,5 @@
 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- ZQUENT monogram: a Z inside a hairline proof frame (legible at 16px) -->
-  <rect width="32" height="32" rx="4" fill="#0A0B0D"/>
-  <rect x="0.5" y="0.5" width="31" height="31" rx="3.5" stroke="#3DDC97"/>
-  <path d="M10 10h12L10 22h12" stroke="#EDEEF0" stroke-width="2.4" stroke-linecap="square"/>
+  <!-- ZQUENT mark: a geometric Z on a navy tile (legible at 16px) -->
+  <rect width="32" height="32" rx="7" fill="#0B1F3A"/>
+  <path d="M9 8.5H23V11.5L13.2 20.5H23V23.5H9V20.5L18.8 11.5H9Z" fill="#FFFFFF"/>
 </svg>

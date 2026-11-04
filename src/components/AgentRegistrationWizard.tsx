@@ -143,9 +143,9 @@ export default function AgentRegistrationWizard() {
               <div className={clsx(
                 "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border transition-all",
                 stepIdx > i
-                  ? "bg-zq-accent/10 border-zq-accent/40 text-zq-accent"
+                  ? "bg-zq-success/10 border-zq-success/40 text-zq-success"
                   : stepIdx === i
-                  ? "bg-zq-accent border-zq-accent text-zq-bg"
+                  ? "bg-zq-accent border-zq-accent text-zq-on-accent"
                   : "bg-zq-surface border-zq-line text-zq-faint"
               )}>
                 {stepIdx > i ? "✓" : i + 1}
@@ -208,7 +208,7 @@ export default function AgentRegistrationWizard() {
           <button
             onClick={() => setStep("identity")}
             disabled={!agentIdValid}
-            className="w-full bg-zq-accent hover:bg-zq-accent-strong disabled:opacity-30 disabled:cursor-not-allowed text-zq-bg font-semibold py-3 rounded-md transition-colors text-sm"
+            className="w-full bg-zq-accent hover:bg-zq-accent-strong disabled:opacity-30 disabled:cursor-not-allowed text-zq-on-accent font-semibold py-3 rounded-md transition-colors text-sm"
           >
             Continue →
           </button>
@@ -239,7 +239,7 @@ export default function AgentRegistrationWizard() {
               <p className="text-xs text-zq-muted mt-0.5">Auto-generate a random idHash + salt — not tied to a real identity</p>
             </div>
             {demoFilled && (
-              <span className="text-xs text-zq-accent font-medium shrink-0">Generated ✓</span>
+              <span className="text-xs text-zq-success font-medium shrink-0">Generated ✓</span>
             )}
           </button>
 
@@ -297,7 +297,7 @@ export default function AgentRegistrationWizard() {
           {/* Live commitment preview */}
           <div className={clsx(
             "rounded-md border p-4 transition-all",
-            commitment       ? "bg-zq-accent/10 border-zq-accent/30"
+            commitment       ? "bg-zq-success/10 border-zq-success/30"
             : commitError    ? "bg-zq-danger/10 border-zq-danger/30"
             : commitLoading  ? "bg-zq-surface border-zq-line"
             : "bg-zq-surface border-zq-line"
@@ -308,7 +308,7 @@ export default function AgentRegistrationWizard() {
             {commitLoading ? (
               <p className="text-xs text-zq-muted font-mono animate-pulse">Computing…</p>
             ) : commitment ? (
-              <p className="text-xs text-zq-accent font-mono break-all leading-relaxed">{commitment}</p>
+              <p className="text-xs text-zq-success font-mono break-all leading-relaxed">{commitment}</p>
             ) : commitError ? (
               <p className="text-xs text-zq-danger/80">{commitError}</p>
             ) : (
@@ -337,7 +337,7 @@ export default function AgentRegistrationWizard() {
             <button
               onClick={() => setStep("review")}
               disabled={!commitment || commitLoading}
-              className="flex-1 bg-zq-accent hover:bg-zq-accent-strong disabled:opacity-30 disabled:cursor-not-allowed text-zq-bg font-semibold py-3 rounded-md transition-colors text-sm"
+              className="flex-1 bg-zq-accent hover:bg-zq-accent-strong disabled:opacity-30 disabled:cursor-not-allowed text-zq-on-accent font-semibold py-3 rounded-md transition-colors text-sm"
             >
               Continue →
             </button>
@@ -422,7 +422,7 @@ export default function AgentRegistrationWizard() {
             <button
               onClick={register}
               disabled={loading}
-              className="flex-1 bg-zq-accent hover:bg-zq-accent-strong disabled:opacity-50 text-zq-bg font-semibold py-3 rounded-md transition-all text-sm"
+              className="flex-1 bg-zq-accent hover:bg-zq-accent-strong disabled:opacity-50 text-zq-on-accent font-semibold py-3 rounded-md transition-all text-sm"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -439,8 +439,8 @@ export default function AgentRegistrationWizard() {
       {step === "success" && result && (
         <div className="space-y-6">
           <div className="text-center pt-2">
-            <div className="w-16 h-16 rounded-full bg-zq-accent/10 border border-zq-accent/30 flex items-center justify-center mx-auto mb-5">
-              <svg className="w-8 h-8 text-zq-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-16 h-16 rounded-full bg-zq-success/10 border border-zq-success/30 flex items-center justify-center mx-auto mb-5">
+              <svg className="w-8 h-8 text-zq-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
             </div>
@@ -460,7 +460,7 @@ export default function AgentRegistrationWizard() {
               </p>
             </div>
             <div className="bg-zq-bg border border-zq-line rounded p-3 flex items-start gap-3">
-              <code className="text-xs text-zq-accent font-mono flex-1 break-all leading-relaxed">
+              <code className="text-xs text-zq-success font-mono flex-1 break-all leading-relaxed">
                 {result.apiKey}
               </code>
               <button
@@ -468,7 +468,7 @@ export default function AgentRegistrationWizard() {
                 className={clsx(
                   "shrink-0 px-3 py-1.5 rounded border text-xs font-semibold transition-all mt-0.5",
                   copied
-                    ? "bg-zq-accent/10 border-zq-accent/40 text-zq-accent"
+                    ? "bg-zq-success/10 border-zq-success/40 text-zq-success"
                     : "bg-zq-surface border-zq-line text-zq-soft hover:text-zq-text hover:border-zq-line-strong"
                 )}
               >
@@ -520,11 +520,11 @@ export default function AgentRegistrationWizard() {
           </div>
 
           {/* Browser session notice */}
-          <div className="flex items-center gap-2 px-4 py-3 bg-zq-accent/10 border border-zq-accent/30 rounded-md">
-            <span className="w-1.5 h-1.5 rounded-full bg-zq-accent shrink-0"/>
+          <div className="flex items-center gap-2 px-4 py-3 bg-zq-success/10 border border-zq-success/30 rounded-md">
+            <span className="w-1.5 h-1.5 rounded-full bg-zq-success shrink-0"/>
             <p className="text-xs text-zq-soft">
               Agent saved to this browser — the{" "}
-              <span className="text-zq-accent font-medium">Live Demo</span> will use your registered agent automatically.
+              <span className="text-zq-success font-medium">Live Demo</span> will use your registered agent automatically.
             </p>
           </div>
 
@@ -532,7 +532,7 @@ export default function AgentRegistrationWizard() {
           <div className="flex gap-3">
             <a
               href="/#demo"
-              className="flex-1 text-center px-5 py-3 bg-zq-accent hover:bg-zq-accent-strong text-zq-bg font-semibold rounded-md transition-colors text-sm"
+              className="flex-1 text-center px-5 py-3 bg-zq-accent hover:bg-zq-accent-strong text-zq-on-accent font-semibold rounded-md transition-colors text-sm"
             >
               Run the live demo →
             </a>
