@@ -33,7 +33,9 @@ export type AuditDecision =
   | "policy_denied"
   | "disclosure_requested"
   | "disclosure_approval"
-  | "disclosure_approved";
+  | "disclosure_approved"
+  | "disclosure_share_released"
+  | "disclosure_delivered";
 
 export interface AuditRecord {
   id: string;
@@ -61,7 +63,7 @@ export interface AuditRecord {
    */
   revealEscrow?: EscrowReference;
   /** Disclosure flow events (agentId "system:disclosure"). Only the requestHash; never the txId. */
-  disclosure?: { requestHash: string; regulatorId?: string; approverId?: string };
+  disclosure?: { requestHash: string; regulatorId?: string; approverId?: string; memberIndex?: number; deliveryHash?: string };
 }
 
 /** Records written before the escrow split carried the ciphertext inline. */

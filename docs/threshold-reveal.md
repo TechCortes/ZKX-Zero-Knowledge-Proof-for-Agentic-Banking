@@ -177,9 +177,10 @@ For unsealed records, `escrow` writes `ct.json` directly; skip `unseal` and `ope
   one operation it needs to expose.
 - **The trusted setup.** `setup-zk` makes a single-contributor Groth16 key. Run a real phase-2
   ceremony before trusting proofs in production.
-- **Access to ciphertexts.** Today the only read path is the operator reading the escrow store.
-  A regulator-facing request flow is next on the roadmap; the legal process around it is the
-  institution's to build.
+- **Access to ciphertexts.** Besides the operator reading the escrow store, the regulator flow
+  (`docs/disclosure-requests.md`, `docs/disclosure-delivery.md`) lets k members decrypt one
+  approved transaction and deliver it sealed to the requesting regulator. The legal process
+  around it is the institution's to build.
 
 ## Known limits
 
