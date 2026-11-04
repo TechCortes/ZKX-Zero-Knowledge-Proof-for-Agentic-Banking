@@ -1,63 +1,43 @@
 import type { Metadata } from "next";
-import { LogoWordmark } from "@/components/Logo";
+import SiteNav from "@/components/SiteNav";
 import AgentRegistrationWizard from "@/components/AgentRegistrationWizard";
 
 export const metadata: Metadata = {
-  title: "Register Agent — Vero Protocol",
+  title: "Register an agent — ZQUENT",
   description:
-    "Register an OWS-compatible agent with Vero Protocol vero:kyc compliance. KYC commitment derived locally — no PII transmitted.",
+    "Register an OWS-compatible agent with ZQUENT zquent:kyc compliance. KYC commitment derived locally — no PII transmitted.",
 };
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen bg-[#04040a] text-white overflow-x-hidden">
+    <div className="min-h-screen bg-zq-bg text-zq-text overflow-x-hidden">
+      <SiteNav base="/" />
 
-      {/* Nav */}
-      <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/[0.04] bg-[#04040a]/95 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-          <a href="/" className="hover:opacity-80 transition-opacity">
-            <LogoWordmark />
-          </a>
-          <div className="flex items-center gap-4">
-            <a
-              href="/#demo"
-              className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
-            >
-              Live Demo
-            </a>
-            <a
-              href="/"
-              className="text-xs font-semibold text-slate-300 hover:text-white transition-colors border border-white/10 hover:border-white/20 px-3 py-1.5 rounded-lg"
-            >
-              ← Back
-            </a>
-          </div>
-        </div>
-      </nav>
-
-      {/* Page content */}
-      <main className="pt-28 pb-24 px-6">
-
+      <main className="pt-28 md:pt-32 pb-24 px-4 sm:px-6">
         {/* Header */}
         <div className="max-w-xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-2 text-xs px-3.5 py-1.5 rounded-full border border-purple-500/20 bg-purple-500/5 text-purple-300 font-medium mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"/>
-            OWS Agent Registration · vero:kyc · FATF-Compatible
-          </div>
+          <p className="font-mono text-xs uppercase tracking-[0.16em] text-zq-muted mb-6 flex flex-wrap items-center gap-x-3 gap-y-2">
+            <span className="inline-flex items-center gap-2 text-zq-accent">
+              <span className="w-1.5 h-1.5 bg-zq-accent" aria-hidden="true"/>
+              OWS agent registration
+            </span>
+            <span className="text-zq-faint">/</span>
+            zquent:kyc · FATF-compatible
+          </p>
 
           {/* Privacy callout */}
-          <div className="grid grid-cols-3 gap-3">
+          <dl className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-zq-line border border-zq-line rounded-md overflow-hidden">
             {[
-              { label: "0 bytes PII",    sub: "nothing transmitted"    },
-              { label: "Local compute",  sub: "runs entirely in your browser"},
-              { label: "Shown once",     sub: "store your ows_key_"    },
+              { label: "0 bytes PII",   sub: "nothing transmitted" },
+              { label: "Local compute", sub: "runs entirely in your browser" },
+              { label: "Shown once",    sub: "store your ows_key_" },
             ].map((s) => (
-              <div key={s.label} className="bg-white/[0.02] border border-white/[0.04] rounded-xl px-3 py-3 text-center">
-                <p className="text-sm font-bold text-white font-mono">{s.label}</p>
-                <p className="text-xs text-slate-700 mt-0.5">{s.sub}</p>
+              <div key={s.label} className="bg-zq-surface px-4 py-4">
+                <dt className="font-mono text-sm text-zq-text">{s.label}</dt>
+                <dd className="text-xs text-zq-muted mt-1">{s.sub}</dd>
               </div>
             ))}
-          </div>
+          </dl>
         </div>
 
         {/* Wizard */}

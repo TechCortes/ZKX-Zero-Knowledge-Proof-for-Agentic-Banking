@@ -1,13 +1,15 @@
-# Vero Protocol — Zero-Knowledge Compliance for AI Agent Wallets
+# ZQUENT — The Zero-Knowledge, Post-Quantum Trust Protocol for Agentic Banking and Micropayments
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-purple.svg)](./LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-3DDC97.svg)](./LICENSE)
 [![Live Demo](https://img.shields.io/badge/demo-zkx--psi.vercel.app-blue)](https://zkx-psi.vercel.app)
 
-> Composable compliance without doxxing.
+> Every agent payment, proven. Composable compliance without doxxing.
 
-Vero Protocol extends the [Open Wallet Standard](https://github.com/open-wallet-standard/core) (OWS) — the open, MIT-licensed wallet layer for AI agents originated by MoonPay, with 15+ contributing organizations including Circle, PayPal, Ripple, Solana Foundation, and Ethereum Foundation — with a zero-knowledge KYC credential for agent payments.
+_ZQUENT was previously named Vero Protocol. See [Renamed from Vero Protocol](#renamed-from-vero-protocol) for what changed and what stays compatible._
 
-The problem is current, not hypothetical: as of April 2026 the x402 agent-payment ecosystem alone reports 69,000+ active agents and 165M+ transactions ([Coinbase](https://www.coinbase.com/developer-platform/discover/launches/x402)), now formalized as the Linux Foundation's x402 Foundation. Agent-to-agent payments already move real volume with no KYA (Know Your Agent) standard and no AML framework attached — that's the gap Vero Protocol closes.
+ZQUENT extends the [Open Wallet Standard](https://github.com/open-wallet-standard/core) (OWS) — the open, MIT-licensed wallet layer for AI agents originated by MoonPay, with 15+ contributing organizations including Circle, PayPal, Ripple, Solana Foundation, and Ethereum Foundation — with a zero-knowledge KYC credential for agent payments.
+
+The problem is current, not hypothetical: as of April 2026 the x402 agent-payment ecosystem alone reports 69,000+ active agents and 165M+ transactions ([Coinbase](https://www.coinbase.com/developer-platform/discover/launches/x402)), now formalized as the Linux Foundation's x402 Foundation. Agent-to-agent payments already move real volume with no KYA (Know Your Agent) standard and no AML framework attached — that's the gap ZQUENT closes.
 
 ## Why fork this
 
@@ -15,7 +17,7 @@ This isn't a slide deck or a mocked-up demo — it's a working reference impleme
 
 - **A real Groth16 setup** — `kyc_credential.circom` is compiled, and a completed Powers of Tau ceremony + trusted setup (`public/zk/*.wasm`, `*.zkey`, `verification_key.json`) is committed. No stub verifier.
 - **A live agent onboarding API** — `/api/v1/agents/register`, `/api/v1/payment`, `/api/v1/verify-proof` — token-scoped auth, policy evaluation, and proof verification wired end to end.
-- **OWS wallet-standard integration** — registers `vero:kyc` as a wallet-standard feature so it composes with the existing OWS policy engine instead of bolting on a parallel one.
+- **OWS wallet-standard integration** — registers `zquent:kyc` as a wallet-standard feature so it composes with the existing OWS policy engine instead of bolting on a parallel one.
 - **A working registration UI** (`/register`) — the same flow demoed on the live site, not just an API you have to curl.
 
 If you're building agent-facing payments and need a compliance layer that doesn't require agents (or their operators) to hand over PII, this is a starting point you can clone and ship from — not build from scratch.
@@ -34,7 +36,7 @@ Agents prove they have a valid identity **without revealing who they are**. Comp
 ```
 Agent Payment Request
        ↓
-  Policy Engine (OWS vero:kyc middleware)
+  Policy Engine (OWS zquent:kyc middleware)
        ↓
  Daily spend < $1k? ──yes──→ Approve (anonymous)
        ↓ no
@@ -56,7 +58,7 @@ The `kyc_credential` circuit (circom) proves:
 
 Private inputs never leave the browser.
 
-**Threshold reveal (opt-in).** Institutions that need a lawful-disclosure path can set `VERO_REVEAL_PUBLIC_KEY`. Proofs then use `kyc_reveal.circom`, which also encrypts the identity to a k-of-n consortium key and proves the ciphertext is honest. No single party, including the operator, can decrypt it. See [docs/threshold-reveal.md](./docs/threshold-reveal.md).
+**Threshold reveal (opt-in).** Institutions that need a lawful-disclosure path can set `ZQUENT_REVEAL_PUBLIC_KEY`. Proofs then use `kyc_reveal.circom`, which also encrypts the identity to a k-of-n consortium key and proves the ciphertext is honest. No single party, including the operator, can decrypt it. See [docs/threshold-reveal.md](./docs/threshold-reveal.md).
 
 ## Stack
 
@@ -71,7 +73,7 @@ OWS (v1.4.2) isn't just a CLI — it ships as a Node.js/Python SDK, a CLI, **and
 framework (LangChain, AutoGPT, custom tool-callers) can attach a policy-gated wallet as a native tool with no
 custom wallet code. It also isn't locked to one payment rail: alongside [x402](https://www.coinbase.com/developer-platform/discover/launches/x402)
 (Coinbase/Cloudflare), it speaks Google's Agent Payments Protocol and Stripe/Tempo's Machine Payments Protocol (MPP)
-for streaming micropayments. Vero Protocol's `vero:kyc` policy check sits in front of all of them — fork it once, and the
+for streaming micropayments. ZQUENT's `zquent:kyc` policy check sits in front of all of them — fork it once, and the
 compliance boundary follows the agent regardless of which payment rail it uses.
 
 ## Quick Start
@@ -116,13 +118,13 @@ npx localtunnel --port 3000
 
 ## OWS Extension
 
-Vero Protocol registers as the `vero:kyc` feature in the wallet-standard registry:
+ZQUENT registers as the `zquent:kyc` feature in the wallet-standard registry:
 
 ```typescript
-import { VERO_KYC_FEATURE } from "@/wallet/ows-wallet";
+import { ZQUENT_KYC_FEATURE } from "@/wallet/ows-wallet";
 
 // Agents declare this capability
-wallet.features[VERO_KYC_FEATURE].requestPayment({ amount, recipient });
+wallet.features[ZQUENT_KYC_FEATURE].requestPayment({ amount, recipient });
 ```
 
 ## Extend it
@@ -140,9 +142,28 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup and how to propose change
 
 By default the verifier learns nothing beyond "credential valid, age ≥ 18". Institutions also need a lawful-disclosure path (EU eIDAS 2 and FATF Travel Rule guidance both expect one), so the audit log and opt-in k-of-n threshold reveal are shipped. See [ROADMAP.md](./ROADMAP.md) and [docs/threshold-reveal.md](./docs/threshold-reveal.md).
 
-Next: a regulator request flow, post-quantum (ML-KEM / ML-DSA) protection for escrowed identity data and the audit trail, a multi-party trusted setup, and issuer-signed credentials.
+Shipped since: post-quantum sealed escrow for identity ciphertexts (X-Wing: ML-KEM-768 + X25519) and a tamper-evident audit chain with Ed25519 + ML-DSA-65 signed checkpoints, both opt-in. The ZK proofs themselves remain classical Groth16.
+
+Next: a regulator request flow, a multi-party trusted setup, and issuer-signed credentials.
 
 **Status:** testnet reference implementation. The circuits have not been independently audited, the Groth16 setup has a single contributor, and the demo credential is self-asserted. Don't use it to protect real funds or identities yet.
+
+## Renamed from Vero Protocol
+
+The project was renamed from Vero Protocol to **ZQUENT**. Nothing already deployed or stored has to change:
+
+| What | New | Still accepted |
+| --- | --- | --- |
+| Env vars | `ZQUENT_REVEAL_PUBLIC_KEY`, `ZQUENT_ESCROW_KEYS`, `ZQUENT_AUDIT_SIGNING_KEY` | `VERO_*` names (read as fallback, one-time warning) |
+| Wallet-standard feature | `zquent:kyc` | `vero:kyc` (registered as an alias of the same feature) |
+| Assistant API | `/api/assistant` | `/api/vera` (same handler) |
+| Browser storage | `zquent_agent` | `zkx_agent` (migrated once on load) |
+| Transaction ids | `zquent_<uuid>` | `zkx_…` ids in existing audit records |
+| CLIs | `scripts/zquent-reveal.ts`, `scripts/zquent-audit.ts` | `npm run reveal` / `npm run audit` unchanged |
+
+The aliases are deprecated and will be removed in a cleanup release about 90 days after the rename.
+
+**Not renamed, on purpose:** the wire-format tags `vero-reveal/v1`, `vero-escrow/v2`, `vero-escrow-keys/v1`, `vero-audit-checkpoint/v1` and the `vero-audit-signing` HKDF label. They are written into stored ciphertexts, sealed envelopes and signed checkpoints, so changing them would orphan existing data. A test pins them.
 
 ## License
 

@@ -1,10 +1,10 @@
 # Roadmap
 
-Vero Protocol's current implementation optimizes for one property: the verifier learns nothing beyond "credential valid, age ≥ 18." That's the right default for the anonymous-micropayment tier, and it's what makes the demo compelling. It is **not**, by itself, enough for an institution to run in production.
+ZQUENT's current implementation optimizes for one property: the verifier learns nothing beyond "credential valid, age ≥ 18." That's the right default for the anonymous-micropayment tier, and it's what makes the demo compelling. It is **not**, by itself, enough for an institution to run in production.
 
 ## Why: the disclosure gap
 
-Regulatory research (EU eIDAS 2, FATF Travel Rule guidance) is consistent on one point: zero-knowledge proofs are an accepted substitute for raw KYC documents, but compliance programs are expected to retain a **lawful disclosure path** — a way to unmask a specific transaction under legal process (subpoena, sanctions hit, travel-rule request) without unmasking everyone else's transactions by default. "The verifier learns nothing, ever, full stop" is a strong developer pitch and a weak institutional one — a compliance team evaluating this for a pilot will ask "what happens when a regulator asks us who this was," and today Vero Protocol has no answer.
+Regulatory research (EU eIDAS 2, FATF Travel Rule guidance) is consistent on one point: zero-knowledge proofs are an accepted substitute for raw KYC documents, but compliance programs are expected to retain a **lawful disclosure path** — a way to unmask a specific transaction under legal process (subpoena, sanctions hit, travel-rule request) without unmasking everyone else's transactions by default. "The verifier learns nothing, ever, full stop" is a strong developer pitch and a weak institutional one — a compliance team evaluating this for a pilot will ask "what happens when a regulator asks us who this was," and today ZQUENT has no answer.
 
 This is scoped as a real feature, not a messaging fix, because it requires new cryptographic machinery, not just new copy.
 
@@ -26,29 +26,29 @@ Implementation: `src/policy/auditLog.ts` (in-memory, DB-shaped — same conventi
 
 ### 2. Threshold reveal (the actual ZK work) — ✅ shipped (opt-in)
 
-At proof-generation time, the circuit additionally encrypts the private inputs (`idHash`, `birthYear`, `salt`) under a **k-of-n threshold public key**, where the `n` key-holders are a consortium the *institution* designates — e.g., independent legal/compliance/custody parties, not Vero Protocol and not any single verifier. The resulting ciphertext is stored alongside the commitment. In the common case it's just opaque bytes; it becomes readable only if `k` of the `n` designated parties cooperate to decrypt it, which is the point — no single party (including the platform operator) can unilaterally deanonymize a user, but a legally-compelled, multi-party disclosure process is possible.
+At proof-generation time, the circuit additionally encrypts the private inputs (`idHash`, `birthYear`, `salt`) under a **k-of-n threshold public key**, where the `n` key-holders are a consortium the *institution* designates — e.g., independent legal/compliance/custody parties, not ZQUENT and not any single verifier. The resulting ciphertext is stored alongside the commitment. In the common case it's just opaque bytes; it becomes readable only if `k` of the `n` designated parties cooperate to decrypt it, which is the point — no single party (including the platform operator) can unilaterally deanonymize a user, but a legally-compelled, multi-party disclosure process is possible.
 
-**Status:** ✅ the circuit (`circuits/kyc_reveal.circom`), the ciphertext format and threshold-decryption contract ([docs/threshold-reveal.md](./docs/threshold-reveal.md)), server wiring behind `VERO_REVEAL_PUBLIC_KEY`, and a reference CLI (`npm run reveal`) are in. Circuit keys are generated (`public/zk/kyc_reveal*`, 9,030 constraints, PSE pot14) and real-proof tests pass.
+**Status:** ✅ the circuit (`circuits/kyc_reveal.circom`), the ciphertext format and threshold-decryption contract ([docs/threshold-reveal.md](./docs/threshold-reveal.md)), server wiring behind `ZQUENT_REVEAL_PUBLIC_KEY`, and a reference CLI (`npm run reveal`) are in. Circuit keys are generated (`public/zk/kyc_reveal*`, 9,030 constraints, PSE pot14) and real-proof tests pass.
 
-Vero Protocol's job here is to define the **interface** cleanly — the ciphertext format, the circuit extension, and the threshold-decryption contract — so that an institution forking this plugs in its *own* key-management/HSM infrastructure for the actual threshold ceremony. Vero Protocol does not run the ceremony; it defines the shape of the boundary.
+ZQUENT's job here is to define the **interface** cleanly — the ciphertext format, the circuit extension, and the threshold-decryption contract — so that an institution forking this plugs in its *own* key-management/HSM infrastructure for the actual threshold ceremony. ZQUENT does not run the ceremony; it defines the shape of the boundary.
 
 ### What this unlocks
 
-A compliance team can pilot Vero Protocol and truthfully tell their regulator: "we can prove KYC status without collecting PII, we retain an auditable record of every policy decision, and we can unmask a specific transaction under legal process with the cooperation of a designated multi-party consortium — but not unilaterally, and not in bulk." That sentence is what turns "interesting ZK demo" into "thing our legal team will actually sign off piloting."
+A compliance team can pilot ZQUENT and truthfully tell their regulator: "we can prove KYC status without collecting PII, we retain an auditable record of every policy decision, and we can unmask a specific transaction under legal process with the cooperation of a designated multi-party consortium — but not unilaterally, and not in bulk." That sentence is what turns "interesting ZK demo" into "thing our legal team will actually sign off piloting."
 
 ## Sequencing
 
 1. ✅ Audit log — no cryptography, mechanical, ships independently of everything else.
 2. ✅ Threshold-reveal circuit extension + ciphertext format spec.
 3. ✅ Reference (non-production) threshold-decryption CLI — `npm run reveal -- demo`.
-4. ✅ Post-quantum escrow: each reveal ciphertext is sealed k-of-n to the consortium's X-Wing (ML-KEM-768 + X25519) keys before storage (`vero-escrow/v2`, `VERO_ESCROW_KEYS`).
+4. ✅ Post-quantum escrow: each reveal ciphertext is sealed k-of-n to the consortium's X-Wing (ML-KEM-768 + X25519) keys before storage (`vero-escrow/v2`, `ZQUENT_ESCROW_KEYS`).
 5. ✅ Tamper-evident audit log: every record is sequenced and hashed, and daily checkpoints chain them and are signed with Ed25519 + ML-DSA-65 ([docs/audit-chain.md](./docs/audit-chain.md)).
 6. ✅ Key registries: one signed public document lists the consortium members, approvers and regulators. Every approver and regulator needs k member endorsements ([docs/key-registry.md](./docs/key-registry.md)).
 7. Next: the regulator request API (`POST /api/v1/disclosure/requests`) with k-of-n hybrid-signed approvals, then sealed delivery, then anchoring checkpoint hashes on Base.
 
-## Explicitly out of scope for Vero Protocol itself
+## Explicitly out of scope for ZQUENT itself
 
-Running an actual threshold-decryption consortium, KYC document verification/issuance, and anything resembling custody of the reveal keys. Vero Protocol defines the protocol boundary; institutions that fork this own the actual disclosure infrastructure, the same way they'd own their own key management today.
+Running an actual threshold-decryption consortium, KYC document verification/issuance, and anything resembling custody of the reveal keys. ZQUENT defines the protocol boundary; institutions that fork this own the actual disclosure infrastructure, the same way they'd own their own key management today.
 
 ## Contributing
 

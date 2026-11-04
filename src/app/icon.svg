@@ -1,7 +1,6 @@
 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Container: flat institutional indigo, no gradient (legible at 16px) -->
-  <rect width="32" height="32" rx="6" fill="#3730A3"/>
-
-  <!-- Single diamond: the proof boundary, no nested shape -->
-  <path d="M16 7 L25 16 L16 25 L7 16 Z" fill="white"/>
+  <!-- ZQUENT monogram: a Z inside a hairline proof frame (legible at 16px) -->
+  <rect width="32" height="32" rx="4" fill="#0A0B0D"/>
+  <rect x="0.5" y="0.5" width="31" height="31" rx="3.5" stroke="#3DDC97"/>
+  <path d="M10 10h12L10 22h12" stroke="#EDEEF0" stroke-width="2.4" stroke-linecap="square"/>
 </svg>

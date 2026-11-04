@@ -1,6 +1,6 @@
-# Contributing to Vero Protocol
+# Contributing to ZQUENT
 
-Vero Protocol is MIT licensed — forks, PRs, and standalone derivatives are all welcome. This is a short guide to the actual dev workflow, not a formal process.
+ZQUENT is MIT licensed — forks, PRs, and standalone derivatives are all welcome. This is a short guide to the actual dev workflow, not a formal process.
 
 ## Dev setup
 
@@ -37,11 +37,11 @@ npm run test:coverage
 
 ## Where to make changes
 
-- **Policy logic** (thresholds, spend windows) lives in the OWS `vero:kyc` middleware — see the Architecture section in [README.md](./README.md).
+- **Policy logic** (thresholds, spend windows) lives in the OWS `zquent:kyc` middleware — see the Architecture section in [README.md](./README.md).
 - **The circuit** is `circuits/kyc_credential.circom`. Adding a new private/public input means re-running `npm run compile-circuit` and `npm run setup-zk` to regenerate the wasm/zkey/verification key.
 - **Onboarding API** routes are under `src/app/api/v1/agents/` and `src/app/api/v1/payment/` — the reference agent registry lives here if you want to see how tokens and policy checks are wired.
 - **Audit log** — `src/policy/auditLog.ts` + `GET /api/v1/audit`. See [ROADMAP.md](./ROADMAP.md) for why this exists.
-- **Threshold reveal** — `circuits/kyc_reveal.circom`, `src/zkp/reveal.ts`, `scripts/vero-reveal.ts` (`npm run reveal`). Spec: [docs/threshold-reveal.md](./docs/threshold-reveal.md). Opt-in via `VERO_REVEAL_PUBLIC_KEY`.
+- **Threshold reveal** — `circuits/kyc_reveal.circom`, `src/zkp/reveal.ts`, `scripts/zquent-reveal.ts` (`npm run reveal`). Spec: [docs/threshold-reveal.md](./docs/threshold-reveal.md). Opt-in via `ZQUENT_REVEAL_PUBLIC_KEY`.
 - **UI** — `src/app/page.tsx` (landing page), `src/app/register/` + `src/components/AgentRegistrationWizard.tsx` (registration flow), `src/components/DemoWidget.tsx` (live demo).
 
 ## Proposing a change
@@ -50,4 +50,4 @@ Open a PR with a short description of what changed and why. For anything touchin
 
 ## Biggest open item: [ROADMAP.md](./ROADMAP.md)
 
-If you want to work on something with real impact, start there. The audit log and opt-in threshold reveal are shipped. Open items: a regulator-facing request flow, post-quantum protection (ML-KEM-768 / ML-DSA-65) for escrowed identity data and the audit trail, replacing the trusted-dealer keygen with a DKG, and a multi-party Groth16 setup ceremony.
+If you want to work on something with real impact, start there. The audit log and opt-in threshold reveal are shipped. Post-quantum escrow (X-Wing) and the ML-DSA-65 signed audit chain are shipped too. Open items: a regulator-facing request flow, replacing the trusted-dealer keygen with a DKG, and a multi-party Groth16 setup ceremony.

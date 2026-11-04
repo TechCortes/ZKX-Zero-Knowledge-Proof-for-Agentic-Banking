@@ -11,59 +11,56 @@ export function renderOgImage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          padding: "72px 84px",
-          color: "white",
-          backgroundColor: "#04040a",
-          backgroundImage:
-            "radial-gradient(circle at 88% 8%, rgba(109,40,217,0.38) 0%, rgba(4,4,10,0) 52%), radial-gradient(circle at 6% 96%, rgba(37,99,235,0.28) 0%, rgba(4,4,10,0) 48%)",
+          padding: "64px 80px",
+          color: "#EDEEF0",
+          backgroundColor: "#0A0B0D",
+          border: "1px solid #1F2329",
         }}
       >
         {/* Mark + eyebrow */}
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <svg width="76" height="76" viewBox="0 0 32 32" fill="none">
-            <rect width="32" height="32" rx="6" fill="#3730A3" />
-            <path d="M16 7 L25 16 L16 25 L7 16 Z" fill="white" />
-          </svg>
-          <div
-            style={{
-              display: "flex",
-              marginLeft: 28,
-              fontSize: 26,
-              letterSpacing: 6,
-              color: "#64748b",
-              textTransform: "uppercase",
-            }}
-          >
-            Agent Compliance
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <svg width="64" height="64" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="4" fill="#0A0B0D" />
+              <rect x="0.5" y="0.5" width="31" height="31" rx="3.5" stroke="#3DDC97" />
+              <path d="M10 10h12L10 22h12" stroke="#EDEEF0" strokeWidth="2.4" strokeLinecap="square" />
+            </svg>
+            <div style={{ display: "flex", marginLeft: 24, fontSize: 34, letterSpacing: 8, fontWeight: 600 }}>
+              ZQUENT
+            </div>
+          </div>
+          <div style={{ display: "flex", fontSize: 22, letterSpacing: 4, color: "#3DDC97", textTransform: "uppercase" }}>
+            Testnet · MIT
           </div>
         </div>
 
-        {/* Name + value prop */}
+        {/* Headline + descriptor */}
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", fontSize: 132, lineHeight: 1, letterSpacing: -4 }}>
-            <span>Vero</span>
-            <span style={{ color: "#94a3b8", marginLeft: 32 }}>Protocol</span>
+          <div style={{ display: "flex", fontSize: 96, lineHeight: 1.04, letterSpacing: -3, fontWeight: 600 }}>
+            Every agent payment, proven.
           </div>
-          <div
-            style={{
-              display: "flex",
-              marginTop: 34,
-              fontSize: 44,
-              lineHeight: 1.25,
-              color: "#e2e8f0",
-              maxWidth: 1032,
-            }}
-          >
-            Zero-Knowledge Compliance for AI Agent Wallets
-          </div>
-          <div style={{ display: "flex", marginTop: 22, fontSize: 32, color: "#a78bfa" }}>
-            Agents prove eligibility — not identity.
+          <div style={{ display: "flex", marginTop: 28, fontSize: 36, lineHeight: 1.3, color: "#B6BBC3", maxWidth: 1000 }}>
+            The zero-knowledge, post-quantum trust protocol for agentic banking and micropayments.
           </div>
         </div>
 
-        {/* Footer */}
-        <div style={{ display: "flex", fontSize: 26, color: "#64748b" }}>
-          Open source · MIT licensed · Built on the Open Wallet Standard
+        {/* Footer rule + facts */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            borderTop: "1px solid #2C313A",
+            paddingTop: 24,
+            fontSize: 22,
+            letterSpacing: 3,
+            color: "#8A9099",
+            textTransform: "uppercase",
+          }}
+        >
+          <span>Know Your Agent</span>
+          <span>Zero PII</span>
+          <span>ML-KEM-768 escrow</span>
+          <span>Open Wallet Standard</span>
         </div>
       </div>
     ),

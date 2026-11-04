@@ -46,8 +46,8 @@ and retries with a new number.
 ## Running it
 
 ```bash
-npm run audit -- keygen            # prints VERO_AUDIT_SIGNING_KEY (secret) and the public key
-# Vercel: set VERO_AUDIT_SIGNING_KEY and CRON_SECRET. vercel.json runs the cron daily.
+npm run audit -- keygen            # prints ZQUENT_AUDIT_SIGNING_KEY (secret) and the public key
+# Vercel: set ZQUENT_AUDIT_SIGNING_KEY and CRON_SECRET. vercel.json runs the cron daily.
 npm run audit -- checkpoint        # operator, on demand
 npm run audit -- verify --url https://<deployment> --key audit-pub.json [--record record.json]
 ```
@@ -58,7 +58,7 @@ npm run audit -- verify --url https://<deployment> --key audit-pub.json [--recor
 
 ## Limits
 
-- **The key holder can rewrite history.** Whoever holds `VERO_AUDIT_SIGNING_KEY` can sign a
+- **The key holder can rewrite history.** Whoever holds `ZQUENT_AUDIT_SIGNING_KEY` can sign a
   different chain. Publishing checkpoints makes that detectable by anyone who saved an earlier
   one. Anchoring each `chainHash` on-chain (planned) makes it detectable by everyone.
 - **Records after the last checkpoint** are not yet protected. With a daily cron, that's up to a day.
