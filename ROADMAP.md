@@ -43,7 +43,8 @@ A compliance team can pilot Vero Protocol and truthfully tell their regulator: "
 3. ✅ Reference (non-production) threshold-decryption CLI — `npm run reveal -- demo`.
 4. ✅ Post-quantum escrow: each reveal ciphertext is sealed k-of-n to the consortium's X-Wing (ML-KEM-768 + X25519) keys before storage (`vero-escrow/v2`, `VERO_ESCROW_KEYS`).
 5. ✅ Tamper-evident audit log: every record is sequenced and hashed, and daily checkpoints chain them and are signed with Ed25519 + ML-DSA-65 ([docs/audit-chain.md](./docs/audit-chain.md)).
-6. Next: the regulator request flow with k-of-n hybrid-signed approvals, then anchoring checkpoint hashes on Base.
+6. ✅ Key registries: one signed public document lists the consortium members, approvers and regulators. Every approver and regulator needs k member endorsements ([docs/key-registry.md](./docs/key-registry.md)).
+7. Next: the regulator request API (`POST /api/v1/disclosure/requests`) with k-of-n hybrid-signed approvals, then sealed delivery, then anchoring checkpoint hashes on Base.
 
 ## Explicitly out of scope for Vero Protocol itself
 

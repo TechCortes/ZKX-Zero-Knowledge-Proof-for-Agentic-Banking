@@ -43,8 +43,8 @@ const ED25519_SPKI_PREFIX = Buffer.from("302a300506032b6570032100", "hex");
 const b64 = (b: Uint8Array) => Buffer.from(b).toString("base64");
 const unb64 = (s: string) => new Uint8Array(Buffer.from(s, "base64"));
 
-function derive(seed: Uint8Array, label: string): Buffer {
-  return Buffer.from(hkdfSync("sha256", seed, new Uint8Array(0), `vero-audit-signing|${label}`, 32));
+function derive(seed: Uint8Array, domain: string, label: string): Buffer {
+  return Buffer.from(hkdfSync("sha256", seed, new Uint8Array(0), `${domain}|${label}`, 32));
 }
 
 function ed25519PublicFromRaw(raw: Uint8Array): KeyObject {
@@ -59,17 +59,21 @@ export function generateAuditSigningSeed(): string {
   return b64(randomBytes(32));
 }
 
-export function signerFromSeed(seedB64: string): HybridSigner {
+/**
+ * Derive a hybrid signer from a 32-byte seed. `domain` separates key uses:
+ * the same seed gives unrelated keys under different domains.
+ */
+export function signerFromSeed(seedB64: string, domain = "vero-audit-signing"): HybridSigner {
   const seed = unb64(seedB64);
-  if (seed.length !== 32) throw new Error("Audit signing seed must be 32 bytes (base64).");
+  if (seed.length !== 32) throw new Error("Signing seed must be 32 bytes (base64).");
 
   const edPriv = createPrivateKey({
-    key: Buffer.concat([ED25519_PKCS8_PREFIX, derive(seed, "ed25519")]),
+    key: Buffer.concat([ED25519_PKCS8_PREFIX, derive(seed, domain, "ed25519")]),
     format: "der",
     type: "pkcs8",
   });
   const edPub = new Uint8Array(createPublicKey(edPriv).export({ format: "der", type: "spki" }).subarray(ED25519_SPKI_PREFIX.length));
-  const pq = ml_dsa65.keygen(new Uint8Array(derive(seed, "ml-dsa-65")));
+  const pq = ml_dsa65.keygen(new Uint8Array(derive(seed, domain, "ml-dsa-65")));
 
   const publicKey: HybridPublicKey = {
     suite: SIGNATURE_SUITE,
@@ -89,6 +93,15 @@ export function signerFromSeed(seedB64: string): HybridSigner {
       };
     },
   };
+}
+
+/** Structural check of a published hybrid key; true if it is well formed and its keyId matches. */
+export function isValidHybridPublicKey(key: unknown): key is HybridPublicKey {
+  const k = key as Partial<HybridPublicKey>;
+  if (!k || k.suite !== SIGNATURE_SUITE || typeof k.ed25519 !== "string" || typeof k.mlDsa65 !== "string" || typeof k.keyId !== "string") return false;
+  const ed = unb64(k.ed25519);
+  const pq = unb64(k.mlDsa65);
+  return ed.length === 32 && pq.length === 1952 && keyIdOf(ed, pq) === k.keyId;
 }
 
 /** True only if both signatures verify under `key`. */
