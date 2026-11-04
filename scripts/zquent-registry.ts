@@ -1,5 +1,5 @@
 /**
- * Vero Protocol — consortium key registry CLI (ROADMAP D3). See docs/key-registry.md.
+ * ZQUENT — consortium key registry CLI (ROADMAP D3). See docs/key-registry.md.
  *
  * Reference tooling: keys are plain JSON files. In production each party keeps
  * its signing key in an HSM and only the signatures travel.
@@ -49,6 +49,7 @@ import {
 } from "../src/disclosure/keyRegistry";
 import { ESCROW_KEYS_FORMAT, generateEscrowMemberKey, parseEscrowKeySet } from "../src/zkp/escrowSeal";
 import { REVEAL_FORMAT, type ConsortiumKey } from "../src/zkp/reveal";
+import { readProtocolEnv } from "../src/lib/env";
 
 const USAGE = `Usage: npm run registry -- <command> [options]
 
@@ -81,7 +82,7 @@ Commands:
              Append endorsed proposals to the registry. Refuses anything that doesn't verify.
 
   verify     --registry <file> [--consortium <consortium.json>] [--members-id <hex>]
-             Check every signature. Also checks against VERO_ESCROW_KEYS when it is set.
+             Check every signature. Also checks against ZQUENT_ESCROW_KEYS when it is set.
 
   demo       Build a 2-of-3 registry with an approver pair and a regulator, in memory.`;
 
@@ -169,11 +170,11 @@ function kindOf(entry: Record<string, unknown>): EndorsableKind {
 
 function verifyOptions(flags: Flags): VerifyOptions {
   const o: VerifyOptions = {};
-  const raw = process.env.VERO_ESCROW_KEYS?.trim();
+  const raw = readProtocolEnv("ESCROW_KEYS");
   if (raw) o.escrowKeys = attempt(() => parseEscrowKeySet(JSON.parse(raw)));
   const consortium = opt(flags, "consortium");
   if (consortium) o.revealVerificationKeys = readJson<ConsortiumKey>(consortium, "consortium key", REVEAL_FORMAT).verificationKeys;
-  const pinned = opt(flags, "members-id") ?? process.env.VERO_REGISTRY_MEMBERS_ID?.trim();
+  const pinned = opt(flags, "members-id") ?? readProtocolEnv("REGISTRY_MEMBERS_ID");
   if (pinned) o.pinnedMembersId = pinned;
   return o;
 }
@@ -223,7 +224,7 @@ function init(flags: Flags) {
   const reg = newRegistry(need(flags, "consortium-id"), Number(need(flags, "threshold")), Number(need(flags, "approval-threshold")), members);
   report(reg, verifyOptions(flags));
   writeJson(need(flags, "out"), reg);
-  console.log(`\nWrote ${flags.out}. Pin the member set in deployment config:\n  VERO_REGISTRY_MEMBERS_ID=${membersId(reg)}`);
+  console.log(`\nWrote ${flags.out}. Pin the member set in deployment config:\n  ZQUENT_REGISTRY_MEMBERS_ID=${membersId(reg)}`);
 }
 
 function validity(flags: Flags) {
@@ -314,7 +315,7 @@ function report(reg: ConsortiumRegistry, opts: VerifyOptions) {
   console.log(`  revocations  ${reg.revocations.length}`);
   console.log(`  membersId    ${membersId(reg)}`);
   console.log(`  registryId   ${registryId(reg)}`);
-  if (opts.escrowKeys) console.log(`  escrow keys  match VERO_ESCROW_KEYS`);
+  if (opts.escrowKeys) console.log(`  escrow keys  match ZQUENT_ESCROW_KEYS`);
   const notReady = disclosureReadiness(reg, now);
   if (notReady.length) console.log(`  not ready for disclosure: ${notReady.join(" ")}`);
 }

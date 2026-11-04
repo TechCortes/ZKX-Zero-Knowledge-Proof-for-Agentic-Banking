@@ -17,6 +17,7 @@
  */
 
 import { kv } from "@/lib/kv";
+import { readProtocolEnv } from "@/lib/env";
 import { recordAuditEntry, type AuditDecision } from "@/policy/auditLog";
 import type { ConsortiumRegistry } from "./keyRegistry";
 import { tallyApprovals, type Approval, type DisclosureRequest, type SignedDisclosureRequest } from "./requests";
@@ -53,7 +54,7 @@ const INDEX_KEY = "disclosure_index";
 const rateKey = (regulatorId: string, day: string) => `disclosure_rate:${regulatorId}:${day}`;
 
 export function dailyLimit(): number {
-  const n = Number(process.env.VERO_DISCLOSURE_DAILY_LIMIT);
+  const n = Number(readProtocolEnv("DISCLOSURE_DAILY_LIMIT"));
   return Number.isInteger(n) && n > 0 ? n : DEFAULT_DAILY_LIMIT;
 }
 

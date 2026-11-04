@@ -96,7 +96,7 @@ approver id. Nothing is written to the investigated agent's own trail.
 
 ## Rate limit
 
-Each regulator may submit `VERO_DISCLOSURE_DAILY_LIMIT` requests per UTC day (default 10).
+Each regulator may submit `ZQUENT_DISCLOSURE_DAILY_LIMIT` requests per UTC day (default 10).
 The slot is taken after the signature check, so nobody else can use up a regulator's quota,
 and before the escrow lookup, so the limit also caps probing for transaction ids. Replays
 and requests for unknown transactions still count.
@@ -105,10 +105,16 @@ and requests for unknown transactions still count.
 
 | Variable | Meaning |
 |---|---|
-| `VERO_REGISTRY_FILE` | Registry path (default `config/vero-registry.json`). Disclosure is off when the file doesn't exist. |
-| `VERO_REGISTRY_MEMBERS_ID` | Required when the file exists. Pins the member set. |
-| `VERO_ESCROW_KEYS` | When set, the registry's member keys must match it. |
-| `VERO_DISCLOSURE_DAILY_LIMIT` | Requests per regulator per UTC day (default 10). |
+| `ZQUENT_REGISTRY_FILE` | Registry path (default `config/zquent-registry.json`). Disclosure is off when the file doesn't exist. |
+| `ZQUENT_REGISTRY_MEMBERS_ID` | Required when the file exists. Pins the member set. |
+| `ZQUENT_ESCROW_KEYS` | When set, the registry's member keys must match it. |
+| `ZQUENT_DISCLOSURE_DAILY_LIMIT` | Requests per regulator per UTC day (default 10). |
+
+The legacy `VERO_*` names are still read when the `ZQUENT_*` one is unset.
+
+The `vero-disclosure-request/v1` and `vero-disclosure-approval/v1` tags keep their
+pre-rename prefix on purpose: they are inside signed data, and changing them would
+invalidate existing signatures. The same rule applies to the other wire formats.
 
 ## CLI
 

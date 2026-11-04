@@ -12,7 +12,7 @@ Code: `src/disclosure/keyRegistry.ts`. CLI: `npm run registry -- <command>`
 
 | Section | Each entry holds | Added by |
 |---|---|---|
-| `members` | index, name, X-Wing escrow key (same key as `VERO_ESCROW_KEYS`), hybrid signing key, optional BabyJubJub reveal key `Y_i` | `init` (the trust root) |
+| `members` | index, name, X-Wing escrow key (same key as `ZQUENT_ESCROW_KEYS`), hybrid signing key, optional BabyJubJub reveal key `Y_i` | `init` (the trust root) |
 | `approvers` | id, name, role, hybrid signing key, validity window | self-signed proposal + **k member endorsements** |
 | `regulators` | id, name, jurisdiction, hybrid signing key (authenticates requests), X-Wing key (receives the sealed result), validity window | self-signed proposal + **k member endorsements** |
 | `revocations` | kind, id, keyId, `revokedAt`, reason | **k member endorsements** |
@@ -48,7 +48,7 @@ under a different name. Endorsements are member signatures over the same digest.
 - Ids are unique and lowercase (`[a-z0-9._-]`, max 64). Timestamps are ISO 8601 UTC.
 - A revocation names the revoked entry's `keyId`, so re-registering a new key under the
   same id is not revoked by accident.
-- Optional cross-checks: the members' X-Wing keys and threshold equal `VERO_ESCROW_KEYS`,
+- Optional cross-checks: the members' X-Wing keys and threshold equal `ZQUENT_ESCROW_KEYS`,
   the reveal keys equal `consortium.json`, and the member set equals a pinned `membersId`.
 
 `disclosureReadiness` reports separately whether there are enough active approvers and at
@@ -57,7 +57,7 @@ least one active regulator. A registry can be valid without being ready.
 ## Pinning
 
 - `membersId` = SHA3-256 over consortiumId, both thresholds and the member entries. It
-  doesn't change when approvers or regulators are added. Pin it (`VERO_REGISTRY_MEMBERS_ID`)
+  doesn't change when approvers or regulators are added. Pin it (`ZQUENT_REGISTRY_MEMBERS_ID`, legacy `VERO_REGISTRY_MEMBERS_ID` also read)
   so the server only trusts a registry rooted in the agreed members.
 - `registryId` = SHA3-256 over the whole document. Publish it to freeze a specific version.
 

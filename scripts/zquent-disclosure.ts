@@ -1,5 +1,5 @@
 /**
- * Vero Protocol — disclosure request CLI (ROADMAP D4). See docs/disclosure-requests.md.
+ * ZQUENT — disclosure request CLI (ROADMAP D4). See docs/disclosure-requests.md.
  *
  *   npm run disclosure -- request --registry registry.json --regulator-id demo-fiu --sign-key ./fiu/signing.key.json \
  *                                 --tx-id <txId> --legal-doc order.pdf [--expires-in-days 7] --out signed.json
@@ -40,6 +40,7 @@ import {
   type SignedDisclosureRequest,
 } from "../src/disclosure/requests";
 import { generateEscrowMemberKey } from "../src/zkp/escrowSeal";
+import { readProtocolEnv } from "../src/lib/env";
 
 const USAGE = `Usage: npm run disclosure -- <command> [options]
 
@@ -115,7 +116,7 @@ function writeJson(file: string, data: unknown) {
 function readRegistry(flags: Flags): ConsortiumRegistry {
   const raw = readJson<{ format?: string }>(need(flags, "registry"), "registry");
   if (raw.format !== REGISTRY_FORMAT) fail(`Registry is format "${raw.format}", expected "${REGISTRY_FORMAT}".`);
-  const pin = process.env.VERO_REGISTRY_MEMBERS_ID?.trim();
+  const pin = readProtocolEnv("REGISTRY_MEMBERS_ID");
   try {
     return parseRegistry(raw, pin ? { pinnedMembersId: pin } : {});
   } catch (e) {
@@ -244,8 +245,8 @@ async function demo() {
 
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vero-disclosure-demo-"));
   fs.writeFileSync(path.join(dir, "registry.json"), JSON.stringify(reg));
-  process.env.VERO_REGISTRY_FILE = path.join(dir, "registry.json");
-  process.env.VERO_REGISTRY_MEMBERS_ID = membersId(reg);
+  process.env.ZQUENT_REGISTRY_FILE = path.join(dir, "registry.json");
+  process.env.ZQUENT_REGISTRY_MEMBERS_ID = membersId(reg);
 
   // Imported here so the in-memory store and the env above are in place first.
   const { storeRevealEscrow } = await import("../src/policy/escrow");

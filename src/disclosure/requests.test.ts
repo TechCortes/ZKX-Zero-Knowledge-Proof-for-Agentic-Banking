@@ -95,14 +95,14 @@ beforeAll(() => {
 });
 
 function enable() {
-  process.env.VERO_REGISTRY_FILE = path.join(dir, "registry.json");
-  process.env.VERO_REGISTRY_MEMBERS_ID = membersId(reg);
+  process.env.ZQUENT_REGISTRY_FILE = path.join(dir, "registry.json");
+  process.env.ZQUENT_REGISTRY_MEMBERS_ID = membersId(reg);
 }
 
 afterEach(() => {
-  delete process.env.VERO_REGISTRY_FILE;
-  delete process.env.VERO_REGISTRY_MEMBERS_ID;
-  delete process.env.VERO_DISCLOSURE_DAILY_LIMIT;
+  delete process.env.ZQUENT_REGISTRY_FILE;
+  delete process.env.ZQUENT_REGISTRY_MEMBERS_ID;
+  delete process.env.ZQUENT_DISCLOSURE_DAILY_LIMIT;
 });
 
 afterAll(() => fs.rmSync(dir, { recursive: true, force: true }));
@@ -174,10 +174,21 @@ describe("vero-disclosure-request/v1 (pure)", () => {
 describe("disclosure request API", () => {
   it("is off (503) without a registry, and 500 when the registry is unpinned", async () => {
     expect((await list(new NextRequest(BASE))).status).toBe(503);
+    process.env.ZQUENT_REGISTRY_FILE = path.join(dir, "registry.json");
+    expect((await list(new NextRequest(BASE))).status).toBe(500);
+    process.env.ZQUENT_REGISTRY_MEMBERS_ID = "0".repeat(64);
+    expect((await list(new NextRequest(BASE))).status).toBe(500);
+  });
+
+  it("still reads the legacy VERO_ names", async () => {
     process.env.VERO_REGISTRY_FILE = path.join(dir, "registry.json");
-    expect((await list(new NextRequest(BASE))).status).toBe(500);
-    process.env.VERO_REGISTRY_MEMBERS_ID = "0".repeat(64);
-    expect((await list(new NextRequest(BASE))).status).toBe(500);
+    process.env.VERO_REGISTRY_MEMBERS_ID = membersId(reg);
+    try {
+      expect((await list(new NextRequest(BASE))).status).toBe(200);
+    } finally {
+      delete process.env.VERO_REGISTRY_FILE;
+      delete process.env.VERO_REGISTRY_MEMBERS_ID;
+    }
   });
 
   it("submit → approve → approve reaches approved, and the public view never shows the txId", async () => {
@@ -240,7 +251,7 @@ describe("disclosure request API", () => {
   it("rejects unsigned or badly signed submissions before touching the rate limit", async () => {
     enable();
     const { txId } = await escrowed();
-    process.env.VERO_DISCLOSURE_DAILY_LIMIT = "1000";
+    process.env.ZQUENT_DISCLOSURE_DAILY_LIMIT = "1000";
     expect((await submit(post(BASE, signRequest(newRequest(txId), outsider)))).status).toBe(401);
     expect((await submit(post(BASE, { request: newRequest(txId) }))).status).toBe(422);
     expect((await submit(new NextRequest(BASE, { method: "POST", body: "not json" }))).status).toBe(422);
@@ -248,7 +259,7 @@ describe("disclosure request API", () => {
 
   it("enforces the per-regulator daily limit", async () => {
     enable();
-    process.env.VERO_DISCLOSURE_DAILY_LIMIT = "1";
+    process.env.ZQUENT_DISCLOSURE_DAILY_LIMIT = "1";
     const { txId } = await escrowed();
     // Earlier tests already used this regulator's slot for today.
     expect((await submit(post(BASE, signRequest(newRequest(txId), regSigner)))).status).toBe(429);

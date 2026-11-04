@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   // The disclosure routes read the registry from disk at runtime (src/disclosure/config.ts),
   // which file tracing can't see. Ship it with them.
   outputFileTracingIncludes: {
-    "/api/v1/disclosure/**": ["./config/vero-registry.json"],
+    "/api/v1/disclosure/**": ["./config/zquent-registry.json"],
   },
   webpack: (config, { isServer }) => {
     // Only stub these for the browser bundle (snarkjs/circomlibjs pull them in
