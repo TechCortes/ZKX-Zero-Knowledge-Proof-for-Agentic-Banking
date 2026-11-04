@@ -21,8 +21,9 @@ Anonymous-tier payments (< $1,000/day) never produce a proof, so they never prod
 ```bash
 npm run compile-circuit:reveal          # needs circom 2.x
 npm run setup-zk:reveal                 # needs circuits/pot14_final.ptau — PSE ppot_0080_14 (see scripts/setup_zk.js)
-npm run reveal -- keygen --threshold 2 --parties 3 --out ./consortium   # reference dealer only
-export ZQUENT_REVEAL_PUBLIC_KEY="<x>,<y>" # printed by keygen
+npm run dkg -- demo                     # how the consortium makes its key with no dealer: docs/dkg.md
+npm run reveal -- keygen --threshold 2 --parties 3 --out ./consortium   # or: one-machine dealer, for local testing only
+export ZQUENT_REVEAL_PUBLIC_KEY="<x>,<y>" # printed by `npm run dkg -- verify` (or keygen)
 ```
 
 With `ZQUENT_REVEAL_PUBLIC_KEY` set:
@@ -169,8 +170,9 @@ For unsealed records, `escrow` writes `ct.json` directly; skip `unseal` and `ope
 
 ## What a production deployment replaces
 
-- **`keygen`.** It uses a trusted dealer who briefly sees `sk`. Replace it with a DKG
-  (Pedersen/Feldman) or an HSM ceremony that outputs the same `ConsortiumKey` / `KeyShare` shapes.
+- **`keygen`.** It uses a trusted dealer who briefly sees `sk`. Use the DKG instead
+  (`npm run dkg`, [docs/dkg.md](./dkg.md)), which outputs the same `ConsortiumKey` / `KeyShare`
+  shapes with no one ever holding `sk`.
 - **Share files.** Shares belong in each party's HSM/KMS. `partialDecrypt` is the one
   operation the HSM needs to expose.
 - **Member X-Wing keys.** `member-<i>.key.json` belongs in an HSM; `unsealEscrowShare` is the

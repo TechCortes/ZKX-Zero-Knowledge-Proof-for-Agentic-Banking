@@ -7,8 +7,8 @@
  *
  *   - dealKeyShares      : split a consortium secret key k-of-n (Shamir over the
  *                          BabyJubJub subgroup order). REFERENCE ONLY — a trusted
- *                          dealer sees the whole key. Production should use a DKG
- *                          or HSM ceremony that produces the same public shapes.
+ *                          dealer sees the whole key. Use ./dkg.ts instead: a
+ *                          DKG that produces the same shapes with no dealer.
  *   - encryptForReveal   : JS mirror of the circuit's encryption (tests, tooling).
  *   - partialDecrypt     : one party's share applied to a ciphertext, plus a
  *                          Chaum-Pedersen proof that it used its real share.
@@ -22,8 +22,12 @@
 // It keeps the pre-rename "vero-" prefix on purpose — changing it would orphan existing data.
 export const REVEAL_FORMAT = "vero-reveal/v1";
 
-export type Point = [bigint, bigint];
-type PointStr = [string, string];
+import {
+  add, base8, eq, getCrypto, hash, inSubgroup, mod, modInverse, mul, pt, randomScalar, str,
+  type Crypto, type Point, type PointStr,
+} from "./babyjub";
+
+export type { Point } from "./babyjub";
 
 /** Public consortium description: safe to publish, configure on the server, and share. */
 export interface ConsortiumKey {
@@ -86,81 +90,6 @@ export const REVEAL_SIGNALS = {
   txNonce: 10,
 } as const;
 
-// ---------------------------------------------------------------------------
-// Curve plumbing
-// ---------------------------------------------------------------------------
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-interface Crypto {
-  babyJub: any;
-  poseidon: any;
-  /** BabyJubJub prime subgroup order — all scalar math is mod this. */
-  l: bigint;
-}
-/* eslint-enable @typescript-eslint/no-explicit-any */
-
-let cryptoPromise: Promise<Crypto> | null = null;
-
-function getCrypto(): Promise<Crypto> {
-  if (!cryptoPromise) {
-    cryptoPromise = (async () => {
-      const { buildBabyjub, buildPoseidon } = await import("circomlibjs");
-      const [babyJub, poseidon] = await Promise.all([buildBabyjub(), buildPoseidon()]);
-      return { babyJub, poseidon, l: BigInt(babyJub.subOrder.toString()) };
-    })();
-  }
-  return cryptoPromise;
-}
-
-const mod = (a: bigint, m: bigint) => ((a % m) + m) % m;
-
-function modInverse(a: bigint, m: bigint): bigint {
-  let [oldR, r] = [mod(a, m), m];
-  let [oldS, s] = [BigInt(1), BigInt(0)];
-  while (r !== BigInt(0)) {
-    const q = oldR / r;
-    [oldR, r] = [r, oldR - q * r];
-    [oldS, s] = [s, oldS - q * s];
-  }
-  if (oldR !== BigInt(1)) throw new Error("Value has no inverse modulo the subgroup order.");
-  return mod(oldS, m);
-}
-
-function toF(c: Crypto, p: Point) {
-  return [c.babyJub.F.e(p[0]), c.babyJub.F.e(p[1])];
-}
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function fromF(c: Crypto, p: any[]): Point {
-  return [BigInt(c.babyJub.F.toObject(p[0])), BigInt(c.babyJub.F.toObject(p[1]))];
-}
-function mul(c: Crypto, p: Point, s: bigint): Point {
-  return fromF(c, c.babyJub.mulPointEscalar(toF(c, p), mod(s, c.l)));
-}
-function add(c: Crypto, a: Point, b: Point): Point {
-  return fromF(c, c.babyJub.addPoint(toF(c, a), toF(c, b)));
-}
-function base8(c: Crypto): Point {
-  return fromF(c, c.babyJub.Base8);
-}
-function inSubgroup(c: Crypto, p: Point): boolean {
-  return c.babyJub.inSubgroup(toF(c, p));
-}
-function hash(c: Crypto, inputs: bigint[]): bigint {
-  return BigInt(c.poseidon.F.toObject(c.poseidon(inputs)));
-}
-const eq = (a: Point, b: Point) => a[0] === b[0] && a[1] === b[1];
-const str = (p: Point): PointStr => [p[0].toString(), p[1].toString()];
-const pt = (p: PointStr): Point => [BigInt(p[0]), BigInt(p[1])];
-
-/** Uniform scalar in [1, l). 64 random bytes reduced mod l keeps the bias negligible. */
-async function randomScalar(): Promise<bigint> {
-  const { l } = await getCrypto();
-  const bytes = new Uint8Array(64);
-  crypto.getRandomValues(bytes);
-  const n = BigInt("0x" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join(""));
-  return mod(n, l - BigInt(1)) + BigInt(1);
-}
-
 /** The circuit's private `revealNonce` (r). Fresh per proof — reusing it links ciphertexts. */
 export async function randomRevealNonce(): Promise<string> {
   return (await randomScalar()).toString();
@@ -172,7 +101,7 @@ export async function randomRevealNonce(): Promise<string> {
 
 /**
  * Trusted-dealer k-of-n key generation. REFERENCE ONLY: the dealer briefly holds
- * the full secret key. Real deployments swap this for a DKG/HSM ceremony that
+ * the full secret key. Real deployments use the DKG (./dkg.ts) or an HSM ceremony that
  * outputs the same ConsortiumKey + KeyShare shapes.
  */
 export async function dealKeyShares(

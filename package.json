@@ -17,7 +17,8 @@
     "test:coverage": "vitest run --coverage",
     "audit": "tsx scripts/zquent-audit.ts",
     "registry": "tsx scripts/zquent-registry.ts",
-    "disclosure": "tsx scripts/zquent-disclosure.ts"
+    "disclosure": "tsx scripts/zquent-disclosure.ts",
+    "dkg": "tsx scripts/zquent-dkg.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",

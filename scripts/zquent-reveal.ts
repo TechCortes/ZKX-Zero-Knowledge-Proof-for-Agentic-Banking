@@ -50,7 +50,8 @@ const USAGE = `Usage: npm run reveal -- <command> [options]
 
 Commands:
   keygen   --threshold <k> --parties <n> --out <dir>
-           Deal a k-of-n consortium key (trusted dealer, reference only).
+           Deal a k-of-n consortium key (trusted dealer, reference only). For a real
+           consortium use \`npm run dkg\` instead: no one ever holds the whole key.
            Writes <dir>/consortium.json (public) and <dir>/share-<i>.json (secret, one per party).
 
   kem-keygen  --index <i> --out <dir>

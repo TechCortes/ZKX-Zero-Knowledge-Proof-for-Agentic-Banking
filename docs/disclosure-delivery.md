@@ -124,8 +124,8 @@ Every member command re-checks the package and stops with a reason before releas
 
 ## Limits
 
-- **Trusted dealer.** The BabyJubJub reveal shares still come from a trusted dealer
-  (`npm run reveal -- keygen`). Replacing it with a DKG is D6.
+- **Key ceremony.** Use the DKG (`npm run dkg`, `docs/dkg.md`) for the reveal key shares.
+  With the reference dealer (`npm run reveal -- keygen`), one machine saw the whole key.
 - **Members see the inner ciphertext.** Any k members could decrypt together at any time;
   the protocol makes doing so visible and accountable, it doesn't make it impossible.
 - **No regulator acknowledgement yet.** The chain records what was delivered, not that the
