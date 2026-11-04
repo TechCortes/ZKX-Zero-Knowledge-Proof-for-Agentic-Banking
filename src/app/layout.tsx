@@ -3,6 +3,7 @@ import "@fontsource-variable/geist";
 import "@fontsource-variable/geist-mono";
 import "./globals.css";
 import AssistantChat from "@/components/AssistantChat";
+import { THEME_INIT_SCRIPT } from "@/components/ThemeToggle";
 
 const title = "ZQUENT — Zero-Knowledge, Post-Quantum Trust Protocol for Agentic Banking and Micropayments";
 const description =
@@ -28,12 +29,19 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  themeColor: "#FFFFFF",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FFFFFF" },
+    { media: "(prefers-color-scheme: dark)", color: "#111A2B" },
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    // suppressHydrationWarning: THEME_INIT_SCRIPT sets data-theme on <html> before React loads.
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body suppressHydrationWarning className="bg-zq-bg text-zq-text font-sans">
         {children}
         <AssistantChat />

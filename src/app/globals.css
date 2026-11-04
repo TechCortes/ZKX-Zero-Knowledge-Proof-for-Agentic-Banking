@@ -4,6 +4,81 @@
 
 :root {
   color-scheme: light;
+  --zq-bg: 245 247 250;
+  --zq-surface: 255 255 255;
+  --zq-raise: 238 242 247;
+  --zq-line: 217 223 232;
+  --zq-line-strong: 195 204 216;
+  --zq-text: 11 31 58;
+  --zq-soft: 51 65 90;
+  --zq-muted: 74 86 104;
+  --zq-faint: 90 102 120;
+  --zq-accent: 31 79 216;
+  --zq-accent-strong: 26 67 184;
+  --zq-on-accent: 255 255 255;
+  --zq-success: 14 138 95;
+  --zq-success-bg: 227 244 236;
+  --zq-warn: 161 92 7;
+  --zq-warn-bg: 251 240 223;
+  --zq-danger: 198 40 40;
+  --zq-navy: 11 31 58;
+  --zq-shadow-card: 0 1px 2px rgba(11, 31, 58, 0.06), 0 12px 32px rgba(11, 31, 58, 0.06);
+  --zq-shadow-float: 0 8px 24px rgba(11, 31, 58, 0.14);
+}
+
+/*
+ * Dark reading mode. The choice is saved per reader (see ThemeToggle); with no
+ * saved choice, the inline script in layout.tsx follows the OS setting. The
+ * media query covers readers with JavaScript off.
+ */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --zq-bg: 11 18 32;
+  --zq-surface: 17 26 43;
+  --zq-raise: 24 35 58;
+  --zq-line: 38 51 77;
+  --zq-line-strong: 58 74 104;
+  --zq-text: 232 237 245;
+  --zq-soft: 197 206 220;
+  --zq-muted: 164 175 194;
+  --zq-faint: 144 156 176;
+  --zq-accent: 122 162 255;
+  --zq-accent-strong: 155 185 255;
+  --zq-on-accent: 11 18 32;
+  --zq-success: 76 201 148;
+  --zq-success-bg: 15 42 32;
+  --zq-warn: 227 165 74;
+  --zq-warn-bg: 46 35 19;
+  --zq-danger: 242 116 116;
+  --zq-navy: 11 31 58;
+  --zq-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.28);
+  --zq-shadow-float: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --zq-bg: 11 18 32;
+    --zq-surface: 17 26 43;
+    --zq-raise: 24 35 58;
+    --zq-line: 38 51 77;
+    --zq-line-strong: 58 74 104;
+    --zq-text: 232 237 245;
+    --zq-soft: 197 206 220;
+    --zq-muted: 164 175 194;
+    --zq-faint: 144 156 176;
+    --zq-accent: 122 162 255;
+    --zq-accent-strong: 155 185 255;
+    --zq-on-accent: 11 18 32;
+    --zq-success: 76 201 148;
+    --zq-success-bg: 15 42 32;
+    --zq-warn: 227 165 74;
+    --zq-warn-bg: 46 35 19;
+    --zq-danger: 242 116 116;
+    --zq-navy: 11 31 58;
+    --zq-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.28);
+    --zq-shadow-float: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
 }
 
 html {
@@ -12,19 +87,19 @@ html {
 }
 
 body {
-  background-color: #F5F7FA;
-  color: #0B1F3A;
+  background-color: rgb(var(--zq-bg));
+  color: rgb(var(--zq-text));
   font-family: 'Geist Variable', Geist, ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background: rgba(31, 79, 216, 0.18);
+  background: rgb(var(--zq-accent) / 0.22);
 }
 
 :focus-visible {
-  outline: 2px solid #1F4FD8;
+  outline: 2px solid rgb(var(--zq-accent));
   outline-offset: 2px;
 }
 
