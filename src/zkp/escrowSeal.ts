@@ -1,5 +1,5 @@
 /**
- * Post-quantum sealed escrow (`vero-escrow/v2`).
+ * Post-quantum sealed escrow (`vero-escrow/v2`) — ZQUENT protocol.
  *
  * Wraps a threshold-reveal ciphertext so that a stolen copy of the escrow
  * store is useless even to an attacker with a future quantum computer
@@ -25,6 +25,8 @@
 import { createCipheriv, createDecipheriv, createHash, hkdfSync, randomBytes } from "crypto";
 import { ml_kem768_x25519 as xwing } from "@noble/post-quantum/hybrid.js";
 
+// Frozen wire-format tag: written into stored records and checked on read.
+// It keeps the pre-rename "vero-" prefix on purpose — changing it would orphan existing data.
 export const ESCROW_FORMAT = "vero-escrow/v2";
 export const ESCROW_KEYS_FORMAT = "vero-escrow-keys/v1";
 export const XWING_PUBLIC_KEY_BYTES = 1216;

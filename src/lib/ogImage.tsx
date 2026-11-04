@@ -1,5 +1,7 @@
 import { ImageResponse } from "next/og";
 
+const Z_PATH = "M9 8.5H23V11.5L13.2 20.5H23V23.5H9V20.5L18.8 11.5H9Z";
+
 /** Shared 1200×630 social card, rendered to PNG at build time by next/og. */
 export function renderOgImage() {
   return new ImageResponse(
@@ -11,59 +13,55 @@ export function renderOgImage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          padding: "72px 84px",
-          color: "white",
-          backgroundColor: "#04040a",
-          backgroundImage:
-            "radial-gradient(circle at 88% 8%, rgba(109,40,217,0.38) 0%, rgba(4,4,10,0) 52%), radial-gradient(circle at 6% 96%, rgba(37,99,235,0.28) 0%, rgba(4,4,10,0) 48%)",
+          padding: "64px 80px",
+          color: "#0B1F3A",
+          backgroundColor: "#F5F7FA",
         }}
       >
-        {/* Mark + eyebrow */}
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <svg width="76" height="76" viewBox="0 0 32 32" fill="none">
-            <rect width="32" height="32" rx="6" fill="#3730A3" />
-            <path d="M16 7 L25 16 L16 25 L7 16 Z" fill="white" />
-          </svg>
+        {/* Mark + status */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <svg width="72" height="72" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="7" fill="#0B1F3A" />
+              <path d={Z_PATH} fill="#FFFFFF" />
+            </svg>
+            <div style={{ display: "flex", marginLeft: 24, fontSize: 36, letterSpacing: 6, fontWeight: 600 }}>ZQUENT</div>
+          </div>
           <div
             style={{
               display: "flex",
-              marginLeft: 28,
-              fontSize: 26,
-              letterSpacing: 6,
-              color: "#64748b",
-              textTransform: "uppercase",
+              alignItems: "center",
+              padding: "10px 22px",
+              borderRadius: 999,
+              border: "1px solid #C3CCD8",
+              backgroundColor: "#FFFFFF",
+              fontSize: 22,
+              color: "#4A5668",
             }}
           >
-            Agent Compliance
+            <div style={{ display: "flex", width: 12, height: 12, borderRadius: 999, backgroundColor: "#0E8A5F", marginRight: 12 }} />
+            Live on testnet · Open source
           </div>
         </div>
 
-        {/* Name + value prop */}
+        {/* Headline + descriptor */}
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", fontSize: 132, lineHeight: 1, letterSpacing: -4 }}>
-            <span>Vero</span>
-            <span style={{ color: "#94a3b8", marginLeft: 32 }}>Protocol</span>
+          <div style={{ display: "flex", flexDirection: "column", fontSize: 88, lineHeight: 1.05, letterSpacing: -3, fontWeight: 600 }}>
+            <span>Every agent payment,</span>
+            <span style={{ color: "#1F4FD8" }}>proven.</span>
           </div>
-          <div
-            style={{
-              display: "flex",
-              marginTop: 34,
-              fontSize: 44,
-              lineHeight: 1.25,
-              color: "#e2e8f0",
-              maxWidth: 1032,
-            }}
-          >
-            Zero-Knowledge Compliance for AI Agent Wallets
-          </div>
-          <div style={{ display: "flex", marginTop: 22, fontSize: 32, color: "#a78bfa" }}>
-            Agents prove eligibility — not identity.
+          <div style={{ display: "flex", marginTop: 24, fontSize: 30, lineHeight: 1.35, color: "#4A5668", maxWidth: 1000 }}>
+            The zero-knowledge, post-quantum trust protocol for agentic banking and micropayments.
           </div>
         </div>
 
-        {/* Footer */}
-        <div style={{ display: "flex", fontSize: 26, color: "#64748b" }}>
-          Open source · MIT licensed · Built on the Open Wallet Standard
+        {/* Facts */}
+        <div style={{ display: "flex", gap: 16, fontSize: 24, color: "#33415A" }}>
+          {["No personal data collected", "FATF R.16 threshold", "Post-quantum escrow"].map((t) => (
+            <div key={t} style={{ display: "flex", alignItems: "center", padding: "12px 20px", borderRadius: 12, border: "1px solid #D9DFE8", backgroundColor: "#FFFFFF" }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ marginRight: 10 }}><path d="M5 13l4 4L19 7" stroke="#0E8A5F" strokeWidth="3" strokeLinecap="square" /></svg>{t}
+            </div>
+          ))}
         </div>
       </div>
     ),

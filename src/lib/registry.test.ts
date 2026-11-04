@@ -56,6 +56,6 @@ describe("Transaction IDs", () => {
   it("are unique even when generated in the same millisecond", () => {
     const ids = new Set(Array.from({ length: 1000 }, newTxId));
     expect(ids.size).toBe(1000);
-    for (const id of ids) expect(id).toMatch(/^zkx_[0-9a-f-]{36}$/);
+    for (const id of ids) expect(id).toMatch(/^zquent_[0-9a-f-]{36}$/);
   });
 });

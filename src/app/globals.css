@@ -2,37 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
 body {
-  background-color: #0a0a0f;
-  color: #e2e8f0;
-  font-family: 'Courier New', monospace;
+  background-color: #F5F7FA;
+  color: #0B1F3A;
+  font-family: 'Geist Variable', Geist, ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@keyframes zkxFloat {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  33%       { transform: translateY(-14px) rotate(1deg); }
-  66%       { transform: translateY(-7px) rotate(-0.5deg); }
+::selection {
+  background: rgba(31, 79, 216, 0.18);
 }
 
-.zkx-float {
-  animation: zkxFloat 5s ease-in-out infinite;
+:focus-visible {
+  outline: 2px solid #1F4FD8;
+  outline-offset: 2px;
 }
 
-@keyframes orbPulse {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50%       { opacity: 0.85; transform: scale(1.08); }
-}
-
-.zkx-orb-pulse {
-  animation: orbPulse 2.8s ease-in-out infinite;
-  transform-origin: 380px 142px;
-}
-
-@keyframes proofTrace {
-  0%   { stroke-dashoffset: 24; }
-  100% { stroke-dashoffset: 0; }
-}
-
-.proof-trace path {
-  animation: proofTrace 1.6s linear infinite;
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -1,23 +1,31 @@
 /**
- * Vero Protocol Wallet — Open Wallet Standard v2 Extension
+ * ZQUENT Wallet — Open Wallet Standard v2 Extension
  *
  * Aligns with the OWS v2 wallet descriptor format:
  *   - ows_version: 2
- *   - metadata["vero:kyc"] — KYC status and commitment anchor
- *   - features["vero:kyc"] — fully wired capability methods
+ *   - metadata["zquent:kyc"] — KYC status and commitment anchor
+ *   - features["zquent:kyc"] — fully wired capability methods
  *
  * Feature namespace convention: namespace:capability (OWS §15)
  * Metadata extensions must be namespaced to prevent collisions.
+ *
+ * Rename alias: the pre-rename identifier "vero:kyc" is registered alongside
+ * "zquent:kyc", pointing at the same feature object and metadata, so wallets
+ * and integrators that look up "vero:kyc" keep working. It is deprecated and
+ * is removed in the 90-day alias cleanup (ROADMAP).
  *
  * See: https://github.com/TechCortes/OpenWalletStandard
  */
 
 import type { Wallet, WalletAccount } from "@wallet-standard/core";
 
-// --- Vero Protocol custom feature identifier (OWS namespaced per §15) ---
+// --- ZQUENT custom feature identifier (OWS namespaced per §15) ---
+export const ZQUENT_KYC_FEATURE = "zquent:kyc" as const;
+
+/** @deprecated Pre-rename alias of ZQUENT_KYC_FEATURE. Still registered on every wallet. */
 export const VERO_KYC_FEATURE = "vero:kyc" as const;
 
-export type VeroKYCFeature = {
+export type ZquentKYCFeature = {
   version: "1.0.0";
   /** Returns the agent's current daily spend in USD */
   getDailySpend: () => Promise<number>;
@@ -33,8 +41,8 @@ export type VeroKYCFeature = {
   }) => Promise<{ status: "approved" | "requires_kyc" | "rejected"; txId?: string; challenge?: unknown }>;
 };
 
-/** OWS v2 metadata shape for the vero:kyc extension */
-export interface VeroKYCMetadata {
+/** OWS v2 metadata shape for the zquent:kyc extension */
+export interface ZquentKYCMetadata {
   version: "1.0.0";
   /** Poseidon(idHash, salt) — the ZK identity anchor. No PII stored. */
   commitment: string;
@@ -44,29 +52,44 @@ export interface VeroKYCMetadata {
   chains: string[];
 }
 
-/** OWS v2 wallet descriptor shape with vero:kyc metadata */
-export interface VeroWalletDescriptor extends Omit<Wallet, "features"> {
+/** OWS v2 wallet descriptor shape with zquent:kyc metadata (and the deprecated vero:kyc alias) */
+export interface ZquentWalletDescriptor extends Omit<Wallet, "features"> {
   ows_version: 2;
   metadata: {
-    [VERO_KYC_FEATURE]: VeroKYCMetadata;
+    [ZQUENT_KYC_FEATURE]: ZquentKYCMetadata;
+    /** @deprecated alias of metadata["zquent:kyc"] */
+    [VERO_KYC_FEATURE]: ZquentKYCMetadata;
     [key: string]: unknown; // preserve unknown OWS extension fields
   };
   features: {
-    [VERO_KYC_FEATURE]: VeroKYCFeature;
+    [ZQUENT_KYC_FEATURE]: ZquentKYCFeature;
+    /** @deprecated alias of features["zquent:kyc"] */
+    [VERO_KYC_FEATURE]: ZquentKYCFeature;
     [key: string]: unknown;
   };
 }
 
-export interface VeroWalletAccount extends Omit<WalletAccount, "features"> {
+export interface ZquentWalletAccount extends Omit<WalletAccount, "features"> {
   features: {
-    [VERO_KYC_FEATURE]: VeroKYCFeature;
+    [ZQUENT_KYC_FEATURE]: ZquentKYCFeature;
+    /** @deprecated alias of features["zquent:kyc"] */
+    [VERO_KYC_FEATURE]: ZquentKYCFeature;
   };
 }
 
+/** @deprecated Pre-rename type names, kept for integrators. */
+export type VeroKYCFeature = ZquentKYCFeature;
+/** @deprecated */
+export type VeroKYCMetadata = ZquentKYCMetadata;
+/** @deprecated */
+export type VeroWalletDescriptor = ZquentWalletDescriptor;
+/** @deprecated */
+export type VeroWalletAccount = ZquentWalletAccount;
+
 /**
- * Creates a fully wired Vero Protocol-compliant OWS v2 wallet descriptor.
+ * Creates a fully wired ZQUENT-compliant OWS v2 wallet descriptor.
  *
- * The wallet is a client-side capability object — it calls the Vero Protocol API
+ * The wallet is a client-side capability object — it calls the ZQUENT API
  * endpoints so agents can interact with the policy engine without knowing
  * the underlying HTTP routes.
  *
@@ -76,19 +99,19 @@ export interface VeroWalletAccount extends Omit<WalletAccount, "features"> {
  * @param chains     - CAIP-2 chain identifiers (e.g. ["eip155:1", "solana:mainnet"])
  * @param baseUrl    - API base URL (default: "" for relative in browser)
  */
-export function createVeroWallet(
+export function createZquentWallet(
   agentId: string,
   commitment: string,
   apiKey: string,
   chains: string[] = [],
   baseUrl = ""
-): VeroWalletDescriptor {
+): ZquentWalletDescriptor {
   const headers = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${apiKey}`,
   };
 
-  const feature: VeroKYCFeature = {
+  const feature: ZquentKYCFeature = {
     version: "1.0.0",
 
     async getDailySpend(): Promise<number> {
@@ -118,7 +141,7 @@ export function createVeroWallet(
     },
   };
 
-  const metadata: VeroKYCMetadata = {
+  const metadata: ZquentKYCMetadata = {
     version: "1.0.0",
     commitment,
     registeredAt: new Date().toISOString(),
@@ -128,15 +151,20 @@ export function createVeroWallet(
   return {
     ows_version: 2,
     version: "1.0.0",
-    name: "Vero Protocol Agent Wallet",
-    icon: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI4IiBmaWxsPSIjN2MzYWVkIi8+PHRleHQgeD0iOCIgeT0iMjIiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IndoaXRlIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIj5aWDwvdGV4dD48L3N2Zz4=",
+    name: "ZQUENT Agent Wallet",
+    icon: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI3IiBmaWxsPSIjMEIxRjNBIi8+PHBhdGggZD0iTTkgOC41SDIzVjExLjVMMTMuMiAyMC41SDIzVjIzLjVIOVYyMC41TDE4LjggMTEuNUg5WiIgZmlsbD0iI0ZGRkZGRiIvPjwvc3ZnPg==",
     chains: (chains.length > 0 ? chains : ["solana:mainnet", "eip155:1"]) as `${string}:${string}`[],
     features: {
+      [ZQUENT_KYC_FEATURE]: feature,
       [VERO_KYC_FEATURE]: feature,
     },
     metadata: {
+      [ZQUENT_KYC_FEATURE]: metadata,
       [VERO_KYC_FEATURE]: metadata,
     },
     accounts: [],
   };
 }
+
+/** @deprecated Pre-rename name of createZquentWallet. */
+export const createVeroWallet = createZquentWallet;

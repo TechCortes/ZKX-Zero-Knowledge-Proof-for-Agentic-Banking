@@ -4,7 +4,7 @@
  * A checkpoint is valid only if BOTH signatures verify, so forging one needs
  * breaking Ed25519 (classical) and ML-DSA-65 (post-quantum) at once.
  *
- * VERO_AUDIT_SIGNING_KEY is one base64 32-byte seed; both key pairs are
+ * ZQUENT_AUDIT_SIGNING_KEY (legacy VERO_AUDIT_SIGNING_KEY) is one base64 32-byte seed; both key pairs are
  * derived from it with HKDF, so there's a single secret to store. Generate it
  * with `npm run audit -- keygen`.
  *
@@ -14,6 +14,7 @@
 
 import { createPrivateKey, createPublicKey, hkdfSync, sign, verify, randomBytes, createHash, type KeyObject } from "crypto";
 import { ml_dsa65 } from "@noble/post-quantum/ml-dsa.js";
+import { envLabel, readProtocolEnv } from "./env";
 
 export const SIGNATURE_SUITE = "ed25519+ml-dsa-65";
 
@@ -63,6 +64,8 @@ export function generateAuditSigningSeed(): string {
  * Derive a hybrid signer from a 32-byte seed. `domain` separates key uses:
  * the same seed gives unrelated keys under different domains.
  */
+// Frozen protocol label: changing it would derive different keys and break every
+// existing checkpoint signature. It keeps the pre-rename "vero-" prefix on purpose.
 export function signerFromSeed(seedB64: string, domain = "vero-audit-signing"): HybridSigner {
   const seed = unb64(seedB64);
   if (seed.length !== 32) throw new Error("Signing seed must be 32 bytes (base64).");
@@ -120,16 +123,16 @@ export function verifyHybrid(key: HybridPublicKey, message: Uint8Array, sig: Hyb
 
 let cached: { raw: string | undefined; signer: HybridSigner | null } | null = null;
 
-/** The checkpoint signer from VERO_AUDIT_SIGNING_KEY, or null when unset. Throws if malformed. */
+/** The checkpoint signer from ZQUENT_AUDIT_SIGNING_KEY (legacy VERO_AUDIT_SIGNING_KEY), or null when unset. Throws if malformed. */
 export function getAuditSigner(): HybridSigner | null {
-  const raw = process.env.VERO_AUDIT_SIGNING_KEY?.trim() || undefined;
+  const raw = readProtocolEnv("AUDIT_SIGNING_KEY");
   if (cached && cached.raw === raw) return cached.signer;
   let signer: HybridSigner | null = null;
   if (raw) {
     try {
       signer = signerFromSeed(raw);
     } catch (e) {
-      throw new Error(`VERO_AUDIT_SIGNING_KEY is set but invalid: ${(e as Error).message}`);
+      throw new Error(`${envLabel("AUDIT_SIGNING_KEY")} is set but invalid: ${(e as Error).message}`);
     }
   }
   cached = { raw, signer };

@@ -18,6 +18,8 @@
  * Nothing here talks to the network or stores keys. Callers own key custody.
  */
 
+// Frozen wire-format tag: written into stored records and checked on read.
+// It keeps the pre-rename "vero-" prefix on purpose — changing it would orphan existing data.
 export const REVEAL_FORMAT = "vero-reveal/v1";
 
 export type Point = [bigint, bigint];

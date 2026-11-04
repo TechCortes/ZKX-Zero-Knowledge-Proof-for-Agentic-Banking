@@ -1,18 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { LogoIcon } from "@/components/Logo";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 const STARTERS = [
-  "How does Vero handle FATF R.16 compliance?",
-  "Why can't traditional KYC work for AI agents?",
-  "How do I fork and deploy Vero?",
+  "How does ZQUENT handle FATF R.16 compliance?",
+  "What in ZQUENT is post-quantum today?",
+  "How do I fork and deploy ZQUENT?",
 ];
 
 const MAX_INPUT = 2000;
 
-export default function VeraChat() {
+export default function AssistantChat() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -46,19 +47,19 @@ export default function VeraChat() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/vera", {
+      const res = await fetch("/api/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: next }),
       });
       const data = (await res.json().catch(() => ({}))) as { reply?: string; error?: string };
       if (!res.ok || !data.reply) {
-        setError(data.error ?? "Vera hit a problem. Please try again.");
+        setError(data.error ?? "The assistant hit a problem. Please try again.");
         return;
       }
       setMessages([...next, { role: "assistant", content: data.reply }]);
     } catch {
-      setError("Couldn't reach Vera. Check your connection and try again.");
+      setError("Couldn't reach the assistant. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -69,23 +70,21 @@ export default function VeraChat() {
       {open && (
         <div
           role="dialog"
-          aria-label="Chat with Vera"
-          className="w-[22rem] max-w-[calc(100vw-2rem)] h-[32rem] max-h-[calc(100vh-7rem)] flex flex-col rounded-2xl border border-white/10 bg-[#07070f] shadow-2xl shadow-black/60 overflow-hidden"
+          aria-label="Ask ZQUENT"
+          className="w-[24rem] max-w-[calc(100vw-2rem)] h-[34rem] max-h-[calc(100dvh-6.5rem)] flex flex-col rounded-md border border-zq-line-strong bg-zq-bg shadow-float overflow-hidden"
         >
           {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-white/[0.06] bg-white/[0.02]">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center text-sm font-black text-white">
-              V
-            </div>
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-zq-line bg-zq-surface">
+            <LogoIcon size={28}/>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white leading-none">Vera</p>
-              <p className="text-[11px] text-slate-500 mt-1 leading-none">Vero Protocol compliance assistant</p>
+              <p className="text-sm font-semibold text-zq-text leading-none">ZQUENT Assistant</p>
+              <p className="font-mono text-xs text-zq-muted mt-1.5 leading-none">Protocol &amp; compliance questions</p>
             </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Close chat"
-              className="text-slate-500 hover:text-white transition-colors p-1"
+              className="text-zq-muted hover:text-zq-text transition-colors w-11 h-11 -mr-2 inline-flex items-center justify-center"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -97,15 +96,15 @@ export default function VeraChat() {
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3" aria-live="polite">
             {messages.length === 0 && (
               <div className="space-y-2">
-                <p className="text-sm text-slate-400 leading-relaxed mb-3">
-                  Hi, I&apos;m Vera. Ask me about FATF R.16 compliance, why zero-knowledge proofs beat traditional KYC for AI agents, or how to deploy Vero yourself.
+                <p className="text-sm text-zq-soft leading-relaxed mb-3">
+                  Ask about FATF R.16 compliance, why zero-knowledge proofs beat traditional KYC for AI agents, what is post-quantum today, or how to deploy ZQUENT yourself.
                 </p>
                 {STARTERS.map((s) => (
                   <button
                     key={s}
                     type="button"
                     onClick={() => send(s)}
-                    className="block w-full text-left text-xs text-purple-200 hover:text-white px-3 py-2.5 rounded-xl border border-purple-500/20 hover:border-purple-500/40 bg-purple-500/[0.06] hover:bg-purple-500/10 transition-colors"
+                    className="block w-full text-left text-sm text-zq-soft hover:text-zq-text px-3 py-2.5 min-h-[44px] rounded border border-zq-line hover:border-zq-line-strong bg-zq-surface transition-colors"
                   >
                     {s}
                   </button>
@@ -116,10 +115,10 @@ export default function VeraChat() {
             {messages.map((m, i) => (
               <div key={i} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
                 <div
-                  className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-[13px] leading-relaxed whitespace-pre-wrap break-words ${
+                  className={`max-w-[85%] px-3.5 py-2.5 rounded text-sm leading-relaxed whitespace-pre-wrap break-words ${
                     m.role === "user"
-                      ? "bg-blue-600 text-white rounded-br-md"
-                      : "bg-white/[0.05] border border-white/[0.06] text-slate-200 rounded-bl-md"
+                      ? "bg-zq-raise border border-zq-line-strong text-zq-text"
+                      : "bg-zq-surface border border-zq-line text-zq-soft"
                   }`}
                 >
                   {m.content}
@@ -129,16 +128,16 @@ export default function VeraChat() {
 
             {loading && (
               <div className="flex justify-start">
-                <div className="px-3.5 py-3 rounded-2xl rounded-bl-md bg-white/[0.05] border border-white/[0.06] flex items-center gap-1" aria-label="Vera is typing">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse [animation-delay:150ms]" />
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse [animation-delay:300ms]" />
+                <div className="px-3.5 py-3 rounded bg-zq-surface border border-zq-line flex items-center gap-1" aria-label="The assistant is typing">
+                  <span className="w-1.5 h-1.5 bg-zq-muted animate-pulse" />
+                  <span className="w-1.5 h-1.5 bg-zq-muted animate-pulse [animation-delay:150ms]" />
+                  <span className="w-1.5 h-1.5 bg-zq-muted animate-pulse [animation-delay:300ms]" />
                 </div>
               </div>
             )}
 
             {error && (
-              <p role="alert" className="text-xs text-red-300/80 bg-red-500/[0.06] border border-red-500/20 rounded-lg px-3 py-2">
+              <p role="alert" className="text-xs text-zq-danger bg-zq-danger/10 border border-zq-danger/30 rounded px-3 py-2">
                 {error}
               </p>
             )}
@@ -151,21 +150,21 @@ export default function VeraChat() {
               e.preventDefault();
               send(input);
             }}
-            className="flex items-center gap-2 px-3 py-3 border-t border-white/[0.06]"
+            className="flex items-center gap-2 px-3 py-3 border-t border-zq-line"
           >
             <input
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               maxLength={MAX_INPUT}
-              placeholder="Ask Vera…"
-              aria-label="Message Vera"
-              className="flex-1 min-w-0 bg-white/[0.04] border border-white/[0.08] focus:border-purple-500/40 outline-none rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-slate-600"
+              placeholder="Ask ZQUENT…"
+              aria-label="Message the ZQUENT Assistant"
+              className="flex-1 min-w-0 min-h-[44px] bg-zq-surface border border-zq-line focus:border-zq-accent/60 outline-none rounded px-3.5 py-2.5 text-base sm:text-sm text-zq-text placeholder:text-zq-faint"
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:hover:bg-blue-600 text-white text-sm font-semibold transition-colors"
+              className="min-h-[44px] px-4 rounded bg-zq-accent hover:bg-zq-accent-strong disabled:opacity-40 disabled:hover:bg-zq-accent text-zq-on-accent text-sm font-medium transition-colors"
             >
               Send
             </button>
@@ -176,11 +175,12 @@ export default function VeraChat() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        aria-label={open ? "Close chat with Vera" : "Chat with Vera"}
+        aria-label={open ? "Close the ZQUENT Assistant" : "Ask ZQUENT"}
         aria-expanded={open}
-        className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 shadow-lg shadow-purple-900/40 border border-white/10 flex items-center justify-center text-xl font-black text-white transition-transform hover:scale-105"
+        className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center gap-2.5 p-2 sm:pr-4 rounded border border-zq-line-strong bg-zq-surface hover:border-zq-soft shadow-float text-sm text-zq-text transition-colors"
       >
-        V
+        <LogoIcon size={26}/>
+        <span className="hidden sm:inline">{open ? "Close" : "Ask ZQUENT"}</span>
       </button>
     </div>
   );

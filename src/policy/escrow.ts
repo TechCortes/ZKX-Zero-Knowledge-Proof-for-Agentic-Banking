@@ -9,7 +9,7 @@
  *   - only the operator (direct store access) or, later, the regulator
  *     disclosure flow reads them
  *
- * With VERO_ESCROW_KEYS set, each ciphertext is sealed in a post-quantum
+ * With ZQUENT_ESCROW_KEYS (legacy VERO_ESCROW_KEYS) set, each ciphertext is sealed in a post-quantum
  * envelope (`vero-escrow/v2`, see src/zkp/escrowSeal.ts) before it's stored;
  * the store then never holds the inner ciphertext at all. Without it, records
  * are stored unsealed and a warning is logged.
@@ -75,7 +75,7 @@ function buildRecord(
   }
   if (!warnedUnsealed) {
     warnedUnsealed = true;
-    logger.warn("escrow", "stored_unsealed", { reason: "VERO_ESCROW_KEYS is not set" });
+    logger.warn("escrow", "stored_unsealed", { reason: "ZQUENT_ESCROW_KEYS is not set" });
   }
   return { ...base, ciphertext };
 }
@@ -116,7 +116,7 @@ export async function getRevealEscrow(txId: string): Promise<EscrowRecord | unde
 
 /**
  * Seal every unsealed record in the index with `keys`. For records stored
- * before VERO_ESCROW_KEYS was configured. Safe to re-run: sealed records are
+ * before ZQUENT_ESCROW_KEYS was configured. Safe to re-run: sealed records are
  * skipped. Returns how many were sealed and how many were already sealed.
  */
 export async function sealUnsealedEscrows(keys: EscrowKeySet): Promise<{ sealed: number; alreadySealed: number }> {

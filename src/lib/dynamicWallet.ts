@@ -3,7 +3,7 @@
  *
  * One server-controlled wallet, created once and reused forever (its
  * non-sensitive `walletMetadata` is cached in the same Redis store as the
- * rest of Vero's state — see kv.ts). Threshold is TWO_OF_THREE with
+ * rest of ZQUENT's state — see kv.ts). Threshold is TWO_OF_THREE with
  * backUpToDynamic: true, so Dynamic holds a backup share and the SDK can
  * recover and sign without this process ever holding raw key-share material.
  *

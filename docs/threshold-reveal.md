@@ -1,7 +1,7 @@
 # Threshold Reveal — spec (`vero-reveal/v1`)
 
 ROADMAP.md phase 2. This document defines the boundary an institution plugs into: the circuit
-extension, the ciphertext format, and the threshold-decryption contract. Vero Protocol does not
+extension, the ciphertext format, and the threshold-decryption contract. ZQUENT does not
 run a consortium or hold keys.
 
 ## What each party learns
@@ -22,10 +22,10 @@ Anonymous-tier payments (< $1,000/day) never produce a proof, so they never prod
 npm run compile-circuit:reveal          # needs circom 2.x
 npm run setup-zk:reveal                 # needs circuits/pot14_final.ptau — PSE ppot_0080_14 (see scripts/setup_zk.js)
 npm run reveal -- keygen --threshold 2 --parties 3 --out ./consortium   # reference dealer only
-export VERO_REVEAL_PUBLIC_KEY="<x>,<y>" # printed by keygen
+export ZQUENT_REVEAL_PUBLIC_KEY="<x>,<y>" # printed by keygen
 ```
 
-With `VERO_REVEAL_PUBLIC_KEY` set:
+With `ZQUENT_REVEAL_PUBLIC_KEY` set:
 
 - `POST /api/v1/payment` adds `challenge.reveal.publicKey` to its 402 response.
 - The browser prover sees it and switches to `kyc_reveal`.
@@ -137,7 +137,7 @@ Turn it on:
 ```bash
 npm run reveal -- kem-keygen --index 1 --out ./member-1        # each member, own machine
 npm run reveal -- escrow-keys --threshold 2 member-*.pub.json  # operator
-export VERO_ESCROW_KEYS='{"format":"vero-escrow-keys/v1",…}'   # printed above
+export ZQUENT_ESCROW_KEYS='{"format":"vero-escrow-keys/v1",…}'   # printed above
 npm run reveal -- seal-pending                                 # seal records stored before this
 ```
 
@@ -155,7 +155,7 @@ makes `verify-proof` fail instead of storing unsealed.
 ## Disclosure round-trip (reference CLI)
 
 ```bash
-npm run reveal -- escrow --tx zkx_123 --out env.json       # operator, reads the escrow store
+npm run reveal -- escrow --tx zquent_123 --out env.json       # operator, reads the escrow store
 npm run reveal -- unseal --member-key member-1.key.json --envelope env.json --out part-1.json  # member 1
 npm run reveal -- unseal --member-key member-3.key.json --envelope env.json --out part-3.json  # member 3
 npm run reveal -- open --envelope env.json --out ct.json part-1.json part-3.json
@@ -183,8 +183,8 @@ For unsealed records, `escrow` writes `ct.json` directly; skip `unseal` and `ope
 
 ## Known limits
 
-- Rotating the consortium key means a new `VERO_REVEAL_PUBLIC_KEY`. Old ciphertexts stay
-  decryptable only by the old consortium. The same holds for `VERO_ESCROW_KEYS`.
+- Rotating the consortium key means a new `ZQUENT_REVEAL_PUBLIC_KEY`. Old ciphertexts stay
+  decryptable only by the old consortium. The same holds for `ZQUENT_ESCROW_KEYS`.
 - `@noble/post-quantum` is pure JavaScript: not independently audited, not constant-time, not
   FIPS-validated. Fine for a reference implementation; an institution would seal inside an HSM.
 - Ciphertexts already handed out before the escrow split (through `GET /api/v1/audit`) can't

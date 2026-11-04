@@ -1,39 +1,29 @@
-export function LogoIcon({ size = 32 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 32 32"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-label="Vero Protocol"
-    >
-      {/* Container — flat institutional indigo, matches the favicon */}
-      <rect width="32" height="32" rx="6" fill="#3730A3"/>
+/** The ZQUENT mark: a geometric Z on a navy tile. Same shape as the favicon (src/app/icon.svg). */
+export const Z_PATH = "M9 8.5H23V11.5L13.2 20.5H23V23.5H9V20.5L18.8 11.5H9Z";
 
-      {/* Single diamond — the proof boundary, no nested shape */}
-      <path d="M16 7 L25 16 L16 25 L7 16 Z" fill="white"/>
+export function LogoIcon({ size = 32, inverted = false }: { size?: number; inverted?: boolean }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="32" height="32" rx="7" fill={inverted ? "#FFFFFF" : "#0B1F3A"}/>
+      <path d={Z_PATH} fill={inverted ? "#0B1F3A" : "#FFFFFF"}/>
     </svg>
   );
 }
 
 export function LogoWordmark() {
   return (
-    <div className="flex items-center gap-2.5">
-      <LogoIcon size={32}/>
-      <div className="leading-none">
-        <p className="text-sm font-black tracking-tight text-white whitespace-nowrap" style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>Vero<span className="font-medium text-slate-400"> Protocol</span></p>
-        <p className="text-[8.5px] text-slate-600 tracking-[0.20em] uppercase mt-[3px]" style={{ fontFamily: "ui-monospace, monospace" }}>Agent Compliance</p>
-      </div>
-    </div>
+    <span className="flex items-center gap-2.5" aria-label="ZQUENT">
+      <LogoIcon size={30}/>
+      <span className="font-display text-base font-semibold tracking-[0.14em] text-zq-text leading-none">ZQUENT</span>
+    </span>
   );
 }
 
 export function LogoCompact() {
   return (
-    <div className="flex items-center gap-2">
-      <LogoIcon size={24}/>
-      <span className="text-sm font-black tracking-tight text-white whitespace-nowrap" style={{ fontFamily: "ui-monospace, 'JetBrains Mono', monospace" }}>Vero<span className="font-medium text-slate-400"> Protocol</span></span>
-    </div>
+    <span className="flex items-center gap-2" aria-label="ZQUENT">
+      <LogoIcon size={22}/>
+      <span className="font-display text-sm font-semibold tracking-[0.14em] text-zq-text leading-none">ZQUENT</span>
+    </span>
   );
 }

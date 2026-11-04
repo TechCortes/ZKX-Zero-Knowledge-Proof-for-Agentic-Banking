@@ -1,7 +1,5 @@
 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Container: flat institutional indigo, no gradient (legible at 16px) -->
-  <rect width="32" height="32" rx="6" fill="#3730A3"/>
-
-  <!-- Single diamond: the proof boundary, no nested shape -->
-  <path d="M16 7 L25 16 L16 25 L7 16 Z" fill="white"/>
+  <!-- ZQUENT mark: a geometric Z on a navy tile (legible at 16px) -->
+  <rect width="32" height="32" rx="7" fill="#0B1F3A"/>
+  <path d="M9 8.5H23V11.5L13.2 20.5H23V23.5H9V20.5L18.8 11.5H9Z" fill="#FFFFFF"/>
 </svg>

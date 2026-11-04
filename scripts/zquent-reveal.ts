@@ -1,5 +1,5 @@
 /**
- * Vero Protocol — reference threshold-reveal CLI (ROADMAP.md phase 2, step 3).
+ * ZQUENT — reference threshold-reveal CLI (ROADMAP.md phase 2, step 3).
  *
  * NOT PRODUCTION KEY MANAGEMENT. Shares are plain JSON files and `keygen` uses a
  * trusted dealer. It exists so forkers can run the whole disclosure round-trip
@@ -7,7 +7,7 @@
  *
  *   npm run reveal -- keygen  --threshold 2 --parties 3 --out ./consortium
  *   npm run reveal -- kem-keygen --index 1 --out ./member-1          (each member, on their own machine)
- *   npm run reveal -- escrow-keys --threshold 2 member-*.pub.json   (operator: prints VERO_ESCROW_KEYS)
+ *   npm run reveal -- escrow-keys --threshold 2 member-*.pub.json   (operator: prints ZQUENT_ESCROW_KEYS)
  *   npm run reveal -- escrow  --tx <txId> --out env.json     (operator: reads the escrow store)
  *   npm run reveal -- unseal  --member-key ./member-1/member-1.key.json --envelope env.json --out part-1.json
  *   npm run reveal -- open    --envelope env.json --out ct.json part-1.json part-3.json
@@ -59,7 +59,7 @@ Commands:
            and member-<i>.pub.json (public, send to the operator).
 
   escrow-keys --threshold <k> <member-*.pub.json...>
-           Operator: assemble the members' public keys into the VERO_ESCROW_KEYS value.
+           Operator: assemble the members' public keys into the ZQUENT_ESCROW_KEYS value.
 
   escrow   --tx <txId> --out <file>
            Operator only: read one transaction's record from the reveal escrow. Writes the
@@ -67,7 +67,7 @@ Commands:
            Needs the store credentials (KV_REST_API_URL / KV_REST_API_TOKEN) in the environment.
 
   seal-pending
-           Operator only: seal every unsealed escrow record with VERO_ESCROW_KEYS. Safe to re-run.
+           Operator only: seal every unsealed escrow record with ZQUENT_ESCROW_KEYS (legacy VERO_ESCROW_KEYS is also read). Safe to re-run.
 
   unseal   --member-key <file> --envelope <file> --out <file>
            Run by ONE member: recover their share of the envelope key.
@@ -150,7 +150,7 @@ async function keygen(flags: Flags) {
   console.log(`Dealt a ${k}-of-${n} consortium key into ${out}/`);
   console.log(`  consortium.json   public — give to the server and every party`);
   console.log(`  share-1..${n}.json  SECRET — hand each to exactly one party, then delete the dealer's copies`);
-  console.log(`\nServer config:\n  VERO_REVEAL_PUBLIC_KEY="${consortium.publicKey.join(",")}"`);
+  console.log(`\nServer config:\n  ZQUENT_REVEAL_PUBLIC_KEY="${consortium.publicKey.join(",")}"`);
 }
 
 function writeCiphertext(out: string, tx: string, ct: RevealCiphertext, expectedHash?: string) {
@@ -184,7 +184,7 @@ async function escrowKeys(flags: Flags) {
   const members = flags._.map((f) => readJson<{ index: number; publicKey: string }>(f, "member public key", ESCROW_KEYS_FORMAT));
   try {
     const ks = parseEscrowKeySet({ format: ESCROW_KEYS_FORMAT, threshold, members });
-    console.log(`Server config (${threshold}-of-${members.length}):\n  VERO_ESCROW_KEYS='${JSON.stringify(ks)}'`);
+    console.log(`Server config (${threshold}-of-${members.length}):\n  ZQUENT_ESCROW_KEYS='${JSON.stringify(ks)}'`);
   } catch (e) {
     fail((e as Error).message);
   }
@@ -206,7 +206,7 @@ async function escrow(flags: Flags) {
 async function sealPending() {
   needStore();
   const keys = getEscrowKeySet();
-  if (!keys) fail("VERO_ESCROW_KEYS is not set.");
+  if (!keys) fail("ZQUENT_ESCROW_KEYS (or legacy VERO_ESCROW_KEYS) is not set.");
   const { sealed, alreadySealed } = await sealUnsealedEscrows(keys);
   console.log(`Sealed ${sealed} record(s); ${alreadySealed} were already sealed.`);
 }
@@ -295,7 +295,7 @@ async function demo() {
     threshold: 2,
     members: members.map(({ index, publicKey }) => ({ index, publicKey })),
   });
-  const envelope = sealEscrow(escrowKeySet, "zkx_demo", serializeRevealCiphertext(ct), hashRevealCiphertext(ct));
+  const envelope = sealEscrow(escrowKeySet, "zquent_demo", serializeRevealCiphertext(ct), hashRevealCiphertext(ct));
   console.log(`   envelope: ${JSON.stringify(envelope).length} bytes, ${envelope.parties} sealed shares`);
   console.log("4. Members 1 and 3 unseal their shares; the envelope opens");
   const opened: RevealCiphertext = JSON.parse(

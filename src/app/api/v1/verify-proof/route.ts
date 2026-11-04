@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
   }
 
   const revealPublicKey = await getRevealPublicKey();
-  // Throws on a malformed VERO_ESCROW_KEYS now, before any challenge or spend is touched.
+  // Throws on a malformed ZQUENT_ESCROW_KEYS now, before any challenge or spend is touched.
   getEscrowKeySet();
 
   // Bind proof to this agent's registered commitment — prevents cross-agent replay

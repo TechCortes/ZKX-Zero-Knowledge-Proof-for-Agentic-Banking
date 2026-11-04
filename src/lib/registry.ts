@@ -1,5 +1,5 @@
 /**
- * Agent Registry — Redis-backed store for Vero Protocol agent identities
+ * Agent Registry — Redis-backed store for ZQUENT agent identities
  * (in-memory fallback for local dev/tests — see kv.ts).
  *
  * Follows the Open Wallet Standard API key model:
