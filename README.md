@@ -144,7 +144,9 @@ By default the verifier learns nothing beyond "credential valid, age ≥ 18". In
 
 Shipped since: post-quantum sealed escrow for identity ciphertexts (X-Wing: ML-KEM-768 + X25519) and a tamper-evident audit chain with Ed25519 + ML-DSA-65 signed checkpoints, both opt-in. The ZK proofs themselves remain classical Groth16.
 
-Next: a regulator request flow, a multi-party trusted setup, and issuer-signed credentials.
+Also shipped: the regulator disclosure flow. A registered regulator asks for one transaction, k approvers sign off, and k consortium members deliver the identity sealed to that regulator. Neither the server nor any single member sees it ([docs/disclosure-delivery.md](./docs/disclosure-delivery.md)).
+
+Next: a DKG to replace the trusted dealer, a multi-party trusted setup, and issuer-signed credentials.
 
 **Status:** testnet reference implementation. The circuits have not been independently audited, the Groth16 setup has a single contributor, and the demo credential is self-asserted. Don't use it to protect real funds or identities yet.
 

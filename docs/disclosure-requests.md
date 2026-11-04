@@ -2,7 +2,7 @@
 
 How a regulator asks for **one** transaction to be unmasked, and how the consortium's
 approvers agree to it. This step only authorises a disclosure. Decrypting and delivering
-the identity is the next step (D5).
+the identity is in `docs/disclosure-delivery.md` (D5).
 
 Code: `src/disclosure/requests.ts` (formats and checks), `src/disclosure/store.ts`
 (storage), routes under `src/app/api/v1/disclosure/`. CLI: `npm run disclosure -- <command>`
@@ -81,8 +81,8 @@ Every route returns 503 when disclosure is off or not ready (too few active appr
 active regulator), and 500 when the registry is present but invalid or unpinned.
 
 A summary is `{ requestHash, regulatorId, status, receivedAt, expiresAt, approvalThreshold,
-approvals: [{ approverId, approvedAt }] }`, with `status` one of `pending`, `approved` or
-`expired`. It never includes `txId`, `ciphertextHash` or `legalBasisHash`. The agent can see
+approvals: [{ approverId, approvedAt }], deliveryThreshold, deliveries: [{ memberIndex,
+deliveredAt }] }`, with `status` one of `pending`, `approved`, `delivered` (D5) or `expired`. It never includes `txId`, `ciphertextHash` or `legalBasisHash`. The agent can see
 its own `ciphertextHash` in its audit trail, so any of these would let it recognise that it
 is being investigated.
 

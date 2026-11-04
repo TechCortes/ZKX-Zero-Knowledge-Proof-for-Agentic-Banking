@@ -260,6 +260,52 @@ export function ciphertextFromSignals(publicSignals: string[]): RevealCiphertext
 // Threshold decryption
 // ---------------------------------------------------------------------------
 
+/** sum(lambda_i * P_i) with Lagrange coefficients at x = 0: lambda_i = prod_{j != i} x_j / (x_j - x_i), mod l. */
+function interpolateAtZero(c: Crypto, points: { index: number; point: Point }[]): Point {
+  const xs = points.map((p) => BigInt(p.index));
+  let acc: Point = [BigInt(0), BigInt(1)];
+  points.forEach((p, i) => {
+    let num = BigInt(1);
+    let den = BigInt(1);
+    xs.forEach((xj, j) => {
+      if (j === i) return;
+      num = mod(num * xj, c.l);
+      den = mod(den * (xj - xs[i]), c.l);
+    });
+    acc = add(c, acc, mul(c, p.point, mod(num * modInverse(den, c.l), c.l)));
+  });
+  return acc;
+}
+
+/**
+ * Rebuild the public ConsortiumKey from the members' published verification keys
+ * Y_i (for example, from the key registry): PK = sum(lambda_i * Y_i). With more than
+ * `threshold` keys, every window of `threshold` consecutive keys must give the same
+ * PK, so inconsistent keys are caught instead of silently trusted.
+ */
+export async function consortiumKeyFromVerificationKeys(
+  threshold: number,
+  parties: number,
+  verificationKeys: { index: number; publicKey: PointStr }[]
+): Promise<ConsortiumKey> {
+  const vks = [...verificationKeys].sort((a, b) => a.index - b.index);
+  if (new Set(vks.map((v) => v.index)).size !== vks.length) throw new Error("Duplicate verification key index.");
+  if (vks.length < threshold) throw new Error(`Need ${threshold} verification keys, got ${vks.length}.`);
+  const c = await getCrypto();
+  const points = vks.map((v) => {
+    const p = pt(v.publicKey);
+    if (!inSubgroup(c, p)) throw new Error(`Verification key ${v.index} is not a valid subgroup point.`);
+    return { index: v.index, point: p };
+  });
+  const pk = interpolateAtZero(c, points.slice(0, threshold));
+  for (let i = 1; i + threshold <= points.length; i++) {
+    if (!eq(interpolateAtZero(c, points.slice(i, i + threshold)), pk)) {
+      throw new Error("Verification keys are inconsistent: they don't all come from one consortium key.");
+    }
+  }
+  return { format: REVEAL_FORMAT, threshold, parties, publicKey: str(pk), verificationKeys: vks };
+}
+
 /** DLEQ challenge, Fiat-Shamir over Poseidon. Binds the ciphertext so a proof can't be replayed onto another one. */
 function dleqChallenge(c: Crypto, Y: Point, R: Point, D: Point, A1: Point, A2: Point): bigint {
   return mod(hash(c, [...Y, ...R, ...D, ...A1, ...A2]), c.l);
@@ -341,20 +387,8 @@ export async function combinePartials(
 
   const c = await getCrypto();
   const used = valid.slice(0, consortium.threshold);
-  const xs = used.map((pd) => BigInt(pd.index));
-  // S = sum(lambda_i * D_i), lambda_i = prod_{j != i} x_j / (x_j - x_i), all mod l
-  let S: Point = [BigInt(0), BigInt(1)];
-  used.forEach((pd, i) => {
-    let num = BigInt(1);
-    let den = BigInt(1);
-    xs.forEach((xj, j) => {
-      if (j === i) return;
-      num = mod(num * xj, c.l);
-      den = mod(den * (xj - xs[i]), c.l);
-    });
-    const lambda = mod(num * modInverse(den, c.l), c.l);
-    S = add(c, S, mul(c, pt(pd.partial), lambda));
-  });
+  // S = sum(lambda_i * D_i)
+  const S = interpolateAtZero(c, used.map((pd) => ({ index: pd.index, point: pt(pd.partial) })));
 
   const p = BigInt(c.poseidon.F.p.toString());
   const pad = await streamPad(c, S);

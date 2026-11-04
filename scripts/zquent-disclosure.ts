@@ -1,5 +1,6 @@
 /**
- * ZQUENT — disclosure request CLI (ROADMAP D4). See docs/disclosure-requests.md.
+ * ZQUENT — disclosure CLI (ROADMAP D4 + D5). See docs/disclosure-requests.md and
+ * docs/disclosure-delivery.md.
  *
  *   npm run disclosure -- request --registry registry.json --regulator-id demo-fiu --sign-key ./fiu/signing.key.json \
  *                                 --tx-id <txId> --legal-doc order.pdf [--expires-in-days 7] --out signed.json
@@ -8,6 +9,12 @@
  *   npm run disclosure -- approve --registry registry.json --approver-id approver-1 --sign-key ./a1/signing.key.json \
  *                                 [--legal-doc order.pdf] [--url https://host] bundle.json
  *   npm run disclosure -- status  --url https://host <requestHash>
+ *   npm run disclosure -- release --url https://host --registry registry.json --member 1 --sign-key m1/signing.key.json \
+ *                                 --escrow-key member-1.key.json <requestHash>
+ *   npm run disclosure -- deliver --url https://host --registry registry.json --member 1 --sign-key m1/signing.key.json \
+ *                                 --escrow-key member-1.key.json --reveal-share share-1.json <requestHash>
+ *   npm run disclosure -- receive --url https://host --registry registry.json --sign-key fiu/signing.key.json \
+ *                                 --kem-key fiu/kem.key.json bundle.json [--out identity.json]
  *   npm run disclosure -- demo
  */
 
@@ -39,7 +46,19 @@ import {
   signRequest,
   type SignedDisclosureRequest,
 } from "../src/disclosure/requests";
-import { generateEscrowMemberKey } from "../src/zkp/escrowSeal";
+import { ESCROW_KEYS_FORMAT, generateEscrowMemberKey, type EscrowMemberKey } from "../src/zkp/escrowSeal";
+import { REVEAL_FORMAT, dealKeyShares, encryptForReveal, randomRevealNonce, type KeyShare } from "../src/zkp/reveal";
+import {
+  makeAccessToken,
+  openDisclosure,
+  openForMember,
+  prepareDelivery,
+  releaseShare,
+  verifyPackage,
+  type Delivery,
+  type DisclosurePackage,
+  type ShareRelease,
+} from "../src/disclosure/delivery";
 import { readProtocolEnv } from "../src/lib/env";
 
 const USAGE = `Usage: npm run disclosure -- <command> [options]
@@ -64,7 +83,22 @@ Commands:
 
   status   --url <base url> <requestHash>
 
-  demo     Submit and approve a request end to end in memory.`;
+  Once a request is approved (D5):
+
+  release  --url <base> --registry <file> --member <i> --sign-key <file> --escrow-key <member-i.key.json> <requestHash>
+           Member: download the package, re-check the request and approvals yourself, then
+           unseal your escrow share and seal it to the other members. Round 1.
+
+  deliver  --url <base> --registry <file> --member <i> --sign-key <file> --escrow-key <member-i.key.json>
+           --reveal-share <share-i.json> <requestHash>
+           Member: once enough members have released, open the envelope, check it, and send
+           your partial decryption sealed to the regulator, with a signed receipt. Round 2.
+
+  receive  --url <base> --registry <file> --sign-key <file> --kem-key <kem.key.json> <bundle> [--out <file>]
+           Regulator: fetch the sealed deliveries and decrypt the identity on your machine.
+           Checks every receipt, every partial proof and the commitment first.
+
+  demo     The whole flow in memory: escrow → request → 2 approvals → release → deliver → receive.`;
 
 type Flags = Record<string, string> & { _: string[] };
 
@@ -139,6 +173,13 @@ async function call(url: string, body?: unknown): Promise<Record<string, unknown
   const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
   if (!res.ok) fail(`${res.status}: ${json.error ?? res.statusText}`);
   return json;
+}
+
+async function authGet<T>(url: string, token: string): Promise<T> {
+  const res = await fetch(url, { headers: { authorization: token } });
+  const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+  if (!res.ok) fail(`${res.status}: ${json.error ?? res.statusText}`);
+  return json as T;
 }
 
 interface Bundle extends SignedDisclosureRequest {
@@ -226,59 +267,171 @@ async function status(flags: Flags) {
   console.log(JSON.stringify(await call(api(need(flags, "url"), `/${h}`)), null, 2));
 }
 
+// --- D5: members and regulator ---
+
+function memberContext(flags: Flags) {
+  const reg = readRegistry(flags);
+  const index = Number(need(flags, "member"));
+  const signer = readSigner(need(flags, "sign-key"));
+  const escrowKey = readJson<EscrowMemberKey>(need(flags, "escrow-key"), "escrow member key");
+  if (escrowKey.format !== ESCROW_KEYS_FORMAT || escrowKey.index !== index) fail(`--escrow-key is not member ${index}'s X-Wing key file.`);
+  const h = flags._[0] ?? fail("Give the requestHash.");
+  return { reg, index, signer, escrowKey, h, base: need(flags, "url") };
+}
+
+async function fetchCheckedPackage(c: ReturnType<typeof memberContext>): Promise<DisclosurePackage> {
+  const token = makeAccessToken(c.signer, { party: "member", id: String(c.index), requestHash: c.h, action: "package" });
+  const pkg = await authGet<DisclosurePackage>(api(c.base, `/${c.h}/package`), token);
+  const problems = verifyPackage(c.reg, pkg);
+  if (problems.length) fail(`Don't release anything:\n  - ${problems.join("\n  - ")}`);
+  const r = pkg.signed.request;
+  console.log(`Checked: ${r.regulatorId} asked for ${r.txId}; ${pkg.approvals.length} approvals verify; escrow matches.`);
+  return pkg;
+}
+
+async function releaseCmd(flags: Flags) {
+  const c = memberContext(flags);
+  const pkg = await fetchCheckedPackage(c);
+  const rel = (() => {
+    try { return releaseShare(c.reg, pkg, c.escrowKey, c.signer); } catch (e) { return fail((e as Error).message); }
+  })();
+  await call(api(c.base, `/${c.h}/shares`), rel);
+  console.log(`Released member ${c.index}'s share, sealed to members ${rel.boxes.map((b) => b.to).join(", ")}.`);
+}
+
+async function deliverCmd(flags: Flags) {
+  const c = memberContext(flags);
+  const share = readJson<KeyShare>(need(flags, "reveal-share"), "reveal key share");
+  if (share.format !== REVEAL_FORMAT || share.index !== c.index) fail(`--reveal-share is not member ${c.index}'s share file.`);
+  const pkg = await fetchCheckedPackage(c);
+  const token = makeAccessToken(c.signer, { party: "member", id: String(c.index), requestHash: c.h, action: "shares" });
+  const { releases } = await authGet<{ releases: ShareRelease[] }>(api(c.base, `/${c.h}/shares`), token);
+  let delivery: Delivery;
+  try {
+    const ct = openForMember(c.reg, pkg, c.escrowKey, releases);
+    delivery = await prepareDelivery(c.reg, pkg, ct, share, c.signer);
+  } catch (e) {
+    return fail((e as Error).message);
+  }
+  const res = await call(api(c.base, `/${c.h}/deliveries`), delivery);
+  console.log(`Delivered member ${c.index}'s partial, sealed to ${pkg.signed.request.regulatorId}. Status: ${res.status}.`);
+}
+
+async function receiveCmd(flags: Flags) {
+  const reg = readRegistry(flags);
+  const bundle = readJson<Bundle>(positional(flags, "bundle"), "bundle");
+  const signer = readSigner(need(flags, "sign-key"));
+  const kem = readJson<{ secretKey?: string }>(need(flags, "kem-key"), "X-Wing key");
+  if (!kem.secretKey) fail("--kem-key must be your secret X-Wing key file.");
+  const token = makeAccessToken(signer, { party: "regulator", id: bundle.request.regulatorId, requestHash: bundle.requestHash, action: "deliveries" });
+  const { deliveries } = await authGet<{ deliveries: Delivery[] }>(api(need(flags, "url"), `/${bundle.requestHash}/deliveries`), token);
+  const out = await openDisclosure(reg, { request: bundle.request, ciphertextHash: bundle.ciphertextHash }, deliveries, kem.secretKey).catch((e) => fail(e.message));
+  if (flags.out) {
+    fs.writeFileSync(flags.out, JSON.stringify(out, null, 2) + "\n", { mode: 0o600 });
+    console.log(`Identity for ${out.txId} written to ${flags.out} (members ${out.members.join(", ")}).`);
+  } else {
+    console.log(JSON.stringify(out, null, 2));
+  }
+}
+
 async function demo() {
   const CID = "demo-consortium";
+  console.log("Setup: a 2-of-3 consortium, two approvers and a regulator, each with their own keys.");
+  const { consortium, shares } = await dealKeyShares(2, 3);
+  const escrowKeys = [1, 2, 3].map(generateEscrowMemberKey);
   const memberSigners = [1, 2, 3].map(() => signerFromFile(generateSigningKey()));
   let reg = newRegistry(CID, 2, 2, [1, 2, 3].map((i) =>
-    makeMemberEntry(CID, { index: i, name: `Demo member ${i}`, kem: generateEscrowMemberKey(i).publicKey, signing: memberSigners[i - 1].publicKey }, memberSigners[i - 1]),
+    makeMemberEntry(CID, {
+      index: i, name: `Demo member ${i}`, kem: escrowKeys[i - 1].publicKey, signing: memberSigners[i - 1].publicKey,
+      revealKey: consortium.verificationKeys[i - 1].publicKey,
+    }, memberSigners[i - 1]),
   ));
   const endorsed = <T extends Parameters<typeof endorse>[2]>(kind: Parameters<typeof endorse>[1], e: T) =>
     [1, 2].reduce((acc, i) => endorse(reg, kind, acc, i, memberSigners[i - 1]), e);
   const validFrom = new Date(Date.now() - 60_000).toISOString();
   const approverSigners = [1, 2].map(() => signerFromFile(generateSigningKey()));
   const fiu = signerFromFile(generateSigningKey());
+  const fiuKem = generateKemKey();
   reg = {
     ...reg,
     approvers: approverSigners.map((s, i) => endorsed("approver", makeApproverEntry(CID, { approverId: `approver-${i + 1}`, name: `Demo officer ${i + 1}`, role: "compliance", signing: s.publicKey, validFrom }, s))),
-    regulators: [endorsed("regulator", makeRegulatorEntry(CID, { regulatorId: "demo-fiu", name: "Demo FIU", jurisdiction: "XX", signing: fiu.publicKey, kem: generateKemKey().publicKey, validFrom }, fiu))],
+    regulators: [endorsed("regulator", makeRegulatorEntry(CID, { regulatorId: "demo-fiu", name: "Demo FIU", jurisdiction: "XX", signing: fiu.publicKey, kem: fiuKem.publicKey, validFrom }, fiu))],
   };
 
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vero-disclosure-demo-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "zquent-disclosure-demo-"));
   fs.writeFileSync(path.join(dir, "registry.json"), JSON.stringify(reg));
   process.env.ZQUENT_REGISTRY_FILE = path.join(dir, "registry.json");
   process.env.ZQUENT_REGISTRY_MEMBERS_ID = membersId(reg);
+  process.env.ZQUENT_ESCROW_KEYS = JSON.stringify({ format: ESCROW_KEYS_FORMAT, threshold: 2, members: escrowKeys.map(({ index, publicKey }) => ({ index, publicKey })) });
 
   // Imported here so the in-memory store and the env above are in place first.
   const { storeRevealEscrow } = await import("../src/policy/escrow");
   const { NextRequest } = await import("next/server");
-  const { POST: submitRoute } = await import("../src/app/api/v1/disclosure/requests/route");
-  const { POST: approveRoute } = await import("../src/app/api/v1/disclosure/requests/[requestHash]/approvals/route");
+  const { buildPoseidon } = await import("circomlibjs");
+  const routes = {
+    submit: (await import("../src/app/api/v1/disclosure/requests/route")).POST,
+    approve: (await import("../src/app/api/v1/disclosure/requests/[requestHash]/approvals/route")).POST,
+    pkg: (await import("../src/app/api/v1/disclosure/requests/[requestHash]/package/route")).GET,
+    shares: await import("../src/app/api/v1/disclosure/requests/[requestHash]/shares/route"),
+    deliveries: await import("../src/app/api/v1/disclosure/requests/[requestHash]/deliveries/route"),
+  };
+  const U = "http://demo/api/v1/disclosure/requests";
   const post = (url: string, body: unknown) => new NextRequest(url, { method: "POST", body: JSON.stringify(body) });
+  const get = (url: string, auth: string) => new NextRequest(url, { headers: { authorization: auth } });
+  const json = async (r: Response) => {
+    const j = await r.json();
+    if (!r.ok) fail(`${r.status}: ${j.error}`);
+    return j;
+  };
 
-  const txId = `demo-tx-${Date.now()}`;
-  await storeRevealEscrow({ txId, agentId: "demo-agent", ciphertext: { format: "vero-reveal/v1", commitment: "1", publicKey: ["1", "2"], ephemeral: ["3", "4"], ciphertext: ["5", "6", "7"] } });
-  console.log(`1. Payment ${txId} has an escrowed identity.`);
+  const identity = { idHash: "123456789", birthYear: 1990, salt: "987654321" };
+  const poseidon = await buildPoseidon();
+  const commitment = poseidon.F.toString(poseidon([BigInt(identity.idHash), BigInt(identity.salt)]));
+  const txId = `zquent_demo_${Date.now()}`;
+  const ct = await encryptForReveal(consortium.publicKey, identity, commitment, await randomRevealNonce());
+  await storeRevealEscrow({ txId, agentId: "demo-agent", ciphertext: ct });
+  console.log(`1. Payment ${txId}: the identity is encrypted to the consortium and sealed in a post-quantum envelope.`);
 
   const signed = signRequest(buildRequest({
     consortiumId: CID, regulatorId: "demo-fiu", txId,
     legalBasisHash: hashLegalDocument(Buffer.from("Demo court order")),
     expiresAt: new Date(Date.now() + 7 * 86400_000).toISOString(),
   }), fiu);
-  const created = await (await submitRoute(post("http://demo/api/v1/disclosure/requests", signed))).json();
-  console.log(`2. demo-fiu submitted a signed request → ${created.status}, requestHash ${created.requestHash.slice(0, 16)}…`);
+  const created = await json(await routes.submit(post(U, signed)));
+  const h: string = created.requestHash;
+  const ctx = { params: Promise.resolve({ requestHash: h }) };
+  console.log(`2. demo-fiu submits a signed request → ${created.status}`);
 
-  const bundle: Bundle = { ...signed, ciphertextHash: created.ciphertextHash, requestHash: created.requestHash };
   for (const [i, s] of approverSigners.entries()) {
-    if (computeRequestHash(bundle.request, bundle.ciphertextHash) !== bundle.requestHash) fail("requestHash mismatch");
-    const res = await approveRoute(
-      post(`http://demo/x/${bundle.requestHash}/approvals`, { approverId: `approver-${i + 1}`, signature: signApproval(bundle.requestHash, s) }),
-      { params: Promise.resolve({ requestHash: bundle.requestHash }) },
-    );
-    const j = await res.json();
-    console.log(`${3 + i}. approver-${i + 1} recomputed requestHash and signed → ${j.status} (${j.approvals.length}/${j.approvalThreshold})`);
+    const j = await json(await routes.approve(post(`${U}/${h}/approvals`, { approverId: `approver-${i + 1}`, signature: signApproval(h, s) }), ctx));
+    console.log(`3. approver-${i + 1} signs → ${j.status} (${j.approvals.length}/${j.approvalThreshold})`);
   }
+
+  const members = [1, 3];
+  const pkgs: Record<number, DisclosurePackage> = {};
+  for (const i of members) {
+    const token = makeAccessToken(memberSigners[i - 1], { party: "member", id: String(i), requestHash: h, action: "package" });
+    pkgs[i] = await json(await routes.pkg(get(`${U}/${h}/package`, token), ctx));
+    const problems = verifyPackage(reg, pkgs[i]);
+    if (problems.length) fail(problems.join(" "));
+    await json(await routes.shares.POST(post(`${U}/${h}/shares`, releaseShare(reg, pkgs[i], escrowKeys[i - 1], memberSigners[i - 1])), ctx));
+    console.log(`4. member ${i} re-checks the request and approvals, then releases its share to the other members`);
+  }
+  for (const i of members) {
+    const token = makeAccessToken(memberSigners[i - 1], { party: "member", id: String(i), requestHash: h, action: "shares" });
+    const { releases } = await json(await routes.shares.GET(get(`${U}/${h}/shares`, token), ctx));
+    const opened = openForMember(reg, pkgs[i], escrowKeys[i - 1], releases);
+    const j = await json(await routes.deliveries.POST(post(`${U}/${h}/deliveries`, await prepareDelivery(reg, pkgs[i], opened, shares[i - 1], memberSigners[i - 1])), ctx));
+    console.log(`5. member ${i} opens the envelope, checks it, and delivers its partial sealed to demo-fiu → ${j.status}`);
+  }
+
+  const token = makeAccessToken(fiu, { party: "regulator", id: "demo-fiu", requestHash: h, action: "deliveries" });
+  const { deliveries } = await json(await routes.deliveries.GET(get(`${U}/${h}/deliveries`, token), ctx));
+  const out = await openDisclosure(reg, { request: signed.request, ciphertextHash: created.ciphertextHash }, deliveries, fiuKem.secretKey);
+  console.log("6. demo-fiu decrypts on its own machine:");
+  console.log(JSON.stringify(out, null, 2));
+  console.log(`   matches the original identity: ${out.idHash === identity.idHash && out.birthYear === identity.birthYear}`);
   fs.rmSync(dir, { recursive: true, force: true });
-  console.log("Done. Unsealing and sealed delivery to the regulator are D5.");
 }
 
 async function main() {
@@ -290,6 +443,9 @@ async function main() {
     case "check": return checkCmd(flags);
     case "approve": return approveCmd(flags);
     case "status": return status(flags);
+    case "release": return releaseCmd(flags);
+    case "deliver": return deliverCmd(flags);
+    case "receive": return receiveCmd(flags);
     case "demo": return demo();
     default:
       console.log(USAGE);

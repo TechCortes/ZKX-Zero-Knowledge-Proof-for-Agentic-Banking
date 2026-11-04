@@ -45,7 +45,8 @@ A compliance team can pilot ZQUENT and truthfully tell their regulator: "we can 
 5. ✅ Tamper-evident audit log: every record is sequenced and hashed, and daily checkpoints chain them and are signed with Ed25519 + ML-DSA-65 ([docs/audit-chain.md](./docs/audit-chain.md)).
 6. ✅ Key registries: one signed public document lists the consortium members, approvers and regulators. Every approver and regulator needs k member endorsements ([docs/key-registry.md](./docs/key-registry.md)).
 7. ✅ Disclosure requests: a registered regulator submits a hybrid-signed request for one transaction (`POST /api/v1/disclosure/requests`); it is approved once `approvalThreshold` registered approvers sign its `requestHash`. Rate limited per regulator; the public log shows hashes only ([docs/disclosure-requests.md](./docs/disclosure-requests.md)).
-8. Next: sealed delivery (members unseal, check the approvals themselves, combine partial decryptions and seal the result to the regulator), then anchoring checkpoint hashes on Base.
+8. ✅ Sealed delivery: once a request is approved, members check it themselves, pass their escrow shares to each other, and each delivers a proven partial decryption sealed to the regulator's X-Wing key, with a signed receipt in the audit chain. Only the regulator ever sees the identity ([docs/disclosure-delivery.md](./docs/disclosure-delivery.md)).
+9. Next: replace the trusted dealer with a DKG and run a multi-party trusted setup (D6), then anchor checkpoint hashes on Base.
 
 ## Explicitly out of scope for ZQUENT itself
 
@@ -53,4 +54,4 @@ Running an actual threshold-decryption consortium, KYC document verification/iss
 
 ## Contributing
 
-The audit log (#1) and the threshold-reveal code (#2, #3) are in. Proofs are bound to a single-use, per-payment challenge nonce (`src/policy/challenges.ts`). Open item: a regulator-facing request flow. See [docs/threshold-reveal.md](./docs/threshold-reveal.md). See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup.
+The audit log (#1) and the threshold-reveal code (#2, #3) are in. Proofs are bound to a single-use, per-payment challenge nonce (`src/policy/challenges.ts`). The regulator flow is in: requests and approvals ([docs/disclosure-requests.md](./docs/disclosure-requests.md)) and sealed delivery ([docs/disclosure-delivery.md](./docs/disclosure-delivery.md)). Open items: a DKG to replace the trusted dealer, and a multi-party trusted setup. See [docs/threshold-reveal.md](./docs/threshold-reveal.md). See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup.
