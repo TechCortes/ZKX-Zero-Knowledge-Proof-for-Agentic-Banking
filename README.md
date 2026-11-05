@@ -146,7 +146,9 @@ Shipped since: post-quantum sealed escrow for identity ciphertexts (X-Wing: ML-K
 
 Also shipped: the regulator disclosure flow. A registered regulator asks for one transaction, k approvers sign off, and k consortium members deliver the identity sealed to that regulator. Neither the server nor any single member sees it ([docs/disclosure-delivery.md](./docs/disclosure-delivery.md)).
 
-Next: a DKG to replace the trusted dealer, a multi-party trusted setup, and issuer-signed credentials.
+The consortium's reveal key is made with a distributed key generation ceremony, so no one ever holds the whole key ([docs/dkg.md](./docs/dkg.md)).
+
+Next: a multi-party trusted setup and issuer-signed credentials.
 
 **Status:** testnet reference implementation. The circuits have not been independently audited, the Groth16 setup has a single contributor, and the demo credential is self-asserted. Don't use it to protect real funds or identities yet.
 

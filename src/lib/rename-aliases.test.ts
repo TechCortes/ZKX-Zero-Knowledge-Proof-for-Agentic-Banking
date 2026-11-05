@@ -3,6 +3,7 @@ import { REGISTRY_FORMAT, SIGNING_KEY_FORMAT, KEM_KEY_FORMAT, REGISTRY_SIGNING_D
 import { REQUEST_FORMAT, APPROVAL_TAG } from "@/disclosure/requests";
 import { ACCESS_TAG, SHARE_TAG, DELIVERY_FORMAT } from "@/disclosure/delivery";
 import { SEALED_BOX_FORMAT } from "@/disclosure/sealedBox";
+import { DKG_FORMAT, DKG_SECRET_FORMAT } from "@/zkp/dkg";
 import { readProtocolEnv, envLabel } from "./env";
 import { AGENT_STORAGE_KEY, LEGACY_AGENT_STORAGE_KEY, migrateLegacyAgentStorage } from "./agentStorage";
 import { createZquentWallet, createVeroWallet, ZQUENT_KYC_FEATURE, VERO_KYC_FEATURE } from "@/wallet/ows-wallet";
@@ -111,5 +112,7 @@ describe("frozen wire formats", () => {
     expect(SHARE_TAG).toBe("vero-disclosure-share/v1");
     expect(DELIVERY_FORMAT).toBe("vero-disclosure-delivery/v1");
     expect(SEALED_BOX_FORMAT).toBe("vero-sealed-box/v1");
+    expect(DKG_FORMAT).toBe("vero-dkg/v1");
+    expect(DKG_SECRET_FORMAT).toBe("vero-dkg-secret/v1");
   });
 });
