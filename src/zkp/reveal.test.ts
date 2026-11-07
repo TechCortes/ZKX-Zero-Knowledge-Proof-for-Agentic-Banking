@@ -120,8 +120,8 @@ describe("ciphertextFromSignals", () => {
     expect(ciphertextFromSignals(signals)).toMatchObject({
       ephemeral: ["0", "1"],
       ciphertext: ["2", "3", "4"],
-      commitment: "5",
-      publicKey: ["8", "9"],
+      commitment: "6",
+      publicKey: ["9", "10"],
     });
   });
 

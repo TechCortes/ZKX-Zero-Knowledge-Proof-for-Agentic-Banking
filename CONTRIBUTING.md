@@ -17,12 +17,17 @@ npm run compile-circuit
 
 # PSE Perpetual Powers of Tau, 2^14 — covers both circuits
 wget https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_14.ptau -O circuits/pot14_final.ptau
-npm run setup-zk
+npm run ceremony -- verify kyc_credential   # checks the committed key against your build
 
 # Optional: threshold-reveal circuit
 npm run compile-circuit:reveal
-npm run setup-zk:reveal
+npm run ceremony -- verify kyc_reveal
+
+# Proofs need a credential issuer configured
+npm run issuer -- keygen >> .env.local
 ```
+
+`npm run setup-zk[:reveal]` still makes a single-contributor key for local circuit work. It overwrites `public/zk/`, so don't commit its output; shared keys come from the ceremony ([docs/ceremony.md](./docs/ceremony.md)).
 
 Node 20.19+ is required (Next 16, Vitest 4, `@noble/post-quantum`); `.nvmrc` pins 22.
 
@@ -38,7 +43,7 @@ npm run test:coverage
 ## Where to make changes
 
 - **Policy logic** (thresholds, spend windows) lives in the OWS `zquent:kyc` middleware — see the Architecture section in [README.md](./README.md).
-- **The circuit** is `circuits/kyc_credential.circom`. Adding a new private/public input means re-running `npm run compile-circuit` and `npm run setup-zk` to regenerate the wasm/zkey/verification key.
+- **The circuits** are `circuits/kyc_credential.circom` and `circuits/kyc_reveal.circom`; the shared credential checks are in `circuits/lib/credential.circom` ([docs/credentials.md](./docs/credentials.md)). Changing a circuit means recompiling, iterating locally with `npm run setup-zk`, and then a new ceremony before merging ([docs/ceremony.md](./docs/ceremony.md)).
 - **Onboarding API** routes are under `src/app/api/v1/agents/` and `src/app/api/v1/payment/` — the reference agent registry lives here if you want to see how tokens and policy checks are wired.
 - **Audit log** — `src/policy/auditLog.ts` + `GET /api/v1/audit`. See [ROADMAP.md](./ROADMAP.md) for why this exists.
 - **Threshold reveal** — `circuits/kyc_reveal.circom`, `src/zkp/reveal.ts`, `scripts/zquent-reveal.ts` (`npm run reveal`). Spec: [docs/threshold-reveal.md](./docs/threshold-reveal.md). Opt-in via `ZQUENT_REVEAL_PUBLIC_KEY`.

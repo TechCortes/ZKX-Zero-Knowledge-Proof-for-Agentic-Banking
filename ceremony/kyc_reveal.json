@@ -1,0 +1,43 @@
+{
+  "format": "zquent-ceremony/v1",
+  "circuit": "kyc_reveal",
+  "demo": true,
+  "compiler": "circom 2.2.2 --O2",
+  "r1csSha256": "0588d883eb7046f12ea423b53f0b61c3c5d033ec0532db12c32a1a086ab48e48",
+  "ptau": {
+    "file": "pot14_final.ptau",
+    "url": "https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_14.ptau",
+    "sha256": "3ca1149e9349b22b0ee0649399cfb787677129b7b1189d1899fc0d615d9583db"
+  },
+  "contributions": [
+    {
+      "index": 1,
+      "name": "Demo contributor A",
+      "hash": "2644066ead978c5ad30a24482c6ca6db4327a36d86971c6269897eaf26e54f29b960416d65a0f22eed094bc7d7c7e08d7d7ca2b49cf5194a8875304b32c335aa",
+      "at": "2026-11-07T22:00:55.987Z"
+    },
+    {
+      "index": 2,
+      "name": "Demo contributor B",
+      "hash": "2b2972a724761f493e8ad70d3faca0352de581b3e3c56be517ec6627ffe3ed4816776fb5dc01f3238a7db9020cb470431f158042e0e79183660d58191658f9d3",
+      "at": "2026-11-07T22:02:07.138Z"
+    },
+    {
+      "index": 3,
+      "name": "Demo contributor C",
+      "hash": "dd19a2b73c787bd365111ddd2ac33c096084e414d30acd0de8b32e1113a0b989a90e185ca52f58ce4fcc922c44ddab32df79f7804438763e8393be64f26ecfcc",
+      "at": "2026-11-07T22:03:25.648Z"
+    }
+  ],
+  "beacon": {
+    "source": "drand mainnet round 6621932 (demo: round taken at run time, not announced in advance)",
+    "value": "a6b7452edd478e4af44cb3a293457ef9f5ba9e19f7f08817c8190a9e8a711d4e",
+    "iterationsExp": 10,
+    "hash": "5dae30cb2cd0f2be05ccc53621004e595747a893aef7452a3bcd50002ed1b74da25541878c89b70c83aa5dea56511e60c14f7c83365d762c6228f52fec828126"
+  },
+  "final": {
+    "zkeySha256": "c1603cf9fc8779a5ebce2f82a7d08a0b12f80877b03c1e949a1d3f719c6d1dbf",
+    "vkeySha256": "680cb3888301783f3573f9df46137791fb7bf6867b2d959877cac9adbb361524",
+    "wasmSha256": "5c5334b34b9202c701fe26c88fdc90516ae69742aa6a607162467b298fe8bdbc"
+  }
+}

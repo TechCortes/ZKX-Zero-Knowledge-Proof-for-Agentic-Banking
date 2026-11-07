@@ -1,5 +1,11 @@
 /**
- * ZQUENT — ZK Circuit Setup Script
+ * ZQUENT — ZK Circuit Setup Script (LOCAL DEV ONLY)
+ *
+ * The committed proving keys come from the multi-party ceremony instead:
+ * `npm run ceremony` (scripts/zquent-ceremony.ts, docs/ceremony.md). This
+ * script makes a single-contributor key, so whoever runs it could forge
+ * proofs. Use it only to iterate on a circuit locally. Running it overwrites
+ * public/zk/, and CI's ceremony check will then (rightly) fail.
  *
  * Run this once after compiling a circuit to generate:
  *   1. Groth16 proving key (.zkey)
@@ -20,8 +26,8 @@
  *   2. Compile: npm run compile-circuit (or compile-circuit:reveal)
  *   3. Download a Powers of Tau file large enough for the circuit (the Hermez
  *      buckets are gone; PSE Perpetual Powers of Tau is the maintained successor):
- *        kyc_credential (~530 constraints)  → pot10+  (pot14 works too)
- *        kyc_reveal     (~9k constraints)   → pot14
+ *        kyc_credential (~5.2k constraints with --O2) → pot13+  (pot14 works too)
+ *        kyc_reveal     (~9.3k constraints with --O2) → pot14
  *      wget https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_14.ptau -O circuits/pot14_final.ptau
  *   4. Run: npm run setup-zk (or setup-zk:reveal)
  *
@@ -103,7 +109,8 @@ async function main() {
   console.log("✓ Phase 2 key generated");
 
   // Contribute randomness (in production: use a real MPC ceremony)
-  await snarkjs.zKey.contribute(zkey0Path, zkeyFinalPath, "ZQUENT Demo Contributor", crypto.randomBytes(32).toString("hex"));
+  console.log("⚠ Single contributor: fine for local dev, not for anything shared. See docs/ceremony.md.");
+  await snarkjs.zKey.contribute(zkey0Path, zkeyFinalPath, "ZQUENT local dev (single contributor)", crypto.randomBytes(32).toString("hex"));
   console.log("✓ Contribution complete");
 
   // Export verification key

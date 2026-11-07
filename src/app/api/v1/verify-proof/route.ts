@@ -3,7 +3,15 @@ import { authenticate, isAuthFailure, unauthorized } from "@/lib/auth";
 import { verifyKYCProof, commitmentFromSignals, txNonceFromSignals } from "@/zkp/verifier";
 import { consumeChallenge } from "@/policy/challenges";
 import { getRevealPublicKey, getEscrowKeySet } from "@/zkp/revealConfig";
-import { evaluatePayment, approveWithProof, computePolicyVersionHash, usdAmountError } from "@/policy/engine";
+import { getIssuerPublicKey } from "@/zkp/issuerConfig";
+import {
+  evaluatePayment,
+  approveWithProof,
+  computePolicyVersionHash,
+  usdAmountError,
+  getPersonDailyLimit,
+  reservePersonSpend,
+} from "@/policy/engine";
 import { recordAuditEntry } from "@/policy/auditLog";
 import { storeRevealEscrow } from "@/policy/escrow";
 import { logger } from "@/lib/logger";
@@ -94,8 +102,11 @@ export async function POST(req: NextRequest) {
   }
 
   const revealPublicKey = await getRevealPublicKey();
-  // Throws on a malformed ZQUENT_ESCROW_KEYS now, before any challenge or spend is touched.
+  const issuerPublicKey = await getIssuerPublicKey();
+  // Throw on a malformed ZQUENT_ESCROW_KEYS / ZQUENT_PERSON_DAILY_LIMIT now,
+  // before any challenge or spend is touched.
   getEscrowKeySet();
+  getPersonDailyLimit();
 
   // Bind proof to this agent's registered commitment — prevents cross-agent replay
   const proofCommitment = commitmentFromSignals(publicSignals as string[], revealPublicKey);
@@ -158,7 +169,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const result = await verifyKYCProof(proof as object, publicSignals as string[], { revealPublicKey });
+  const result = await verifyKYCProof(proof as object, publicSignals as string[], {
+    issuerKey: issuerPublicKey,
+    revealKey: revealPublicKey,
+    currentDay: challenge.payment.currentDay,
+  });
 
   if (!result.valid) {
     logger.warn(ROUTE, "proof_rejected", { agentId: agent.id, error: result.error });
@@ -181,6 +196,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: "Payment no longer requires a proof — use /api/v1/payment instead." },
       { status: 409 }
+    );
+  }
+
+  // One person, many agents: cap proof-approved spend per person per day.
+  const person = await reservePersonSpend(result.nullifier!, amount);
+  if (!person.ok) {
+    logger.warn(ROUTE, "person_limit_reached", { agentId: agent.id, limit: person.limit });
+    await recordAuditEntry({
+      agentId: agent.id,
+      commitment: result.commitment,
+      policyVersionHash,
+      decision: "policy_denied",
+      thresholdMet: true,
+      dailyTotal: decision.dailyTotal,
+    });
+    return NextResponse.json(
+      {
+        error: `Daily limit per verified person is $${person.limit.toLocaleString()}, across all of that person's agents.`,
+        errorCode: "POLICY_DENIED",
+      },
+      { status: 403 }
     );
   }
 

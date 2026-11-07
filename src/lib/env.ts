@@ -15,7 +15,10 @@ export type ProtocolEnvName =
   | "AUDIT_SIGNING_KEY"
   | "REGISTRY_FILE"
   | "REGISTRY_MEMBERS_ID"
-  | "DISCLOSURE_DAILY_LIMIT";
+  | "DISCLOSURE_DAILY_LIMIT"
+  | "ISSUER_PUBLIC_KEY"
+  | "ISSUER_PRIVATE_KEY"
+  | "PERSON_DAILY_LIMIT";
 
 const warned = new Set<ProtocolEnvName>();
 

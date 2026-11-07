@@ -1,13 +1,10 @@
 pragma circom 2.0.0;
 
-include "../node_modules/circomlib/circuits/poseidon.circom";
-include "../node_modules/circomlib/circuits/comparators.circom";
-include "../node_modules/circomlib/circuits/bitify.circom";
-include "../node_modules/circomlib/circuits/babyjub.circom";
+include "lib/credential.circom";
 include "../node_modules/circomlib/circuits/escalarmulany.circom";
 
 /*
- * KYC Credential + Threshold Reveal Circuit (ROADMAP.md, phase 2)
+ * KYC Credential + Threshold Reveal Circuit (v2: issuer-signed credential + daily nullifier)
  *
  * Everything kyc_credential.circom proves, plus: the private inputs are encrypted
  * to a consortium public key, and the proof guarantees the ciphertext really
@@ -24,12 +21,17 @@ include "../node_modules/circomlib/circuits/escalarmulany.circom";
  * The threshold part lives entirely in how sk is held (Shamir shares). The
  * circuit only sees one public key. See docs/threshold-reveal.md.
  *
- * Private inputs : idHash, birthYear, salt, revealNonce (r)
- * Public inputs  : commitment, currentYear, minAge, revealPubKey[2], txNonce
- * Public outputs : revealEphemeral[2] (R), revealCiphertext[3] (c)
+ * The credential checks (issuer signature, age, expiry, nullifier, commitment)
+ * are shared with kyc_credential.circom via lib/credential.circom.
+ *
+ * Private inputs : idHash, birthYear, salt, expiryDay, sigR8[2], sigS, revealNonce (r)
+ * Public inputs  : commitment, currentYear, minAge, revealPubKey[2], txNonce,
+ *                  issuerPubKey[2], currentDay, nullifierScope
+ * Public outputs : revealEphemeral[2] (R), revealCiphertext[3] (c), nullifier
  *
  * snarkjs publicSignals order (outputs first, then public inputs):
- *   [R.x, R.y, c0, c1, c2, commitment, currentYear, minAge, PK.x, PK.y, txNonce]
+ *   [R.x, R.y, c0, c1, c2, nullifier, commitment, currentYear, minAge, PK.x, PK.y,
+ *    txNonce, issuer.x, issuer.y, currentDay, nullifierScope]
  *
  * txNonce is the server's single-use challenge for one payment (see
  * src/policy/challenges.ts), so each proof, and its ciphertext, is tied to it.
@@ -39,6 +41,9 @@ template KYCReveal() {
     signal input idHash;
     signal input birthYear;
     signal input salt;
+    signal input expiryDay;
+    signal input sigR8[2];
+    signal input sigS;
     signal input revealNonce;
 
     // --- Public inputs ---
@@ -47,30 +52,33 @@ template KYCReveal() {
     signal input minAge;
     signal input revealPubKey[2];
     signal input txNonce;
+    signal input issuerPubKey[2];
+    signal input currentDay;
+    signal input nullifierScope;
 
     // --- Public outputs ---
     signal output revealEphemeral[2];
     signal output revealCiphertext[3];
+    signal output nullifier;
 
-    // --- 1. Commitment: commitment == Poseidon(idHash, salt) ---
-    component hasher = Poseidon(2);
-    hasher.inputs[0] <== idHash;
-    hasher.inputs[1] <== salt;
-    commitment === hasher.out;
+    // --- 1. Credential: commitment, issuer signature, age, expiry, nullifier, txNonce ---
+    component cred = IssuerCredential();
+    cred.idHash <== idHash;
+    cred.birthYear <== birthYear;
+    cred.salt <== salt;
+    cred.expiryDay <== expiryDay;
+    cred.sigR8 <== sigR8;
+    cred.sigS <== sigS;
+    cred.commitment <== commitment;
+    cred.currentYear <== currentYear;
+    cred.minAge <== minAge;
+    cred.txNonce <== txNonce;
+    cred.issuerPubKey <== issuerPubKey;
+    cred.currentDay <== currentDay;
+    cred.nullifierScope <== nullifierScope;
+    nullifier <== cred.nullifier;
 
-    // --- 2. Age: currentYear - birthYear >= minAge ---
-    signal age;
-    age <== currentYear - birthYear;
-    component ageCheck = GreaterEqThan(8);
-    ageCheck.in[0] <== age;
-    ageCheck.in[1] <== minAge;
-    ageCheck.out === 1;
-
-    // --- 3. Bind txNonce (squared so it can't be optimized away or swapped) ---
-    signal txNonceSquared;
-    txNonceSquared <== txNonce * txNonce;
-
-    // --- 4. Threshold reveal ---
+    // --- 2. Threshold reveal ---
     // The server pins revealPubKey to the configured consortium key. Checking it
     // is on the curve here stops a malformed key from producing junk ciphertext.
     component pkCheck = BabyCheck();
@@ -109,4 +117,4 @@ template KYCReveal() {
     }
 }
 
-component main {public [commitment, currentYear, minAge, revealPubKey, txNonce]} = KYCReveal();
+component main {public [commitment, currentYear, minAge, revealPubKey, txNonce, issuerPubKey, currentDay, nullifierScope]} = KYCReveal();
