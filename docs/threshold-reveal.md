@@ -20,7 +20,7 @@ Anonymous-tier payments (< $1,000/day) never produce a proof, so they never prod
 
 ```bash
 npm run compile-circuit:reveal          # needs circom 2.x
-npm run setup-zk:reveal                 # needs circuits/pot14_final.ptau — PSE ppot_0080_14 (see scripts/setup_zk.js)
+npm run ceremony -- verify kyc_reveal    # committed key from the ceremony: docs/ceremony.md (needs circuits/pot14_final.ptau)
 npm run dkg -- demo                     # how the consortium makes its key with no dealer: docs/dkg.md
 npm run reveal -- keygen --threshold 2 --parties 3 --out ./consortium   # or: one-machine dealer, for local testing only
 export ZQUENT_REVEAL_PUBLIC_KEY="<x>,<y>" # printed by `npm run dkg -- verify` (or keygen)
@@ -75,13 +75,18 @@ The result is accepted only if `Poseidon(idHash, salt)` equals the stored commit
 |-------|--------|------|
 | 0, 1 | `R.x`, `R.y` | output |
 | 2, 3, 4 | `c[0]`, `c[1]`, `c[2]` | output |
-| 5 | `commitment` | public input |
-| 6 | `currentYear` | public input |
-| 7 | `minAge` | public input |
-| 8, 9 | `PK.x`, `PK.y` | public input |
-| 10 | `txNonce` | public input |
+| 5 | `nullifier` | output |
+| 6 | `commitment` | public input |
+| 7 | `currentYear` | public input |
+| 8 | `minAge` | public input |
+| 9, 10 | `PK.x`, `PK.y` | public input |
+| 11 | `txNonce` | public input |
+| 12, 13 | `issuer.x`, `issuer.y` | public input |
+| 14 | `currentDay` | public input |
+| 15 | `nullifierScope` | public input |
 
-`kyc_credential`: `[commitment, currentYear, minAge, txNonce]`.
+`kyc_credential`: `[nullifier, commitment, currentYear, minAge, txNonce, issuer.x, issuer.y, currentDay, nullifierScope]`.
+The credential and nullifier signals are explained in [credentials.md](./credentials.md).
 
 `txNonce` is the single-use challenge from the 402 response (`src/policy/challenges.ts`). Every
 approved KYC payment therefore has its own proof and its own fresh ciphertext, and the audit
@@ -177,8 +182,8 @@ For unsealed records, `escrow` writes `ct.json` directly; skip `unseal` and `ope
   operation the HSM needs to expose.
 - **Member X-Wing keys.** `member-<i>.key.json` belongs in an HSM; `unsealEscrowShare` is the
   one operation it needs to expose.
-- **The trusted setup.** `setup-zk` makes a single-contributor Groth16 key. Run a real phase-2
-  ceremony before trusting proofs in production.
+- **The trusted setup.** The committed keys come from a demo ceremony one operator ran. Run the
+  real multi-party ceremony ([ceremony.md](./ceremony.md)) before trusting proofs in production.
 - **Access to ciphertexts.** Besides the operator reading the escrow store, the regulator flow
   (`docs/disclosure-requests.md`, `docs/disclosure-delivery.md`) lets k members decrypt one
   approved transaction and deliver it sealed to the requesting regulator. The legal process
@@ -202,6 +207,7 @@ For unsealed records, `escrow` writes `ct.json` directly; skip `unseal` and `ope
   "txNonce": "…",                  // random field element, single use
   "expiresInSeconds": 600,
   "payment": { "amount": 1500, "recipient": "0x…" },   // what the nonce is bound to
+  "credential": { "issuerPublicKey": ["x","y"], "currentDay": 20399, "nullifierScope": "…" },  // docs/credentials.md
   "reveal": { "publicKey": ["x","y"] } }               // only when reveal is on
 ```
 

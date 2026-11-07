@@ -10,9 +10,12 @@
  *   - a proof for one payment can't approve another (amount/recipient must match)
  *   - one agent's challenge can't be used by another (keys are per agent)
  *   - stale challenges expire
+ *   - the proof's `currentDay` (which keys the per-person daily nullifier) is the
+ *     day the server issued the challenge for, not one the prover picked
  */
 
 import { kv } from "@/lib/kv";
+import { epochDay } from "@/zkp/credential";
 
 /** Long enough for slow in-browser proving; short enough that a leaked nonce is useless soon. */
 export const CHALLENGE_TTL_SECONDS = 10 * 60;
@@ -22,6 +25,8 @@ export interface ChallengedPayment {
   recipient: string;
   chainId?: string;
   issuedAt: string;
+  /** Days since 1970-01-01 UTC. The proof must use exactly this `currentDay`. */
+  currentDay: number;
 }
 
 const key = (agentId: string, nonce: string) => `challenge:${agentId}:${nonce}`;
@@ -35,14 +40,16 @@ function randomNonce(): string {
 
 export async function issueChallenge(
   agentId: string,
-  payment: Omit<ChallengedPayment, "issuedAt">
+  payment: Omit<ChallengedPayment, "issuedAt" | "currentDay"> & { currentDay?: number }
 ): Promise<string> {
   const nonce = randomNonce();
+  const now = new Date();
   const record: ChallengedPayment = {
     amount: payment.amount,
     recipient: payment.recipient,
     ...(payment.chainId ? { chainId: payment.chainId } : {}),
-    issuedAt: new Date().toISOString(),
+    issuedAt: now.toISOString(),
+    currentDay: payment.currentDay ?? epochDay(now),
   };
   await kv().set(key(agentId, nonce), record, { ex: CHALLENGE_TTL_SECONDS });
   return nonce;

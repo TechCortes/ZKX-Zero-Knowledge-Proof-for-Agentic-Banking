@@ -7,6 +7,8 @@ import { newTxId } from "@/lib/ids";
 import { getRevealPublicKey } from "@/zkp/revealConfig";
 import { REQUIRED_MIN_AGE } from "@/zkp/verifier";
 import { issueChallenge, CHALLENGE_TTL_SECONDS } from "@/policy/challenges";
+import { getIssuerPublicKey } from "@/zkp/issuerConfig";
+import { NULLIFIER_SCOPE, epochDay } from "@/zkp/credential";
 
 const ROUTE = "POST /api/v1/payment";
 
@@ -95,6 +97,15 @@ export async function POST(req: NextRequest) {
   // When threshold reveal is configured, the proof must also encrypt the identity
   // to this consortium key (kyc_reveal circuit). verify-proof pins the same key.
   const revealPublicKey = await getRevealPublicKey();
+  const issuerPublicKey = await getIssuerPublicKey();
+  if (!issuerPublicKey) {
+    logger.error(ROUTE, "issuer_not_configured", { agentId: agent.id });
+    return NextResponse.json(
+      { error: "This server has no credential issuer configured, so it can't accept proofs yet." },
+      { status: 503 }
+    );
+  }
+  const currentDay = epochDay();
 
   // Single-use nonce bound to exactly this payment. The proof must commit to it,
   // and verify-proof will only accept it for the same amount and recipient.
@@ -102,6 +113,7 @@ export async function POST(req: NextRequest) {
     amount,
     recipient,
     chainId: typeof chainId === "string" ? chainId : undefined,
+    currentDay,
   });
 
   logger.info(ROUTE, "proof_required", { agentId: agent.id, amount, dailyTotal: decision.dailyTotal });
@@ -122,6 +134,9 @@ export async function POST(req: NextRequest) {
         commitment: agent.commitment,
         txNonce,
         expiresInSeconds: CHALLENGE_TTL_SECONDS,
+        // The proof must show a credential signed by this issuer, and use this day
+        // and scope for its nullifier (one per person per day).
+        credential: { issuerPublicKey, currentDay, nullifierScope: NULLIFIER_SCOPE },
         payment: { amount, recipient, ...(typeof chainId === "string" ? { chainId } : {}) },
         ...(revealPublicKey ? { reveal: { publicKey: revealPublicKey } } : {}),
       },

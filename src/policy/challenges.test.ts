@@ -52,3 +52,12 @@ describe("proof challenges", () => {
     expect(a).not.toBe(b);
   });
 });
+
+describe("challenge day", () => {
+  it("remembers the day it was issued for, so the proof's nullifier day is the server's", async () => {
+    const PAYMENT = { amount: 1500, recipient: "0xabc" };
+    const nonce = await issueChallenge("agent-day", { ...PAYMENT, currentDay: 20400 });
+    const res = await consumeChallenge("agent-day", nonce, PAYMENT);
+    expect(res.ok && res.payment.currentDay).toBe(20400);
+  });
+});

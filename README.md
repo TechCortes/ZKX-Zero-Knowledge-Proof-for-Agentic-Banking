@@ -15,7 +15,7 @@ The problem is current, not hypothetical: as of April 2026 the x402 agent-paymen
 
 This isn't a slide deck or a mocked-up demo — it's a working reference implementation of a ZK compliance stack for agentic payments:
 
-- **A real Groth16 setup** — `kyc_credential.circom` is compiled, and a completed Powers of Tau ceremony + trusted setup (`public/zk/*.wasm`, `*.zkey`, `verification_key.json`) is committed. No stub verifier.
+- **A real Groth16 setup** — both circuits are compiled, and their proving keys (`public/zk/*.wasm`, `*.zkey`, verification keys) come from a multi-party phase-2 ceremony on top of the PSE Powers of Tau, with a transcript CI re-verifies ([docs/ceremony.md](./docs/ceremony.md)). No stub verifier.
 - **A live agent onboarding API** — `/api/v1/agents/register`, `/api/v1/payment`, `/api/v1/verify-proof` — token-scoped auth, policy evaluation, and proof verification wired end to end.
 - **OWS wallet-standard integration** — registers `zquent:kyc` as a wallet-standard feature so it composes with the existing OWS policy engine instead of bolting on a parallel one.
 - **A working registration UI** (`/register`) — the same flow demoed on the live site, not just an API you have to curl.
@@ -53,10 +53,13 @@ Agent Payment Request
 
 The `kyc_credential` circuit (circom) proves:
 1. The holder knows a preimage `(idHash, salt)` that hashes to a public `commitment` (Poseidon hash)
-2. `currentYear - birthYear >= minAge` (age requirement)
-3. It was made for one specific payment: a single-use `txNonce` the server issues in its 402 challenge, bound to that payment's amount and recipient. A proof can't be replayed or reused for another payment.
+2. A credential issuer signed `(idHash, birthYear, expiryDay)` (EdDSA-Poseidon), the server pins that issuer's key, and the credential hasn't expired
+3. `currentYear - birthYear >= minAge` (age requirement)
+4. It was made for one specific payment: a single-use `txNonce` the server issues in its 402 challenge, bound to that payment's amount and recipient. A proof can't be replayed or reused for another payment.
 
-Private inputs never leave the browser.
+It also outputs a daily nullifier, the same for one person all day across all their agents, so the server can cap spend per person (`ZQUENT_PERSON_DAILY_LIMIT`). See [docs/credentials.md](./docs/credentials.md).
+
+Private inputs and the credential never leave the browser.
 
 **Threshold reveal (opt-in).** Institutions that need a lawful-disclosure path can set `ZQUENT_REVEAL_PUBLIC_KEY`. Proofs then use `kyc_reveal.circom`, which also encrypts the identity to a k-of-n consortium key and proves the ciphertext is honest. No single party, including the operator, can decrypt it. See [docs/threshold-reveal.md](./docs/threshold-reveal.md).
 
@@ -88,17 +91,21 @@ npm run dev
 ```bash
 # 1. Install circom: https://docs.circom.io/getting-started/installation/
 
-# 2. Compile the circuit
+# 2. Compile the circuit (--O2 is in the script)
 npm run compile-circuit
 
 # 3. Download Powers of Tau (PSE Perpetual Powers of Tau, 2^14 — covers both circuits;
 #    the old Hermez S3 bucket no longer serves files)
 wget https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_14.ptau -O circuits/pot14_final.ptau
 
-# 4. Generate proving + verification keys
-npm run setup-zk
+# 4. Check the committed proving keys against the circuit and the ceremony transcript
+npm run ceremony -- verify kyc_credential
+#    (changed the circuit? `npm run setup-zk` makes a local dev key; a shared key needs a new ceremony, docs/ceremony.md)
 
-# 5. Run the app
+# 5. Configure a credential issuer (the demo issuer signs whatever it is sent)
+npm run issuer -- keygen >> .env.local
+
+# 6. Run the app
 npm run dev
 ```
 
@@ -148,9 +155,9 @@ Also shipped: the regulator disclosure flow. A registered regulator asks for one
 
 The consortium's reveal key is made with a distributed key generation ceremony, so no one ever holds the whole key ([docs/dkg.md](./docs/dkg.md)).
 
-Next: a multi-party trusted setup and issuer-signed credentials.
+Proofs now check an issuer-signed credential and carry a per-person daily nullifier ([docs/credentials.md](./docs/credentials.md)), and the proving keys come from a multi-party ceremony with a CI-checked transcript ([docs/ceremony.md](./docs/ceremony.md)).
 
-**Status:** testnet reference implementation. The circuits have not been independently audited, the Groth16 setup has a single contributor, and the demo credential is self-asserted. Don't use it to protect real funds or identities yet.
+**Status:** testnet reference implementation. The circuits have not been independently audited. The committed ceremony is a demo run by one operator (the tooling for a real multi-party one is in place), and the demo issuer signs whatever it is sent, so no one's age is actually checked. Don't use it to protect real funds or identities yet.
 
 ## Renamed from Vero Protocol
 

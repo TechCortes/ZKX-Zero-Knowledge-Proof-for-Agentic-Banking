@@ -121,7 +121,7 @@ const forkIdeas = [
   },
   {
     title: "Extend the circuit",
-    body: "kyc_credential.circom proves two facts today: commitment validity and age. Add a new private input — jurisdiction, accreditation status, sanctions-list exclusion — and re-run the trusted setup.",
+    body: "kyc_credential.circom checks an issuer-signed credential and age today. Have the issuer sign one more field — jurisdiction, accreditation status, sanctions-list exclusion — and run a new setup ceremony.",
   },
   {
     title: "Bring your own chain",
@@ -510,7 +510,7 @@ export default function Home() {
           index="07"
           label="ZK architecture"
           title="Cryptographic proof, not disclosure."
-          lead={<>A single proof establishes two facts at once — that the credential is valid, and that the holder meets the age requirement — without revealing the underlying data to anyone, anywhere. Under the hood: the <span className="font-mono text-zq-soft">kyc_credential</span> circuit.</>}
+          lead={<>A single proof establishes it all at once — that the credential is valid and signed by a trusted issuer, and that the holder meets the age requirement — without revealing the underlying data to anyone, anywhere. Under the hood: the <span className="font-mono text-zq-soft">kyc_credential</span> circuit.</>}
         />
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-4">
@@ -519,6 +519,7 @@ export default function Home() {
               <div className="space-y-4">
                 {[
                   { label: "Credential validity", detail: "Poseidon(idHash, salt) == commitment" },
+                  { label: "Signed by the issuer", detail: "EdDSA(issuerKey, idHash · birthYear · expiry)" },
                   { label: "Age requirement met", detail: "currentYear − birthYear ≥ minAge" },
                 ].map((item) => (
                   <div key={item.label} className="flex items-start gap-3">
@@ -557,17 +558,20 @@ export default function Home() {
 <span className="text-zq-faint">{"// private inputs"}</span>{"\n"}
 <span className="text-zq-muted">signal private input</span> idHash;{"\n"}
 <span className="text-zq-muted">signal private input</span> birthYear;{"\n"}
-<span className="text-zq-muted">signal private input</span> salt;{"\n\n"}
+<span className="text-zq-muted">signal private input</span> salt;{"\n"}
+<span className="text-zq-muted">signal private input</span> issuerSignature;{"\n\n"}
 <span className="text-zq-faint">{"// public inputs"}</span>{"\n"}
 <span className="text-zq-muted">signal input</span> <span className="text-zq-accent">commitment</span>;{"\n"}
 <span className="text-zq-muted">signal input</span> <span className="text-zq-accent">currentYear</span>;{"\n"}
-<span className="text-zq-muted">signal input</span> <span className="text-zq-accent">minAge</span>;{"\n\n"}
+<span className="text-zq-muted">signal input</span> <span className="text-zq-accent">minAge</span>;{"\n"}
+<span className="text-zq-muted">signal input</span> <span className="text-zq-accent">issuerKey</span>;{"\n\n"}
 <span className="text-zq-faint">{"// constraints — math is the anchor"}</span>{"\n"}
 Poseidon([idHash, salt]) === <span className="text-zq-accent">commitment</span>;{"\n"}
+EdDSA.verify(<span className="text-zq-accent">issuerKey</span>, [idHash, birthYear], issuerSignature);{"\n"}
 <span className="text-zq-accent">currentYear</span> - birthYear &gt;= <span className="text-zq-accent">minAge</span>;{"\n\n"}
 <span className="text-zq-faint">{"// what crosses the boundary"}</span>{"\n"}
 <span className="text-zq-accent">{"// ✓ proof · publicSignals · commitment"}</span>{"\n"}
-<span className="text-zq-danger">{"// ✗ idHash · birthYear · salt"}</span>
+<span className="text-zq-danger">{"// ✗ idHash · birthYear · salt · issuerSignature"}</span>
             </code></pre>
           </Card>
         </div>

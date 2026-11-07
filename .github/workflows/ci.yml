@@ -20,3 +20,31 @@ jobs:
       - run: npm ci
       - run: npx tsc --noEmit
       - run: npm test
+
+  # Rebuilds both circuits from source and checks the committed proving keys
+  # against them, the PSE Powers of Tau and ceremony/*.json (docs/ceremony.md).
+  ceremony:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install circom 2.2.2
+        run: |
+          curl -sSL -o /usr/local/bin/circom https://github.com/iden3/circom/releases/download/v2.2.2/circom-linux-amd64
+          echo "f3d8d1fdbc123779b80e210c909ee941d7a1e130c70365524646b48b8b0fe9d5  /usr/local/bin/circom" | sha256sum -c -
+          chmod +x /usr/local/bin/circom
+      - uses: actions/cache@v4
+        with:
+          path: circuits/pot14_final.ptau
+          key: ptau-ppot_0080_14
+      - name: Download Powers of Tau
+        run: |
+          [ -f circuits/pot14_final.ptau ] || curl -sSL -o circuits/pot14_final.ptau https://pse-trusted-setup-ppot.s3.eu-central-1.amazonaws.com/pot28_0080/ppot_0080_14.ptau
+          echo "3ca1149e9349b22b0ee0649399cfb787677129b7b1189d1899fc0d615d9583db  circuits/pot14_final.ptau" | sha256sum -c -
+      - run: npm run compile-circuit && npm run compile-circuit:reveal
+      - run: npm run ceremony -- verify kyc_credential
+      - run: npm run ceremony -- verify kyc_reveal

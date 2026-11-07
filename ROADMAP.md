@@ -47,7 +47,9 @@ A compliance team can pilot ZQUENT and truthfully tell their regulator: "we can 
 7. ✅ Disclosure requests: a registered regulator submits a hybrid-signed request for one transaction (`POST /api/v1/disclosure/requests`); it is approved once `approvalThreshold` registered approvers sign its `requestHash`. Rate limited per regulator; the public log shows hashes only ([docs/disclosure-requests.md](./docs/disclosure-requests.md)).
 8. ✅ Sealed delivery: once a request is approved, members check it themselves, pass their escrow shares to each other, and each delivers a proven partial decryption sealed to the regulator's X-Wing key, with a signed receipt in the audit chain. Only the regulator ever sees the identity ([docs/disclosure-delivery.md](./docs/disclosure-delivery.md)).
 9. ✅ Distributed key generation: consortium members make the reveal key together (Joint-Feldman, shares sealed with X-Wing, signed public transcript). No one ever holds the whole secret key ([docs/dkg.md](./docs/dkg.md)).
-10. Next: a multi-party Groth16 trusted-setup ceremony, run with the issuer-signed credential circuit change; then anchor checkpoint hashes on Base.
+10. ✅ Issuer-signed credentials: both circuits check an EdDSA-Poseidon signature from a pinned issuer, an expiry, and output a per-person daily nullifier the server caps spend on ([docs/credentials.md](./docs/credentials.md)).
+11. ✅ Multi-party trusted-setup tooling: `npm run ceremony` (contribute, accept, beacon, verify), a committed transcript per circuit, and a CI job that rebuilds the circuits and re-verifies the keys ([docs/ceremony.md](./docs/ceremony.md)). The committed keys are from a single-operator demo run; the real ceremony with independent contributors is still to do.
+12. Next: run the real ceremony; close the anonymous-tier Sybil gap (P1); anchor checkpoint hashes on Base.
 
 ## Explicitly out of scope for ZQUENT itself
 
@@ -55,4 +57,4 @@ Running an actual threshold-decryption consortium, KYC document verification/iss
 
 ## Contributing
 
-The audit log (#1) and the threshold-reveal code (#2, #3) are in. Proofs are bound to a single-use, per-payment challenge nonce (`src/policy/challenges.ts`). The regulator flow is in: requests and approvals ([docs/disclosure-requests.md](./docs/disclosure-requests.md)) and sealed delivery ([docs/disclosure-delivery.md](./docs/disclosure-delivery.md)). The reveal key comes from a DKG ([docs/dkg.md](./docs/dkg.md)). Open item: a multi-party trusted setup. See [docs/threshold-reveal.md](./docs/threshold-reveal.md). See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup.
+The audit log (#1) and the threshold-reveal code (#2, #3) are in. Proofs are bound to a single-use, per-payment challenge nonce (`src/policy/challenges.ts`). The regulator flow is in: requests and approvals ([docs/disclosure-requests.md](./docs/disclosure-requests.md)) and sealed delivery ([docs/disclosure-delivery.md](./docs/disclosure-delivery.md)). The reveal key comes from a DKG ([docs/dkg.md](./docs/dkg.md)). Credentials are issuer-signed and the setup tooling is multi-party ([docs/credentials.md](./docs/credentials.md), [docs/ceremony.md](./docs/ceremony.md)). Open item: running the real ceremony with independent contributors. See [docs/threshold-reveal.md](./docs/threshold-reveal.md). See [CONTRIBUTING.md](./CONTRIBUTING.md) for dev setup.

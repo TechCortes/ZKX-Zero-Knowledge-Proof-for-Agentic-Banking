@@ -6,8 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "compile-circuit": "circom circuits/kyc_credential.circom --r1cs --wasm --sym -o circuits/build",
-    "compile-circuit:reveal": "circom circuits/kyc_reveal.circom --r1cs --wasm --sym -o circuits/build",
+    "compile-circuit": "circom circuits/kyc_credential.circom --O2 --r1cs --wasm --sym -o circuits/build",
+    "compile-circuit:reveal": "circom circuits/kyc_reveal.circom --O2 --r1cs --wasm --sym -o circuits/build",
     "setup-zk": "node scripts/setup_zk.js",
     "setup-zk:reveal": "node scripts/setup_zk.js kyc_reveal",
     "reveal": "tsx scripts/zquent-reveal.ts",
@@ -18,7 +18,9 @@
     "audit": "tsx scripts/zquent-audit.ts",
     "registry": "tsx scripts/zquent-registry.ts",
     "disclosure": "tsx scripts/zquent-disclosure.ts",
-    "dkg": "tsx scripts/zquent-dkg.ts"
+    "dkg": "tsx scripts/zquent-dkg.ts",
+    "ceremony": "tsx scripts/zquent-ceremony.ts",
+    "issuer": "tsx scripts/zquent-issuer.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",

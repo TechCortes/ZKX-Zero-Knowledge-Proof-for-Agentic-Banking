@@ -1,60 +1,56 @@
 pragma circom 2.0.0;
 
-include "../node_modules/circomlib/circuits/poseidon.circom";
-include "../node_modules/circomlib/circuits/comparators.circom";
+include "lib/credential.circom";
 
 /*
- * KYC Credential Circuit
+ * KYC Credential Circuit (v2: issuer-signed credential + daily nullifier)
  *
- * Proves that the holder has a valid identity credential satisfying:
- *   1. The credential commits to their identity (Poseidon hash)
- *   2. Their age >= minAge (e.g., 18)
+ * Proves the holder has an issuer-signed identity credential, is at least
+ * minAge, the credential hasn't expired, and outputs a per-person daily
+ * nullifier. All the checks live in lib/credential.circom.
  *
- * Private inputs (never revealed):
- *   - idHash    : Poseidon hash of the user's government ID number
- *   - birthYear : Year of birth
- *   - salt      : Random blinding factor
+ * Private : idHash, birthYear, salt, expiryDay, sigR8[2], sigS
+ * Public  : commitment, currentYear, minAge, txNonce, issuerPubKey[2],
+ *           currentDay, nullifierScope
+ * Output  : nullifier
  *
- * Public inputs (visible to verifier):
- *   - commitment  : Poseidon(idHash, salt) — ties proof to a specific credential
- *   - currentYear : Year the proof is generated
- *   - minAge      : Minimum age required (typically 18)
- *   - txNonce     : Server-issued, single-use challenge for one payment. Binds the
- *                   proof to that payment so it can't be replayed or reused.
- *
- * publicSignals: [commitment, currentYear, minAge, txNonce]
+ * snarkjs publicSignals order (outputs first, then public inputs):
+ *   [nullifier, commitment, currentYear, minAge, txNonce,
+ *    issuer.x, issuer.y, currentDay, nullifierScope]
  */
 template KYCCredential() {
-    // --- Private inputs ---
     signal input idHash;
     signal input birthYear;
     signal input salt;
+    signal input expiryDay;
+    signal input sigR8[2];
+    signal input sigS;
 
-    // --- Public inputs ---
     signal input commitment;
     signal input currentYear;
     signal input minAge;
     signal input txNonce;
+    signal input issuerPubKey[2];
+    signal input currentDay;
+    signal input nullifierScope;
 
-    // --- Verify commitment: commitment == Poseidon(idHash, salt) ---
-    component hasher = Poseidon(2);
-    hasher.inputs[0] <== idHash;
-    hasher.inputs[1] <== salt;
-    commitment === hasher.out;
+    signal output nullifier;
 
-    // --- Verify age: currentYear - birthYear >= minAge ---
-    signal age;
-    age <== currentYear - birthYear;
-
-    component ageCheck = GreaterEqThan(8); // 8-bit comparison (max 255 years)
-    ageCheck.in[0] <== age;
-    ageCheck.in[1] <== minAge;
-    ageCheck.out === 1;
-
-    // --- Bind txNonce: a public input with no constraint could be dropped by the
-    // optimizer or swapped without invalidating the proof. Squaring it pins it.
-    signal txNonceSquared;
-    txNonceSquared <== txNonce * txNonce;
+    component cred = IssuerCredential();
+    cred.idHash <== idHash;
+    cred.birthYear <== birthYear;
+    cred.salt <== salt;
+    cred.expiryDay <== expiryDay;
+    cred.sigR8 <== sigR8;
+    cred.sigS <== sigS;
+    cred.commitment <== commitment;
+    cred.currentYear <== currentYear;
+    cred.minAge <== minAge;
+    cred.txNonce <== txNonce;
+    cred.issuerPubKey <== issuerPubKey;
+    cred.currentDay <== currentDay;
+    cred.nullifierScope <== nullifierScope;
+    nullifier <== cred.nullifier;
 }
 
-component main {public [commitment, currentYear, minAge, txNonce]} = KYCCredential();
+component main {public [commitment, currentYear, minAge, txNonce, issuerPubKey, currentDay, nullifierScope]} = KYCCredential();

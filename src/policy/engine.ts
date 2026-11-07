@@ -12,6 +12,7 @@
 import { createHash } from "crypto";
 import { OWSErrorCode } from "@/lib/ows-errors";
 import { kv } from "@/lib/kv";
+import { envLabel, readProtocolEnv } from "@/lib/env";
 
 // --- OWS policy rule types ---
 
@@ -158,6 +159,47 @@ export async function recordSpend(agentId: string, amount: number): Promise<numb
 }
 
 export const DAILY_ANONYMOUS_LIMIT = 1_000; // USD
+
+// Per-person daily ledger, keyed by the proof's nullifier (plan item P1). The
+// nullifier is Poseidon(idHash, scope, day): the same for one person all day,
+// whichever agent they use, so N agents can't multiply one person's cap.
+// A new day gives a new nullifier, so no date is needed in the key.
+const personLedgerKey = (nullifier: string) => `person_spend_cents:${nullifier}`;
+
+/**
+ * ZQUENT_PERSON_DAILY_LIMIT (USD) — cap on proof-approved spend per person per
+ * day, across all their agents. Unset means no cap (spend is still counted).
+ * A set-but-invalid value throws rather than silently lifting the cap.
+ */
+export function getPersonDailyLimit(): number | null {
+  const raw = readProtocolEnv("PERSON_DAILY_LIMIT");
+  if (!raw) return null;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n <= 0 || n > MAX_PAYMENT_USD) {
+    throw new Error(`${envLabel("PERSON_DAILY_LIMIT")} must be a positive USD amount.`);
+  }
+  return n;
+}
+
+export type PersonSpendResult =
+  | { ok: true; personDailyTotal: number }
+  | { ok: false; personDailyTotal: number; limit: number };
+
+/**
+ * Count a proof-approved payment against the person behind `nullifier`.
+ * Atomic: adds first, and takes it back if that went over the cap, so two
+ * concurrent payments can't both slip under it.
+ */
+export async function reservePersonSpend(nullifier: string, amount: number): Promise<PersonSpendResult> {
+  const limit = getPersonDailyLimit();
+  const cents = toCents(amount);
+  const total = await kv().incrby(personLedgerKey(nullifier), cents, { ex: LEDGER_TTL_SECONDS });
+  if (limit !== null && total > toCents(limit)) {
+    const after = await kv().incrby(personLedgerKey(nullifier), -cents, { ex: LEDGER_TTL_SECONDS });
+    return { ok: false, personDailyTotal: fromCents(after), limit };
+  }
+  return { ok: true, personDailyTotal: fromCents(total) };
+}
 
 /**
  * Hash of the effective policy config (the global threshold + this agent's

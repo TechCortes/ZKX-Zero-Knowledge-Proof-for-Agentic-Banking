@@ -7,6 +7,8 @@ import {
   DAILY_ANONYMOUS_LIMIT,
   MAX_PAYMENT_USD,
   usdAmountError,
+  reservePersonSpend,
+  getPersonDailyLimit,
 } from "./engine";
 
 // Isolate tests: use unique agentIds per test to avoid ledger bleed
@@ -127,5 +129,47 @@ describe("Policy Engine — spending_limit rule", () => {
     await recordSpend(agentId, 450);
     expect((await evaluatePayment({ agentId, amount: 50, recipient: "0xabc" }, limit)).allowed).toBe(true);
     expect((await evaluatePayment({ agentId, amount: 50.01, recipient: "0xabc" }, limit)).allowed).toBe(false);
+  });
+});
+
+describe("Policy Engine — per-person daily cap (nullifier)", () => {
+  const prev = process.env.ZQUENT_PERSON_DAILY_LIMIT;
+  const restore = () => {
+    if (prev === undefined) delete process.env.ZQUENT_PERSON_DAILY_LIMIT;
+    else process.env.ZQUENT_PERSON_DAILY_LIMIT = prev;
+  };
+  const nullifier = () => `n-${Date.now()}-${++agentCounter}`;
+
+  it("counts but doesn't cap when unset", async () => {
+    delete process.env.ZQUENT_PERSON_DAILY_LIMIT;
+    try {
+      const n = nullifier();
+      expect(await reservePersonSpend(n, 5000)).toEqual({ ok: true, personDailyTotal: 5000 });
+      expect(await reservePersonSpend(n, 0.1)).toEqual({ ok: true, personDailyTotal: 5000.1 });
+    } finally {
+      restore();
+    }
+  });
+
+  it("caps one person across agents and rolls back the rejected amount", async () => {
+    process.env.ZQUENT_PERSON_DAILY_LIMIT = "3000";
+    try {
+      const n = nullifier();
+      expect((await reservePersonSpend(n, 2000)).ok).toBe(true);
+      expect(await reservePersonSpend(n, 1500)).toEqual({ ok: false, personDailyTotal: 2000, limit: 3000 });
+      expect(await reservePersonSpend(n, 1000)).toEqual({ ok: true, personDailyTotal: 3000 });
+      expect((await reservePersonSpend(nullifier(), 3000)).ok).toBe(true); // someone else
+    } finally {
+      restore();
+    }
+  });
+
+  it("throws on an invalid limit instead of lifting it", () => {
+    process.env.ZQUENT_PERSON_DAILY_LIMIT = "lots";
+    try {
+      expect(() => getPersonDailyLimit()).toThrow(/positive USD/);
+    } finally {
+      restore();
+    }
   });
 });

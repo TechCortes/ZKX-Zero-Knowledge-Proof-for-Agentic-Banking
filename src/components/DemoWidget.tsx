@@ -2,7 +2,14 @@
 
 import { useState, useEffect, useRef } from "react";
 import clsx from "clsx";
-import { deriveCommitment, generateKYCProof, randomFieldElement } from "@/zkp/prover";
+import {
+  deriveCommitment,
+  generateKYCProof,
+  randomFieldElement,
+  requestDemoCredential,
+  type ProofChallenge,
+} from "@/zkp/prover";
+import type { Credential } from "@/zkp/credential";
 import { AGENT_STORAGE_KEY, migrateLegacyAgentStorage } from "@/lib/agentStorage";
 
 const DAILY_LIMIT    = 1000;
@@ -17,7 +24,7 @@ const PRESETS = [
 ];
 
 const PROOF_STEPS = [
-  { label: "Computing witness from private inputs", detail: "Poseidon(idHash, salt)"          },
+  { label: "Computing witness from private inputs", detail: "Commitment · issuer signature"   },
   { label: "Generating Groth16 proof",              detail: "BN128 curve · in-browser"        },
   { label: "Submitting proof for verification",     detail: "Server verifier · real proof"    },
 ];
@@ -48,10 +55,15 @@ interface DemoSession {
   idHash: string;
   salt: string;
   birthYear: number;
+  /** Issuer-signed credential for (idHash, birthYear). Fetched on first proof; also client-side only. */
+  credential?: Credential;
   type: "registered" | "demo";
 }
 
-type StoredSession = Pick<DemoSession, "agentId" | "apiKey" | "commitment" | "idHash" | "salt" | "birthYear">;
+type StoredSession = Pick<
+  DemoSession,
+  "agentId" | "apiKey" | "commitment" | "idHash" | "salt" | "birthYear" | "credential"
+>;
 
 function sleep(ms: number) {
   return new Promise<void>((r) => setTimeout(r, ms));
@@ -148,13 +160,7 @@ export default function DemoWidget() {
   const [txLog, setTxLog]           = useState<Tx[]>([]);
   const [lastTx, setLastTx]         = useState<Tx | null>(null);
   const [apiError, setApiError]     = useState("");
-  const [challenge, setChallenge]   = useState<{
-    commitment: string;
-    currentYear: number;
-    minAge: number;
-    txNonce: string;
-    reveal?: { publicKey: [string, string] };
-  } | null>(null);
+  const [challenge, setChallenge]   = useState<ProofChallenge | null>(null);
 
   // Keep the proof progress and its result in view on small screens while a proof runs.
   const progressRef = useRef<HTMLDivElement>(null);
@@ -269,14 +275,23 @@ export default function DemoWidget() {
     try {
       // Real Groth16 proof, generated in the browser — private inputs never leave this device.
       setProofStep(1);
-      const minAge = challenge?.minAge ?? 18;
-      const { proof, publicSignals } = await generateKYCProof(
-        { idHash: session.idHash, salt: session.salt, birthYear: session.birthYear },
-        session.commitment,
-        minAge,
-        challenge?.txNonce ?? "",
-        challenge?.reveal
-      );
+      const secret = { idHash: session.idHash, salt: session.salt, birthYear: session.birthYear };
+      // First proof for this identity (or the issuer changed): get it signed by the
+      // demo issuer. Only idHash and birthYear are sent, never the salt.
+      let credential = session.credential;
+      const [ix, iy] = challenge.credential.issuerPublicKey;
+      if (
+        !credential ||
+        credential.issuer.publicKey[0] !== ix ||
+        credential.issuer.publicKey[1] !== iy ||
+        credential.subject.expiryDay < challenge.credential.currentDay
+      ) {
+        credential = await requestDemoCredential(secret);
+        const updated = { ...session, credential };
+        setSession(updated);
+        persistSession(updated);
+      }
+      const { proof, publicSignals } = await generateKYCProof(secret, credential, challenge);
 
       setProofStep(2);
       const res = await fetch("/api/v1/verify-proof", {
